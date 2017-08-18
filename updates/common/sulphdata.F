@@ -71,22 +71,15 @@
         first_time = .false.
       endif
 
-      intrp = .false.
 # if defined O_sulphate_data_transient
       data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
       yrl(2) = min(time(ln), max(time(1), data_time))
-#  if defined O_sulphate_data_transient_repyr
-      if (data_time .gt. sulph_yr) then
-        first_time = .true.
-        intrp = .true.
-        yrl(2) = data_time - int(data_time) + sulph_yr
-        print*, "Warning => sulphdata: repeating year", sulph_yr
-      endif
-#  endif
+      ice_yr = data_time
 # else
       yrl(2) = min(time(ln), max(time(1), sulph_yr))
 # endif
 
+      intrp = .false.
       if (yrl(2) .gt. time(1) .and. yrl(2) .lt. time(ln)) intrp = .true.
 
       if (first_time .or. yrl(2) .gt. yrl(3)) then

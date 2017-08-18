@@ -28,6 +28,9 @@
       parameter (nt=2
 #if defined O_carbon
      $             +1
+# if defined O_carbon_13
+     $             +1
+# endif
 # if defined O_carbon_14
      $             +1
 # endif
@@ -42,15 +45,30 @@
      $             +1
 #endif
 #if defined O_npzd
-     $             +4
+     $             +5
 # if defined O_npzd_nitrogen
-     $             +2
+     $             +3
+#  if defined O_npzd_nitrogen_15
+     $             +6
+#  endif
+# endif
+# if defined O_carbon_13
+     $             +4
+#  if defined O_npzd_nitrogen
+     $             +1
+#  endif
+# endif
+# if defined O_npzd_iron
+     $               +2 
 # endif
 #endif
      $               )
       parameter (nsrc=0
 #if defined O_carbon
      $               +1
+# if defined O_carbon_13
+     $               +1
+# endif
 # if defined O_carbon_14
      $               +1
 # endif
@@ -62,9 +80,21 @@
      $               +1
 #endif
 #if defined O_npzd
-     $               +4
+     $               +5
 # if defined O_npzd_nitrogen
-     $               +2
+     $               +3
+#  if defined O_npzd_nitrogen_15
+     $               +6
+#  endif
+# endif
+# if defined O_carbon_13
+     $               +4
+#  if defined O_npzd_nitrogen
+     $               +1
+#  endif
+# endif
+# if defined O_npzd_iron
+     $               +2 
 # endif
 #endif
      $                 )

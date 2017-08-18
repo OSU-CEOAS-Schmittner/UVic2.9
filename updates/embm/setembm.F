@@ -129,6 +129,44 @@
       if (dtatms .ne. 0.) ns = nint(dtatm/dtatms)
 
 # endif
+# if defined O_time_averages
+      if (mod(timavgint, segtim) .gt. 1.e-6 .and. timavgint .gt. 0.)
+     &  then
+        t1 = nint(timavgint/segtim)*segtim
+        if (t1 .lt. segtim) t1 = segtim
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: "timavgint" does not contain an integral number'
+     &,   '              of coupling time steps "segtim".              '
+        write (stdout,*) '              (changed "timavgint" from '
+     &, timavgint,' days to ', t1,' days to insure this condition)'
+        timavgint = t1
+      endif
+      if (timavgint .eq. 0.) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: averaging interval "timavgint" = 0. implies no '
+     &,   '             averaging when "time_averages" is enabled      '
+      endif
+      if (timavgint .gt. timavgper) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: the interval "timavgint" exceeds the averaging '
+     &,   '             period "timavgper" for option "time_averages"  '
+      endif
+      if (timavgint .lt. timavgper) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: averaging period "timavgper" exceeds interval  '
+     &,   '             "timavgint". Setting timavgper = timavgint     '
+        timavgper = timavgint
+      endif
+      if (timavgper .eq. 0.) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: the averaging period "timavgper" is zero. The  '
+     &,   '             average will be over only one time step!       '
+      endif
+      write (stdout,'(/,1x,a,f10.2,a,/,1x,a,f10.2,a)')
+     &  '==> Time averages will be written every ', timavgint, ' days, '
+     &, '    with an averaging period of         ', timavgper, ' days. '
+
+# endif
 # if  defined O_co2emit_data || defined O_co2emit_data_transient
 !-----------------------------------------------------------------------
 !     read CO2 emissions from data
@@ -175,25 +213,18 @@
       write (stdout,*)
       write (stdout,*) 'Initial Orbital Parameters:'
 # if !defined O_orbit_user
-      tmp = orbit_yr
 #  if defined O_orbit_transient
-      tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
-#   if defined O_orbit_transient_repyr
-      if (tmp .gt. orbit_yr) then
-        tmp = orbit_yr
-        print*, "Warning => setembm: repeating orbit year", orbit_yr
-      endif
-#   endif
+      orbit_yr = year0 + accel_yr0 + (relyr - accel_yr0)*accel
 #  endif
-      call orbit (tmp, eccen, obliq, mvelp, lambm0)
-      write (stdout,*) '  Orbital Year:', tmp
+      call orbit (orbit_yr, eccen, obliq, mvelp, lambm0)
+      write (stdout,*) '  Orbital Year:', orbit_yr
 # endif
       write (stdout,*) '  Eccentricity:', eccen
       write (stdout,*) '  Obliquity:   ', obliq
       write (stdout,*) '  Longitude of Perihelion:', mvelp+180.
 
 !-----------------------------------------------------------------------
-!     calculate Coriolis factor
+!     calculate annual average insolation and Coriolis factor
 !-----------------------------------------------------------------------
 
       radian = 360./(2.*pi)
@@ -208,10 +239,6 @@
       enddo
 
 # if defined O_embm_annual
-!-----------------------------------------------------------------------
-!     calculate annual average insolation
-!-----------------------------------------------------------------------
-
       solins(:,:) = 0.
       i = imt*jmt
       do n=1,365
@@ -681,9 +708,6 @@
 # endif
 # if defined O_sulphate_data || defined O_sulphate_data_transient
       sulph(:,:,:) = 0.
-# endif
-# if defined O_carbon_carbonate_approx
-      hSWS(:,:) = 7.94e-9
 # endif
 # if !defined O_embm_explicit
       bv(:) = 0.

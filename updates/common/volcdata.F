@@ -71,14 +71,6 @@
 # if defined O_volcano_data_transient
       data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
       tim(2) = min(time(ln), max(time(1), data_time))
-#  if defined O_volcano_data_transient_repyr
-      if (data_time .gt. volcano_yr) then
-        first_time = .true.
-        intrp = .true.
-        tim(2) = data_time - int(data_time) + volcano_yr
-        print*, "Warning => volcdata: repeating year", volcano_yr
-      endif
-#  endif
 # else
       tim(2) = min(time(ln), max(time(1), volcano_yr))
 # endif

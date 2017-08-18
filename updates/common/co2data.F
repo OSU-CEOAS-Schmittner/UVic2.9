@@ -77,14 +77,6 @@
 # if defined O_co2emit_data_transient
       data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
       tim(2) = min(time(ln), max(time(1), data_time))
-#  if defined O_co2emit_data_transient_repyr
-      if (data_time .gt. co2_yr) then
-        first_time = .true.
-        intrp = .true.
-        tim(2) = data_time - int(data_time) + co2_yr
-        print*, "Warning => co2data: repeating year", co2_yr
-      endif
-#  endif
 # else
       tim(2) = min(time(ln), max(time(1), co2_yr))
 # endif
@@ -217,14 +209,6 @@
 # if defined O_co2ccn_data_transient || defined O_co2emit_track_co2_transient
       data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
       tim(2) = min(time(ln), max(time(1), data_time))
-#  if defined O_co2ccn_data_transient_repyr || defined O_co2emit_track_co2_transient_repyr
-      if (data_time .gt. co2_yr) then
-        first_time = .true.
-        intrp = .true.
-        tim(2) = data_time - int(data_time) + co2_yr
-        print*, "Warning => co2data: repeating year", co2_yr
-      endif
-#  endif
 # else
       tim(2) = min(time(ln), max(time(1), co2_yr))
 # endif
@@ -406,14 +390,6 @@
 # if defined O_co2emit_track_sat_transient
       data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
       tim(2) = min(time(ln), max(time(1), data_time))
-#  if defined O_co2emit_track_sat_transient_repyr
-      if (data_time .gt. co2_yr) then
-        first_time = .true.
-        intrp = .true.
-        tim(2) = data_time - int(data_time) + co2_yr
-        print*, "Warning => co2data: repeating year", co2_yr
-      endif
-#  endif
 # else
       tim(2) = min(time(ln), max(time(1), co2_yr))
 # endif

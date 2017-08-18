@@ -20,7 +20,7 @@
 
       logical exists, inqvardef
 
-      real ca, time, wt, wtp1
+      real avgper, ca, time, wt, wtp1
       real c100, c500, C2K, tmp
 
       include "size.h"
@@ -94,14 +94,32 @@
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = time
         call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-# if !defined O_mom
-        avgtimtsi = time
+
+        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
+          write (*,'(1x, a3, i7, 1x, a32, 3(a,1pe13.6))')
+     &      'ts=',itt, nstamp, ' iterations =', tai_maxit
+     &,     ' TAbar=', tai_sat, ' QAbar=', tai_shum
+        endif
+#  if defined O_mtlm
+        rntatil = 0.
+        if (ntatil .gt. 0) rntatil = 1./float(ntatil)
+        tai_hsno = tai_hsno + tai_LYING_SNOW*1000.*rntatil/rhosno
+#  endif
+        call def_tsi
+        call def_tsi_embm (fname)
+#  if defined O_save_carbon_totals
+!       convert from ppmv to Pg
+        tai_catm = tai_co2ccn*1.e-15*atmsa/gtoppm
+#  else
+        tai_catm = 0.
+#  endif
+
 #  if !defined O_save_time_relyear0
 !       make output time relative to year 1
-        avgtimtsi = avgtimtsi - 1.
+        time = time - 1.
 #  endif
-        avgpertsi = dtatm*ntatia*secday
-        if (avgpertsi .le. 1e-6) avgpertsi = 0.
+        avgper = tsiper*accel
+        if (avgper .le. 1e-6) avgper = 0.
 #  if defined O_save_time_endper
         tmp = 0.
 #  elif defined O_save_time_startper
@@ -111,50 +129,29 @@
 #  endif
 #  if defined O_units_time_years
 #   if defined O_calendar_360_day
-        avgtimtsi = avgtimtsi - tmp*avgpertsi/360.
+        time = time - tmp*avgper/360.
 #   elif defined O_calendar_gregorian
-        avgtimtsi = avgtimtsi - tmp*avgpertsi/365.25
+        time = time - tmp*avgper/365.25
 #   else
-        avgtimtsi = avgtimtsi - tmp*avgpertsi/365.
+        time = time - tmp*avgper/365.
 #   endif
 #  else
 #   if defined O_calendar_360_day
-        avgtimtsi = avgtimtsi*360. - tmp*avgpertsi
+        time = time*360. - tmp*avgper
 #   elif defined O_calendar_gregorian
-        avgtimtsi = avgtimtsi*365.25 - tmp*avgpertsi
+        time = time*365.25 - tmp*avgper
 #   else
-        avgtimtsi = avgtimtsi*365. - tmp*avgpertsi
+        time = time*365. - tmp*avgper
 #   endif
-#  endif
-# endif
-
-#  if defined O_mtlm
-        rntatil = 0.
-        if (ntatil .gt. 0) rntatil = 1./float(ntatil)
-        tai_hsno = tai_hsno + tai_LYING_SNOW*1000.*rntatil/rhosno
-#  endif
-#  if defined O_save_carbon_totals
-!       convert from ppmv to Pg
-        tai_catm = tai_co2ccn*1.e-15*atmsa/gtoppm
-#  else
-        tai_catm = 0.
 #  endif
 !       convert emissions from g cm-2 to kg s-1
         tmp = tai_co2emit*atmsa*1.e-3
 
-        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
-          write (*,'(1x, a3, i7, 1x, a32, 3(a,1pe13.6))')
-     &      'ts=',itt, nstamp, ' iterations =', tai_maxit
-     &,     ' TAbar=', tai_sat, ' QAbar=', tai_shum
-        endif
-
-        call def_tsi
-        call def_tsi_embm (fname)
-
-        call embm_tsi_out (fname, avgpertsi, avgtimtsi, nstamp, tai_sat
+        call embm_tsi_out (fname, avgper, time, nstamp, tai_sat
      &,                    tai_shum, tai_precip, tai_evap, tai_ohice
      &,                    tai_oaice, tai_hsno, tai_lhice, tai_laice
-     &,                    tai_co2ccn, tmp, tai_dc14ccn, tai_cfc11ccn
+     &,                    tai_co2ccn, tmp, tai_dc14ccn
+     &,                    tai_dc13ccn, tai_cfc11ccn
      &,                    tai_cfc12ccn, tai_maxit, tai_nsat, tai_ssat
      &,                    tai_nshum, tai_sshum, tai_nprecip
      &,                    tai_sprecip, tai_nevap, tai_sevap, tai_nohice
@@ -165,11 +162,13 @@
      &,                    tai_solins, tai_upsens, tai_uplwr, tai_outlwr
      &,                    tai_dnswr, tai_absswr, tai_netrad, tai_palb
      &,                    tai_aalb, tai_salb, tai_lsalb, tai_osalb
-     &,                    tai_sst, tai_sss, tai_ssdic, tai_ssc14
-     &,                    tai_ssalk, tai_sso2, tai_sspo4, tai_ssno3
-     &,                    tai_sscfc11, tai_sscfc12, tai_sulph
-     &,                    tai_volc, tai_agg, tai_catm, tai_carbemit
-     &,                    ntrec)
+     &,                    tai_sst, tai_sss, tai_ssdic, tai_ssdic13 
+     &,                    tai_ssc14, tai_ssalk, tai_sso2, tai_sspo4
+     &,                    tai_ssdop, tai_ssno3, tai_ssdon, tai_ssdin15
+     &,                    tai_ssdon15, tai_ssdoc13, tai_sscfc11
+     &,                    tai_sscfc12, tai_sulph, tai_volc, tai_agg
+     &,                    tai_catm, tai_carbemit, ntrec
+     &,                    tai_ssdfe)
 
         call ta_embm_tsi (is, ie, js, je, 0)
 
@@ -254,14 +253,14 @@
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-# if !defined O_mom
-        avgtimtavg = time
+        call def_tavg
+        call def_tavg_embm (fname)
 #  if !defined O_save_time_relyear0
 !       make output time relative to year 1
-        avgtimtavg = avgtimtavg - 1.
+        time = time - 1.
 #  endif
-        avgpertavg = dtatm*ntatia*secday
-        if (avgpertavg .le. 1e-6) avgpertavg = 0.
+        avgper = timavgper*accel
+        if (avgper .le. 1e-6) avgper = 0.
 #  if defined O_save_time_endper
         tmp = 0.
 #  elif defined O_save_time_startper
@@ -271,30 +270,26 @@
 #  endif
 #  if defined O_units_time_years
 #   if defined O_calendar_360_day
-        avgtimtavg = avgtimtavg - tmp*avgpertavg/360.
+        time = time - tmp*avgper/360.
 #   elif defined O_calendar_gregorian
-        avgtimtavg = avgtimtavg - tmp*avgpertavg/365.25
+        time = time - tmp*avgper/365.25
 #   else
-        avgtimtavg = avgtimtavg - tmp*avgpertavg/365.
+        time = time - tmp*avgper/365.
 #   endif
 #  else
 #   if defined O_calendar_360_day
-        avgtimtavg = avgtimtavg*360. - tmp*avgpertavg
+        time = time*360. - tmp*avgper
 #   elif defined O_calendar_gregorian
-        avgtimtavg = avgtimtavg*365.25 - tmp*avgpertavg
+        time = time*365.25 - tmp*avgper
 #   else
-        avgtimtavg = avgtimtavg*365. - tmp*avgpertavg
+        time = time*365. - tmp*avgper
 #   endif
 #  endif
-# endif
-
-        call def_tavg
-        call def_tavg_embm (fname)
 
         call embm_tavg_out (fname, is, ie, js, je, imt, jmt, nat, ncat
-     &,   xt, yt, xu, yu, dxt, dyt, dxu, dyu, avgpertavg, avgtimtavg
-     &,   nstamp, mapat, ta_at, sat, ta_precip, ta_evap, ta_disch
-     &,   ta_vflux, ta_outlwr, ta_uplwr, ta_upsens, ta_dnswr, ta_solins
+     &,   xt, yt, xu, yu, dxt, dyt, dxu, dyu, avgper, time, nstamp
+     &,   mapat, ta_at, sat, ta_precip, ta_evap, ta_disch, ta_vflux
+     &,   ta_outlwr, ta_uplwr, ta_upsens, ta_dnswr, ta_solins
      &,   ta_outswr, ta_netrad, p_alb, a_alb, s_alb, elev, ta_psno
      &,   ta_ws, ta_runoff
 #  if defined O_save_embm_wind
@@ -356,14 +351,8 @@
 
 # if defined O_orbit_transient
 
-        tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
-#  if defined O_orbit_transient_repyr
-        if (tmp .gt. orbit_yr) then
-          tmp = orbit_yr
-          print*, "Warning => embmio: repeating orbit year", tmp
-        endif
-#  endif
-        call orbit (tmp, eccen, obliq, mvelp, lambm0)
+        orbit_yr = year0 + accel_yr0 + (relyr - accel_yr0)*accel
+        call orbit (orbit_yr, eccen, obliq, mvelp, lambm0)
 # endif
 # if defined O_landice_data_transient
 
@@ -862,6 +851,7 @@
         tai_co2ccn = 0.
         tai_co2emit = 0.
         tai_dc14ccn = 0.
+        tai_dc13ccn = 0.
         tai_cfc11ccn = 0.
         tai_cfc12ccn = 0.
         tai_osat = 0.
@@ -908,17 +898,24 @@
         tai_sst = 0.
         tai_sss = 0.
         tai_ssdic = 0.
+        tai_ssdic13 = 0.
         tai_ssc14 = 0.
         tai_ssalk = 0.
         tai_sso2 = 0.
         tai_sspo4 = 0.
+        tai_ssdop = 0.
         tai_ssno3 = 0.
+        tai_ssdon = 0.
+        tai_ssdin15 = 0.
+        tai_ssdon15 = 0.
+        tai_ssdoc13 = 0.
         tai_sscfc11 = 0.
         tai_sscfc12 = 0.
         tai_sulph = 0.
         tai_volc = 0.
         tai_agg = 0.
         tai_carbemit = 0.
+        tai_ssdfe = 0.
 
       elseif (iflag .eq. 1) then
 
@@ -957,6 +954,9 @@
         tai_co2ccn = tai_co2ccn + co2ccn
 # endif
         tai_co2emit = tai_co2emit + co2emit
+# if defined O_carbon && defined O_carbon_13
+        tai_dc13ccn = tai_dc13ccn + dc13ccn
+# endif
 # if defined O_carbon && defined O_carbon_14
         tai_dc14ccn = tai_dc14ccn + dc14ccn
 # endif
@@ -1226,6 +1226,10 @@
 # if defined O_carbon
         call areaavg (sbc(1,1,issdic), dmsk, tmp)
         tai_ssdic = tai_ssdic + tmp
+#  if defined O_carbon_13
+        call areaavg (sbc(1,1,issdic13), dmsk, tmp)
+        tai_ssdic13 = tai_ssdic13 + tmp
+#  endif
 #  if defined O_carbon_14
         call areaavg (sbc(1,1,issc14), dmsk, tmp)
         tai_ssc14 = tai_ssc14 + tmp
@@ -1242,9 +1246,27 @@
 # if defined O_npzd
         call areaavg (sbc(1,1,isspo4), dmsk, tmp)
         tai_sspo4 = tai_sspo4 + tmp
+        call areaavg (sbc(1,1,issdop), dmsk, tmp)
+        tai_ssdop = tai_ssdop + tmp
 #  if defined O_npzd_nitrogen
         call areaavg (sbc(1,1,issno3), dmsk, tmp)
         tai_ssno3 = tai_ssno3 + tmp
+        call areaavg (sbc(1,1,issdon), dmsk, tmp)
+        tai_ssdon = tai_ssdon + tmp
+#   if defined O_npzd_nitrogen_15
+        call areaavg (sbc(1,1,issdin15), dmsk, tmp)
+        tai_ssdin15 = tai_ssdin15 + tmp
+        call areaavg (sbc(1,1,issdon15), dmsk, tmp)
+        tai_ssdon15 = tai_ssdon15 + tmp
+#   endif
+#  endif
+#  if defined O_carbon_13
+        call areaavg (sbc(1,1,issdoc13), dmsk, tmp)
+        tai_ssdoc13 = tai_ssdoc13 + tmp
+#  endif
+#  if defined O_npzd_iron
+        call areaavg (sbc(1,1,issdfe), dmsk, tmp)
+        tai_ssdfe = tai_ssdfe + tmp
 #  endif
 # endif
 # if defined O_cfcs_data || defined O_cfcs_data_transient
@@ -1279,6 +1301,7 @@
         tai_evap = tai_evap*rntatia
         tai_co2ccn = tai_co2ccn*rntatia
         tai_co2emit = tai_co2emit*rntatia
+        tai_dc13ccn = tai_dc13ccn*rntatia
         tai_dc14ccn = tai_dc14ccn*rntatia
         tai_cfc11ccn = tai_cfc11ccn*rntatia
         tai_cfc12ccn = tai_cfc12ccn*rntatia
@@ -1326,17 +1349,24 @@
         tai_sst = tai_sst*rntatia
         tai_sss = tai_sss*rntatia
         tai_ssdic = tai_ssdic*rntatia
+        tai_ssdic13 = tai_ssdic13*rntatia
         tai_ssc14 = tai_ssc14*rntatia
         tai_ssalk = tai_ssalk*rntatia
         tai_sso2 = tai_sso2*rntatia
         tai_sspo4 = tai_sspo4*rntatia
+        tai_ssdop = tai_ssdop*rntatia
         tai_ssno3 = tai_ssno3*rntatia
+        tai_ssdon = tai_ssdon*rntatia
+        tai_ssdin15 = tai_ssdin15*rntatia
+        tai_ssdon15 = tai_ssdon15*rntatia
+        tai_ssdoc13 = tai_ssdoc13*rntatia
         tai_sscfc11 = tai_sscfc11*rntatia
         tai_sscfc12 = tai_sscfc12*rntatia
         tai_sulph = tai_sulph*rntatia
         tai_volc = tai_volc*rntatia
         tai_agg = tai_agg*rntatia
         tai_carbemit = tai_carbemit*rntatia
+        tai_ssdfe = tai_ssdfe*rntatia
 
       endif
 

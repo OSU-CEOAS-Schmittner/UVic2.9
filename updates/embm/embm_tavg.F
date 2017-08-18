@@ -139,13 +139,13 @@
      &, 'longitude edges', 'longitude', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, 'Y', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', 'longitude', 'degrees_east')
       it(1) = id_xu_e
       call defvar ('longitude_V_edges', iou, 1, it, c0, c0, 'X', 'D'
      &, 'longitude edges', 'longitude', 'degrees_east')
       it(1) = id_yu_e
       call defvar ('latitude_V_edges', iou, 1, it, c0, c0, 'Y', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', 'longitude', 'degrees_east')
 # if defined O_ice_cpts && defined O_ice
       it(1) = id_cat
       call defvar ('cat', iou, 1, it, c0, c0, 'Z', 'F'

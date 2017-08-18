@@ -82,14 +82,6 @@
 # if defined O_cfcs_data_transient
       data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
       tim(2) = min(time(ln), max(time(1), data_time))
-#  if defined O_cfcs_data_transient_repyr
-      if (data_time .gt. cfcs_yr) then
-        first_time = .true.
-        intrp = .true.
-        tim(2) = data_time - int(data_time) + cfcs_yr
-        print*, "Warning => cfcdata: repeating year", cfcs_yr
-      endif
-#  endif
 # else
       tim(2) = min(time(ln), max(time(1), cfcs_yr))
 # endif

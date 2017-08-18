@@ -26,6 +26,12 @@
       include "tmngr.h"
       include "switch.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
 
       character(*) :: fname
       character(32) :: nstamp
@@ -260,7 +266,91 @@
       call getvara ('sbc_evap', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,ievap) = tmpij(ils:ile,jls:jle)
 
-#  if defined O_carbon
+# if defined O_mtlm_carbon_13
+      call unloadland (POINTS, CS13, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      if (inqvardef('CS13', iou)) then
+        call getvara ('CS13', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+      else
+        call getvara ('CS', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+     &                           *rc13std/(1.+rc13std)
+        print*,"mtlm_rest: CS13 not found in restart file"
+        print*,"           CS13 initialized with CS*r/(1+r)"
+      endif
+      call loadland (POINTS, CS13, imt, jmt, mskl, data)
+
+      call unloadland (POINTS, CV13, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      if (inqvardef('CV13', iou)) then
+        call getvara ('CV13', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+      else
+        call getvara ('CV', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+     &                           *rc13std/(1.+rc13std)
+        print*,"mtlm_rest: CV13 not found in restart file"
+        print*,"           CV13 initialized with CV*r/(1+r)"
+      endif
+      call loadland (POINTS, CV13, imt, jmt, mskl, data)
+
+      call unloadland (POINTS, RESP_S_DR13, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call getvara ('RESP_S_DR13', iou, ln, ib, ic, tmpij, c1, c0)
+      where (mskt(ils:ile,jls:jle) .ne. 0)
+     &  data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+      call loadland (POINTS, RESP_S_DR13, imt, jmt, mskl, data)
+
+# endif
+
+# if defined O_mtlm_carbon_14
+      call unloadland (POINTS, CS14, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      if (inqvardef('CS14', iou)) then
+        call getvara ('CS14', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+      else
+        call getvara ('CS', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+     &                           *rc14std/(1.+rc14std)
+        print*,"mtlm_rest: CS14 not found in restart file"
+        print*,"           CS14 initialized with CS*r/(1+r)"
+      endif
+      call loadland (POINTS, CS14, imt, jmt, mskl, data)
+
+      call unloadland (POINTS, CV14, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      if (inqvardef('CV14', iou)) then
+        call getvara ('CV14', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+      else
+        call getvara ('CV', iou, ln, ib, ic, tmpij, c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+     &                           *rc14std/(1.+rc14std)
+        print*,"mtlm_rest: CV14 not found in restart file"
+        print*,"           CV14 initialized with CV*r/(1+r)"
+      endif
+      call loadland (POINTS, CV14, imt, jmt, mskl, data)
+
+      call unloadland (POINTS, RESP_S_DR14, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call getvara ('RESP_S_DR14', iou, ln, ib, ic, tmpij, c1, c0)
+      where (mskt(ils:ile,jls:jle) .ne. 0)
+     &  data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+      call loadland (POINTS, RESP_S_DR14, imt, jmt, mskl, data)
+
+# endif
+
+# if defined O_carbon
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,inpp)
       call getvara ('sbc_npp', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,inpp) = tmpij(ils:ile,jls:jle)
@@ -272,7 +362,36 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,iburn)
       call getvara ('sbc_burn', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,iburn) = tmpij(ils:ile,jls:jle)
+
+#  if defined O_mtlm_carbon_13
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,inpp13)
+      call getvara ('sbc_npp13', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,inpp13) = tmpij(ils:ile,jls:jle)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isr13)
+      call getvara ('sbc_sr13', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,isr13) = tmpij(ils:ile,jls:jle)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,iburn13)
+      call getvara ('sbc_burn13', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,iburn13) = tmpij(ils:ile,jls:jle)
 #  endif
+
+#  if defined O_mtlm_carbon_14
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,inpp14)
+      call getvara ('sbc_npp14', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,inpp14) = tmpij(ils:ile,jls:jle)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isr14)
+      call getvara ('sbc_sr14', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,isr14) = tmpij(ils:ile,jls:jle)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,iburn14)
+      call getvara ('sbc_burn14', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,iburn14) = tmpij(ils:ile,jls:jle)
+#  endif
+# endif
+
 
       do n=1,npft
         if (n .lt. 1000) write(a3, '(i3)') n
@@ -327,6 +446,50 @@
      &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
         call loadland (POINTS, C_VEG(1,n), imt, jmt, mskl, data)
 
+# if defined O_mtlm_carbon_13
+        call unloadland (POINTS, C_VEG13(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        if (inqvardef('CVEG13_'//trim(a3), iou)) then
+          call getvara ('CVEG13_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,     c1, c0)
+          where (mskt(ils:ile,jls:jle) .ne. 0)
+     &      data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+        else
+!         if no restart data initialize with standard ratio
+          call getvara ('CVEG_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,     c1, c0)
+          where (mskt(ils:ile,jls:jle) .ne. 0)
+     &      data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+     &                             *rc13std/(1.+rc13std)
+          print*,"mtlm_rest: "
+          print*,"CVEG13_"//trim(a3), " not found in restart file"
+          print*,"                  initialized with CVEG*r/(1+r)"
+        endif
+        call loadland (POINTS, C_VEG13(1,n), imt, jmt, mskl, data)
+# endif
+
+# if defined O_mtlm_carbon_14
+        call unloadland (POINTS, C_VEG14(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        if (inqvardef('CVEG14_'//trim(a3), iou)) then
+          call getvara ('CVEG14_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,     c1, c0)
+          where (mskt(ils:ile,jls:jle) .ne. 0)
+     &      data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+        else
+!         if no restart data initialize with standard ratio
+          call getvara ('CVEG_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,     c1, c0)
+          where (mskt(ils:ile,jls:jle) .ne. 0)
+     &      data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+     &                             *rc14std/(1.+rc14std)
+          print*,"mtlm_rest: "
+          print*,"CVEG14_"//trim(a3), " not found in restart file"
+          print*,"                  initialized with CVEG*r/(1+r)"
+        endif
+        call loadland (POINTS, C_VEG14(1,n), imt, jmt, mskl, data)
+# endif
+
         call unloadland (POINTS, G_LEAF_PHEN(1,n), imt, jmt, mskl
      &,   data)
         tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
@@ -354,6 +517,26 @@
         where (mskt(ils:ile,jls:jle) .ne. 0)
      &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
         call loadland (POINTS, NPP_DR(1,n), imt, jmt, mskl, data)
+
+# if defined O_mtlm_carbon_13
+        call unloadland (POINTS, NPP_DR13(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call getvara ('NPP_DR13_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,   c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+        call loadland (POINTS, NPP_DR13(1,n), imt, jmt, mskl, data)
+# endif
+
+# if defined O_mtlm_carbon_14
+        call unloadland (POINTS, NPP_DR14(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call getvara ('NPP_DR14_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,   c1, c0)
+        where (mskt(ils:ile,jls:jle) .ne. 0)
+     &    data(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
+        call loadland (POINTS, NPP_DR14(1,n), imt, jmt, mskl, data)
+# endif
 
         call unloadland (POINTS, RESP_W_DR(1,n), imt, jmt, mskl
      &,   data)
@@ -529,16 +712,16 @@
      &, 'latitude', 'latitude', 'degrees_north')
       it(1) = id_xt_e
       call defvar ('longitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
       it(1) = id_xu_e
       call defvar ('longitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yu_e
       call defvar ('latitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
 
 !-----------------------------------------------------------------------
 !     define 3d data (x,y,t)
@@ -604,6 +787,28 @@
       call defvar ('sbc_evap', iou , 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sbc_evap', ' ', ' ')
 
+#  if defined O_mtlm_carbon_13
+      call defvar ('CS13', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'CS13', ' ', ' ')
+
+      call defvar ('CV13', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'CV13', ' ', ' ')
+
+      call defvar ('RESP_S_DR13', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'RESP_S_DR13', ' ', ' ')
+
+#  endif
+#  if defined O_mtlm_carbon_14
+      call defvar ('CS14', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'CS14', ' ', ' ')
+
+      call defvar ('CV14', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'CV14', ' ', ' ')
+
+      call defvar ('RESP_S_DR14', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'RESP_S_DR14', ' ', ' ')
+
+#  endif
 #  if defined O_carbon
       call defvar ('sbc_npp', iou , 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sbc_npp', ' ', ' ')
@@ -613,6 +818,27 @@
 
       call defvar ('sbc_burn', iou , 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sbc_burn', ' ', ' ')
+
+#   if defined O_mtlm_carbon_13
+      call defvar ('sbc_npp13', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'sbc_npp13', ' ', ' ')
+
+      call defvar ('sbc_sr13', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'sbc_sr13', ' ', ' ')
+
+      call defvar ('sbc_burn13', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'sbc_burn13', ' ', ' ')
+#   endif
+#   if defined O_mtlm_carbon_14
+      call defvar ('sbc_npp14', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'sbc_npp14', ' ', ' ')
+
+      call defvar ('sbc_sr14', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'sbc_sr14', ' ', ' ')
+
+      call defvar ('sbc_burn14', iou , 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'sbc_burn14', ' ', ' ')
+#   endif
 #  endif
       do n=1,nPFT
         if (n .lt. 1000) write(a3,'(i3)') n
@@ -655,7 +881,22 @@
         call defvar ('Z0_'//trim(a3), iou , 3, it, -c1e20
      &,   c1e20, ' ', 'D', 'Z0_'//trim(a3), ' ', ' ')
 
-       enddo
+#  if defined O_mtlm_carbon_13
+        call defvar ('CVEG13_'//trim(a3), iou , 3, it, -c1e20
+     &,   c1e20, ' ', 'D', 'CVEG13_'//trim(a3) , ' ', ' ')
+
+        call defvar ('NPP_DR13_'//trim(a3), iou , 3, it, -c1e20
+     &,   c1e20, ' ', 'D', 'NPP_DR13_'//trim(a3), ' ', ' ')
+#  endif
+
+#  if defined O_mtlm_carbon_14
+        call defvar ('CVEG14_'//trim(a3), iou , 3, it, -c1e20
+     &,   c1e20, ' ', 'D', 'CVEG14_'//trim(a3) , ' ', ' ')
+
+        call defvar ('NPP_DR14_'//trim(a3), iou , 3, it, -c1e20
+     &,   c1e20, ' ', 'D', 'NPP_DR14_'//trim(a3), ' ', ' ')
+#  endif
+      enddo
 
       do n=1,ntype
         if (n .lt. 1000) write(a3, '(i3)') n
@@ -700,6 +941,12 @@
       include "tmngr.h"
       include "switch.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "iounit.h"
 
       character(*) :: fname
@@ -921,7 +1168,7 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,ievap)
       call putvara ('sbc_evap', iou, ln, ib, ic, tmpij, c1, c0)
 
-#  if defined O_carbon
+# if defined O_carbon
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,inpp)
       call putvara ('sbc_npp', iou, ln, ib, ic, tmpij, c1, c0)
 
@@ -930,7 +1177,53 @@
 
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,iburn)
       call putvara ('sbc_burn', iou, ln, ib, ic, tmpij, c1, c0)
-#  endif
+# endif
+
+# if defined O_mtlm_carbon_13
+      call unloadland (POINTS, CS13, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvara ('CS13', iou, ln, ib, ic, tmpij, c1, c0)
+
+      call unloadland (POINTS, CV13, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvara ('CV13', iou, ln, ib, ic, tmpij, c1, c0)
+
+      call unloadland (POINTS, RESP_S_DR13, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvara ('RESP_S_DR13', iou, ln, ib, ic, tmpij, c1, c0)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,inpp13)
+      call putvara ('sbc_npp13', iou, ln, ib, ic, tmpij, c1, c0)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isr13)
+      call putvara ('sbc_sr13', iou, ln, ib, ic, tmpij, c1, c0)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,iburn13)
+      call putvara ('sbc_burn13', iou, ln, ib, ic, tmpij, c1, c0)
+# endif
+
+# if defined O_mtlm_carbon_14
+      call unloadland (POINTS, CS14, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvara ('CS14', iou, ln, ib, ic, tmpij, c1, c0)
+
+      call unloadland (POINTS, CV14, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvara ('CV14', iou, ln, ib, ic, tmpij, c1, c0)
+
+      call unloadland (POINTS, RESP_S_DR14, imt, jmt, mskl, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvara ('RESP_S_DR14', iou, ln, ib, ic, tmpij, c1, c0)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,inpp14)
+      call putvara ('sbc_npp14', iou, ln, ib, ic, tmpij, c1, c0)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isr14)
+      call putvara ('sbc_sr14', iou, ln, ib, ic, tmpij, c1, c0)
+
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,iburn14)
+      call putvara ('sbc_burn14', iou, ln, ib, ic, tmpij, c1, c0)
+# endif
 
       do n=1,npft
         if (n .lt. 1000) write(a3, '(i3)') n
@@ -999,7 +1292,31 @@
         tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
         call putvara ('Z0_'//trim(a3), iou, ln, ib, ic, tmpij, c1, c0)
 
-       enddo
+# if defined O_mtlm_carbon_13
+        call unloadland (POINTS, C_VEG13(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvara ('CVEG13_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,   c1, c0)
+
+        call unloadland (POINTS, NPP_DR13(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvara ('NPP_DR13_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,   c1, c0)
+# endif
+
+# if defined O_mtlm_carbon_14
+        call unloadland (POINTS, C_VEG14(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvara ('CVEG14_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,   c1, c0)
+
+        call unloadland (POINTS, NPP_DR14(1,n), imt, jmt, mskl, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvara ('NPP_DR14_'//trim(a3), iou, ln, ib, ic, tmpij
+     &,   c1, c0)
+# endif
+
+      enddo
 
       do n=1,ntype
         if (n .lt. 1000) write(a3, '(i3)') n

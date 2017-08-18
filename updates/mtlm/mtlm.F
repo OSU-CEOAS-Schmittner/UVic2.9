@@ -23,6 +23,12 @@
       include "size.h"
       include "csbc.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "mtlm_data.h"
       include "switch.h"
 
@@ -149,6 +155,13 @@
       parameter (V_CRIT=0.34, VSAT=0.458, VWILT=0.13)
       parameter (MSAT=1000*ROOTDEP*VSAT, Z0_SOIL=0.0003, Z1_REF=10.0)
       parameter (RHO_WATER = 1000.0, PI=3.14159265358979323846)
+
+# if defined O_mtlm_carbon_13
+      real B13NPP, G13NPP(NPFT), B13RES, G13RES
+# endif
+# if defined O_mtlm_carbon_14
+      real B14NPP, G14NPP(NPFT), B14RES, G14RES
+# endif
 
 !-----------------------------------------------------------------------
 ! Factors for accumulation variables
@@ -414,16 +427,52 @@
      &,                SATCON, VSAT, LHF, TM, TIMESTEP, G, RAIN, SNOW
      &,                ET, ESUB, M, LYING_SNOW, TS1, SURF_ROFF
      &,                SNOWMELT, MNEG)
-#endif
+# endif
 
 !-----------------------------------------------------------------------
 ! Accumulate TRIFFID driving variables
 !-----------------------------------------------------------------------
+# if defined O_mtlm_carbon_13
+      do N=1,NPFT
+        B13NPP = AC13NPP(N)*RC13A
+        B13NPP = MAX(0.5*RC13STD, MIN(2.*RC13STD,B13NPP))
+        G13NPP(N) = B13NPP/(1.+B13NPP)
+      enddo
+# endif
+# if defined O_mtlm_carbon_14
+      do N=1,NPFT
+        B14NPP = AC14NPP(N)*RC14A
+        B14NPP = MAX(0.5*RC14STD, MIN(2.*RC14STD,B14NPP))
+        G14NPP(N) = B14NPP/(1.+B14NPP)
+      enddo
+# endif
       do I=1,LAND_PTS
         L = LAND_INDEX(I)
         RESP_S_DR(L) = RESP_S_DR(L)+RESP_S(L)*FTIME*SEC_YEAR
+# if defined O_mtlm_carbon_13
+        B13RES = CS13(L)/(CS(L)-CS13(L))
+        B13RES = MAX(0.5*RC13STD,MIN(2.*RC13STD,B13RES))
+        G13RES = B13RES/(1.+B13RES)
+        RESP_S13(L) = G13RES*RESP_S(L)
+        RESP_S_DR13(L) = RESP_S_DR13(L)+RESP_S13(L)*FTIME*SEC_YEAR
+# endif
+# if defined O_mtlm_carbon_14
+        B14RES = CS14(L)/(CS(L)-CS14(L))
+        B14RES = MAX(0.5*RC14STD,MIN(2.*RC14STD,B14RES))
+        G14RES = B14RES/(1.+B14RES)
+        RESP_S14(L) = G14RES*RESP_S(L)
+        RESP_S_DR14(L) = RESP_S_DR14(L)+RESP_S14(L)*FTIME*SEC_YEAR
+# endif
         do N=1,NPFT
           NPP_DR(L,N) = NPP_DR(L,N) + NPP(L,N)*FTIME*SEC_YEAR
+# if defined O_mtlm_carbon_13
+          NPP13(L,N) = G13NPP(N)*NPP(L,N)
+          NPP_DR13(L,N) = NPP_DR13(L,N) + NPP13(L,N)*FTIME*SEC_YEAR
+# endif
+# if defined O_mtlm_carbon_14
+          NPP14(L,N) = G14NPP(N)*NPP(L,N)
+          NPP_DR14(L,N) = NPP_DR14(L,N) + NPP14(L,N)*FTIME*SEC_YEAR
+# endif
           G_LEAF_DR(L,N) = G_LEAF_DR(L,N) + G_LEAF_PHEN(L,N)*FTIME
           RESP_W_DR(L,N) = RESP_W_DR(L,N) + RESP_W(L,N)*FTIME*SEC_YEAR
         enddo
@@ -449,6 +498,20 @@
      &                      + NPP(L,N)*FRAC(L,N)*TIMESTEP
             enddo
             sbc(i,j,isr) = sbc(i,j,isr) + RESP_S(L)*TIMESTEP
+# endif
+# if defined O_mtlm_carbon_13
+            do N=1,NPFT
+              sbc(i,j,inpp13) = sbc(i,j,inpp13)
+     &                      + NPP13(L,N)*FRAC(L,N)*TIMESTEP
+            enddo
+            sbc(i,j,isr13) = sbc(i,j,isr13) + RESP_S13(L)*TIMESTEP
+# endif
+# if defined O_mtlm_carbon_14
+            do N=1,NPFT
+              sbc(i,j,inpp14) = sbc(i,j,inpp14)
+     &                      + NPP14(L,N)*FRAC(L,N)*TIMESTEP
+            enddo
+            sbc(i,j,isr14) = sbc(i,j,isr14) + RESP_S14(L)*TIMESTEP
 # endif
           endif
         enddo
@@ -479,17 +542,13 @@
           KITER = 1
         endif
 
+# if defined defined O_carbon
 !       diagnose the total land carbon before triffid
         do j=2,jmt-1
           do i=2,imt-1
             L = land_map(i,j)
             if (L .ne. 0) then
-# if defined O_reproduce_updates_01
-              sbc(i,j,iburn) = sbc(i,j,iburn) + CS(L) 
-     &                       - RESP_S_DR(L)/GAMMA
-# else
               sbc(i,j,iburn) = CS(L) - RESP_S_DR(L)/GAMMA
-# endif
               do N=1,NPFT
                 sbc(i,j,iburn) = sbc(i,j,iburn) + FRAC(L,N)*C_VEG(L,N)
      &                         + FRAC(L,N)*NPP_DR(L,N)/GAMMA
@@ -497,12 +556,22 @@
             endif
           enddo
         enddo
+# endif
 
         do I=1,KITER
           call TRIFFID (LAND_PTS, LAND_INDEX, FORW, GAMMA, FRAC_VS
      &,                 FRACA, FRAC_MIN, FRAC_SEED, DENOM_MIN, BF
      &,                 G_LEAF_DR, NPP_DR, RESP_S_DR, RESP_W_DR, CS
-     &,                 FRAC, HT, LAI, C_VEG, CV, LIT_C, LIT_C_T)
+     &,                 FRAC, HT, LAI, C_VEG, CV, LIT_C, LIT_C_T
+# if defined O_mtlm_carbon_13
+     &,                 NPP_DR13, RESP_S_DR13
+     &,                 RC13STD, CS13, C_VEG13, CV13
+# endif
+# if defined O_mtlm_carbon_14
+     &,                 NPP_DR14, RESP_S_DR14
+     &,                 RC14STD, CS14, C_VEG14, CV14
+# endif
+     &                  )
         enddo
         LAND_COUNTER = 0.
 
@@ -514,6 +583,7 @@
 # else
         RTSB = 1./(DAY_TRIF*SEC_DAY)
 # endif
+# if defined defined O_carbon
         do j=2,jmt-1
           do i=2,imt-1
             L = land_map(i,j)
@@ -522,14 +592,13 @@
               do N=1,NPFT
                 sbc(i,j,iburn) = sbc(i,j,iburn) - FRAC(L,N)*C_VEG(L,N)
               enddo
-# if !defined O_reproduce_updates_01
               sbc(i,j,iburn) =  sbc(i,j,iburn)*RTSB
             else
               sbc(i,j,iburn) = 0.
-# endif
             endif
           enddo
         enddo
+# endif
 # if defined O_global_sums
         ntlbc = 0
 # endif
@@ -540,8 +609,20 @@
         do I=1,LAND_PTS
           L = LAND_INDEX(I)
           RESP_S_DR(L) = 0.0
+# if defined O_mtlm_carbon_13
+          RESP_S_DR13(L) = 0.0
+# endif
+# if defined O_mtlm_carbon_14
+          RESP_S_DR14(L) = 0.0
+# endif
           do N=1,NPFT
             NPP_DR(L,N) = 0.0
+# if defined O_mtlm_carbon_13
+            NPP_DR13(L,N) = 0.0
+# endif
+# if defined O_mtlm_carbon_14
+            NPP_DR14(L,N) = 0.0
+# endif
             G_LEAF_DR(L,N) = 0.0
             RESP_W_DR(L,N) = 0.0
           enddo

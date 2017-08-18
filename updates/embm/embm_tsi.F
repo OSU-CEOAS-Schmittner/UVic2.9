@@ -96,6 +96,10 @@
 # endif
       call defvar ('A_maxiter', iou, 1, id, -c1e3, c1e3, ' '
      &,   'F', 'maximum atmosphere solver iterations', ' ','1')
+# if defined O_carbon_13
+      call defvar ('A_dc13', iou, 1, id, -c1e3, c1e3, ' ', 'F'
+     &,   'global average delta C13 concentration', ' ','permil')
+# endif
 # if defined O_carbon_14
       call defvar ('A_dc14', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &,   'global average delta C14 concentration', ' ','permil')
@@ -229,6 +233,10 @@
 # if defined O_carbon
       call defvar ('O_dicsur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface dic', ' ','mol m-3')
+#  if defined O_carbon_13
+      call defvar ('O_dic13sur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface dic13', ' ','mol m-3')
+#  endif
 #  if defined O_carbon_14
       call defvar ('O_c14sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface c14', ' ','mol m-3')
@@ -245,9 +253,29 @@
 # if defined O_npzd
       call defvar ('O_po4sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface phosphate', ' ','mol m-3')
+      call defvar ('O_dopsur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface DOP', ' ','mol m-3')
 #  if defined O_npzd_nitrogen
       call defvar ('O_no3sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface nitrate', ' ','mol m-3')
+      call defvar ('O_donsur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface DON', ' ','mol m-3')
+#   if defined O_npzd_nitrogen_15
+      call defvar ('O_din15sur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface nitrate 15', ' ','mol m-3')
+      call defvar ('O_don15sur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface DON15', ' ','mol m-3')
+#   endif
+#  endif
+!juan
+#  if defined O_npzd_iron
+      call defvar ('O_dfesur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface iron', ' ','mol m-3')
+#  endif
+!
+#  if defined O_carbon_13
+      call defvar ('O_doc13sur', iou, 1, id, c0, c100, ' '
+     &,   'F', 'global average sea surface DOC13', ' ','mol m-3')
 #  endif
 # endif
 # if defined O_cfcs_data || defined O_cfcs_data_transient
@@ -283,6 +311,7 @@
       subroutine embm_tsi_out (fname, avgper, time, stamp, sat, shum
      &,                        precip, evap, v_oice, a_oice, v_snow
      &,                        v_lice, a_lice, co2ccn, co2emit, dc14ccn
+     &,                        dc13ccn
      &,                        cfc11ccn, cfc12ccn, scan, nsat, ssat
      &,                        nshum, sshum, nprecip, sprecip, nevap
      &,                        sevap, v_noice, v_soice, a_noice
@@ -291,9 +320,10 @@
      &,                        lprecip, oprecip, levap, oevap, solins
      &,                        upsens, uplwr, outlwr, dnswr, absswr
      &,                        netrad, palb, aalb, salb, lsalb, osalb
-     &,                        sst, sss, ssdic, ssc14, ssalk, sso2
-     &,                        sspo4, ssno3, sscfc11, sscfc12, sulph
-     &,                        volc, agg, catm, carbemit, ntrec)
+     &,                        sst, sss, ssdic, ssdic13, ssc14, ssalk
+     &,                        sso2, sspo4, ssdop, ssno3, ssdon, ssdin15
+     &,                        ssdon15, ssdoc13, sscfc11, sscfc12, sulph
+     &,                        volc, agg, catm, carbemit, ntrec, ssdfe)
 !=======================================================================
 !     output routine for atmospheric time step integrals
 
@@ -316,6 +346,7 @@
 
       real sat, shum, precip, evap, v_oice, a_oice, v_snow, v_lice
       real a_lice, co2ccn, co2emit, scan, dc14ccn, cfc11ccn, cfc12ccn
+      real dc13ccn
       real nsat, ssat, nshum, sshum, nprecip, sprecip, nevap, sevap
       real v_noice, v_soice, a_noice, a_soice, v_nsnow, v_ssnow
       real v_nlice, v_slice, a_nlice, a_slice, lsat, osat, lprecip
@@ -324,7 +355,8 @@
       real osalb, sst, sss, ssdic, ssc14, ssalk, sso2, sspo4, ssno3
       real sscfc11, sscfc12, sulph, volc, agg, catm, carbemit, time, tmp
       real c0, c1, c100, c1e3, c1e4, c1e6, p1, p001, p035, cal2J, C2K
-      real kgsPgyr
+      real kgsPgyr, ssdop, ssdon, ssdin15, ssdon15, ssdic13, ssdoc13
+      real ssdfe
 
       c0 = 0.
       c1 = 1.
@@ -368,6 +400,9 @@
       call putvars ('F_co2emit', iou, ntrec, co2emit, c1, c0)
 # endif
       call putvars ('A_maxiter', iou, ntrec, scan, c1, c0)
+# if defined O_carbon_13
+      call putvars ('A_dc13', iou, ntrec, dc13ccn, c1, c0)
+# endif
 # if defined O_carbon_14
       call putvars ('A_dc14', iou, ntrec, dc14ccn, c1, c0)
 # endif
@@ -450,6 +485,9 @@
       call putvars ('O_salsur', iou, ntrec, sss, p001, -p035)
 # if defined O_carbon
       call putvars ('O_dicsur', iou, ntrec, ssdic, c1, c0)
+#  if defined O_carbon_13
+      call putvars ('O_dic13sur', iou, ntrec, ssdic13, c1, c0)
+#  endif
 #  if defined O_carbon_14
       call putvars ('O_c14sur', iou, ntrec, ssc14, c1, c0)
 #  endif
@@ -462,8 +500,22 @@
 # endif
 # if defined O_npzd
       call putvars ('O_po4sur', iou, ntrec, sspo4, c1e3, c0)
+      call putvars ('O_dopsur', iou, ntrec, ssdop, c1e3, c0)
 #  if defined O_npzd_nitrogen
       call putvars ('O_no3sur', iou, ntrec, ssno3, c1e3, c0)
+      call putvars ('O_donsur', iou, ntrec, ssdon, c1e3, c0)
+#   if defined O_npzd_nitrogen_15
+      call putvars ('O_din15sur', iou, ntrec, ssdin15, c1e3, c0)
+      call putvars ('O_don15sur', iou, ntrec, ssdon15, c1e3, c0)
+#   endif
+#  endif
+!juan
+#  if defined O_npzd_iron
+      call putvars ('O_dfesur', iou, ntrec, ssno3, c1e3, c0)
+#  endif
+!
+#  if defined O_carbon_13
+      call putvars ('O_doc13sur', iou, ntrec, ssdoc13, c1, c0)
 #  endif
 # endif
 # if defined O_cfcs_data || defined O_cfcs_data_transient

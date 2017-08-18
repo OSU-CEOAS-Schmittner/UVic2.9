@@ -15,6 +15,12 @@
       include "coord.h"
       include "grdvar.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "csbc.h"
 # if defined O_embm
       include "cembm.h"
@@ -29,13 +35,14 @@
       integer is, ie, js, je, ntrec
       integer nyear, nmonth, nday, nhour, nmin, nsec
 
-      real time, tmp
+      real avgper, time, tmp
 
 # if defined O_time_step_monitor
       if (tsits .and. ntatil .ne. 0) then
 
         call ta_mtlm_tsi (is, ie, js, je, 2)
 
+        avgper = tsiper*accel
         time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = time
@@ -52,12 +59,50 @@
         tai_clnd = 0.
         tai_cfa2l = 0.
 #  endif
+#  if !defined O_save_time_relyear0
+!       make output time relative to year 1
+        time = time - 1.
+#  endif
+        avgper = tsiper*accel
+        if (avgper .le. 1e-6) avgper = 0.
+#  if defined O_save_time_endper
+        tmp = 0.
+#  elif defined O_save_time_startper
+        tmp = 1.
+#  else
+        tmp = 0.5
+#  endif
+#  if defined O_units_time_years
+#   if defined O_calendar_360_day
+        time = time - tmp*avgper/360.
+#   elif defined O_calendar_gregorian
+        time = time - tmp*avgper/365.25
+#   else
+        time = time - tmp*avgper/365.
+#   endif
+#  else
+#   if defined O_calendar_360_day
+        time = time*360. - tmp*avgper
+#   elif defined O_calendar_gregorian
+        time = time*365.25 - tmp*avgper
+#   else
+        time = time*365. - tmp*avgper
+#   endif
+#  endif
 
-        call mtlm_tsi_out (fname, avgpertsi, avgtimtsi, nstamp, tai_CS
+        call mtlm_tsi_out (fname, avgper, time, nstamp, tai_CS
      &,   tai_RESP_S, tai_LIT_C_T, tai_BURN, tai_CV, tai_NPP, tai_GPP
      &,   tai_HT, tai_LAI, tai_LYING_SNOW, tai_TSOIL, tai_TSTAR
-     &,   tai_M, tai_ET, tai_clnd, tai_cfa2l, ntrec)
-
+     &,   tai_M, tai_ET, tai_clnd, tai_cfa2l, ntrec
+# if defined O_mtlm_carbon_13
+     &,   tai_RESP_S13, tai_NPP13, tai_BURN13
+     &,   tai_CS13, tai_CV13
+# endif
+# if defined O_mtlm_carbon_14
+     &,   tai_RESP_S14, tai_NPP14, tai_BURN14
+     &,   tai_CS14, tai_CV14
+# endif
+     &    )
         call ta_mtlm_tsi (is, ie, js, je, 0)
 
       endif
@@ -85,12 +130,46 @@
 !       make output time relative to year 1
         time = time - 1.
 #  endif
+        avgper = timavgper*accel
+        if (avgper .le. 1e-6) avgper = 0.
+#  if defined O_save_time_endper
+        tmp = 0.
+#  elif defined O_save_time_startper
+        tmp = 1.
+#  else
+        tmp = 0.5
+#  endif
+#  if defined O_units_time_years
+#   if defined O_calendar_360_day
+        time = time - tmp*avgper/360.
+#   elif defined O_calendar_gregorian
+        time = time - tmp*avgper/365.25
+#   else
+        time = time - tmp*avgper/365.
+#   endif
+#  else
+#   if defined O_calendar_360_day
+        time = time*360. - tmp*avgper
+#   elif defined O_calendar_gregorian
+        time = time*365.25 - tmp*avgper
+#   else
+        time = time*365. - tmp*avgper
+#   endif
+#  endif
 
         call mtlm_tavg_out (fname, is, ie, js, je, imt, jmt
      &,   POINTS, NPFT, NTYPE, xt, yt, xu, yu, dxt, dyt, dxu, dyu
-     &,   avgpertavg, avgtimtavg, nstamp, land_map, ta_TS1, ta_CS
-     &,   ta_RESP_S, ta_LIT_C_T, ta_BURN, ta_FRAC, ta_GPP, ta_NPP
-     &,   ta_HT, ta_LAI, ta_C_VEG
+     &,   avgper, time, nstamp, land_map, ta_TS1, ta_CS, ta_RESP_S
+     &,   ta_LIT_C_T, ta_BURN, ta_FRAC, ta_GPP, ta_NPP, ta_HT, ta_LAI
+     &,   ta_C_VEG
+# if defined O_mtlm_carbon_13
+     &,   ta_RESP_S13, ta_NPP13, ta_BURN13
+     &,   ta_CS13, ta_C_VEG13
+# endif
+# if defined O_mtlm_carbon_14
+     &,   ta_RESP_S14, ta_NPP14, ta_BURN14
+     &,   ta_CS14, ta_C_VEG14
+# endif
 # if !defined O_embm
      &,   ta_TSTAR_GB, ta_ALBLAND, ta_ET, ta_M
 # endif
@@ -137,6 +216,12 @@
 
       include "size.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "csbc.h"
       include "switch.h"
 
@@ -171,6 +256,20 @@
         ta_LYING_SNOW(:) = 0.
         ta_SURF_ROFF(:) = 0.
         ta_FRAC(:,:) = 0.
+# if defined O_mtlm_carbon_13
+        ta_CS13(:) = 0.
+        ta_RESP_S13(:) = 0.
+        ta_BURN13(:) = 0.
+        ta_NPP13(:,:) = 0.
+        ta_C_VEG13(:,:) = 0.
+# endif
+# if defined O_mtlm_carbon_14
+        ta_CS14(:) = 0.
+        ta_RESP_S14(:) = 0.
+        ta_BURN14(:) = 0.
+        ta_NPP14(:,:) = 0.
+        ta_C_VEG14(:,:) = 0.
+# endif
 
       elseif (iflag .eq. 1) then
 
@@ -209,6 +308,38 @@
         ta_SURF_ROFF(:) = ta_SURF_ROFF(:) + SURF_ROFF(:)
         ta_FRAC(:,:) = ta_FRAC(:,:) + FRAC(:,:)
 
+# if defined O_mtlm_carbon_13
+        ta_CS13(:) = ta_CS13(:) + CS13(:)
+        ta_RESP_S13(:) = ta_RESP_S13(:) + RESP_S13(:)
+        do j=js,je
+          do i=is,ie
+            L = land_map(i,j)
+            if (L .ne. 0) then
+              ta_BURN13(L) = ta_BURN13(L) + sbc(i,j,iburn13)
+            endif
+          enddo
+        enddo
+        do n=1,NPFT
+          ta_NPP13(:,n) = ta_NPP13(:,n) + NPP13(:,n)*FRAC(:,n)
+          ta_C_VEG13(:,n) = ta_C_VEG13(:,n) + C_VEG13(:,n)*FRAC(:,n)
+        enddo
+# endif
+# if defined O_mtlm_carbon_14
+        ta_CS14(:) = ta_CS14(:) + CS14(:)
+        ta_RESP_S14(:) = ta_RESP_S14(:) + RESP_S14(:)
+        do j=js,je
+          do i=is,ie
+            L = land_map(i,j)
+            if (L .ne. 0) then
+              ta_BURN14(L) = ta_BURN14(L) + sbc(i,j,iburn14)
+            endif
+          enddo
+        enddo
+        do n=1,NPFT
+          ta_NPP14(:,n) = ta_NPP14(:,n) + NPP14(:,n)*FRAC(:,n)
+          ta_C_VEG14(:,n) = ta_C_VEG14(:,n) + C_VEG14(:,n)*FRAC(:,n)
+        enddo
+# endif
       elseif (iflag .eq. 2 .and. ntatsl .ne. 0) then
 
 !       average
@@ -232,7 +363,20 @@
         ta_LYING_SNOW(:) = ta_LYING_SNOW(:)*rntatsl
         ta_SURF_ROFF(:) = ta_SURF_ROFF(:)*rntatsl
         ta_FRAC(:,:) = ta_FRAC(:,:)*rntatsl
-
+# if defined O_mtlm_carbon_13
+        ta_CS13(:) = ta_CS13(:)*rntatsl
+        ta_RESP_S13(:) = ta_RESP_S13(:)*rntatsl
+        ta_BURN13(:) = ta_BURN13(:)*rntatsl
+        ta_NPP13(:,:) = ta_NPP13(:,:)*rntatsl
+        ta_C_VEG13(:,:) = ta_C_VEG13(:,:)*rntatsl
+# endif
+# if defined O_mtlm_carbon_14
+        ta_CS14(:) = ta_CS14(:)*rntatsl
+        ta_RESP_S14(:) = ta_RESP_S14(:)*rntatsl
+        ta_BURN14(:) = ta_BURN14(:)*rntatsl
+        ta_NPP14(:,:) = ta_NPP14(:,:)*rntatsl
+        ta_C_VEG14(:,:) = ta_C_VEG14(:,:)*rntatsl
+# endif
       endif
 
       return
@@ -253,6 +397,12 @@
       include "size.h"
       include "csbc.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "switch.h"
 
       integer is, ie, js, je, iflag, n
@@ -281,7 +431,20 @@
         tai_TSTAR = 0
         tai_M = 0
         tai_ET = 0
-
+# if defined O_mtlm_carbon_13
+        tai_CS13 = 0
+        tai_RESP_S13 = 0
+        tai_BURN13 = 0
+        tai_NPP13 = 0
+        tai_CV13 = 0
+# endif
+# if defined O_mtlm_carbon_14
+        tai_CS14 = 0
+        tai_RESP_S14 = 0
+        tai_BURN14 = 0
+        tai_NPP14 = 0
+        tai_CV14 = 0
+# endif
       elseif (iflag .eq. 1) then
 
 !       set data mask
@@ -326,6 +489,23 @@
 !         convert area to m2
           tai_NPP = tai_NPP + tmp*1.e-4
 
+# if defined O_mtlm_carbon_13
+          call unloadland (POINTS, NPP13(1,n), imt, jmt, land_map, data)
+          data(:,:) = data(:,:)*wt(:,:)
+          call areatot (data, dmsk, tmp)
+!         convert area to m2
+          tai_NPP13 = tai_NPP13 + tmp*1.e-4
+
+# endif
+# if defined O_mtlm_carbon_14
+
+          call unloadland (POINTS, NPP14(1,n), imt, jmt, land_map, data)
+          data(:,:) = data(:,:)*wt(:,:)
+          call areatot (data, dmsk, tmp)
+!         convert area to m2
+          tai_NPP14 = tai_NPP14 + tmp*1.e-4
+
+# endif
           call unloadland (POINTS, GPP(1,n), imt, jmt, land_map, data)
           data(:,:) = data(:,:)*wt(:,:)
           call areatot (data, dmsk, tmp)
@@ -344,6 +524,52 @@
 
         enddo
 
+# if defined O_mtlm_carbon_13
+        call unloadland (POINTS, CS13, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
+!       convert area to m2
+        tai_CS13 = tai_CS13 + tmp*1.e-4
+
+        call unloadland (POINTS, RESP_S13, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
+!       convert area to m2
+        tai_RESP_S13 = tai_RESP_S13 + tmp*1.e-4
+
+#  if defined O_carbon
+        call areatot (sbc(:,:,iburn13), dmsk, tmp)
+!       convert area to m2
+        tai_BURN13 = tai_BURN13 + tmp*1.e-4
+#  endif
+
+        call unloadland (POINTS, CV13, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
+!       convert area to m2
+        tai_CV13 = tai_CV13 + tmp*1.e-4
+
+# endif
+# if defined O_mtlm_carbon_14
+        call unloadland (POINTS, CS14, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
+!       convert area to m2
+        tai_CS14 = tai_CS14 + tmp*1.e-4
+
+        call unloadland (POINTS, RESP_S14, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
+!       convert area to m2
+        tai_RESP_S14 = tai_RESP_S14 + tmp*1.e-4
+
+#  if defined O_carbon
+        call areatot (sbc(:,:,iburn14), dmsk, tmp)
+!       convert area to m2
+        tai_BURN14 = tai_BURN14 + tmp*1.e-4
+#  endif
+
+        call unloadland (POINTS, CV14, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
+!       convert area to m2
+        tai_CV14 = tai_CV14 + tmp*1.e-4
+
+# endif
         call unloadland (POINTS, LYING_SNOW, imt, jmt, land_map, data)
         call areatot (data, dmsk, tmp)
 !       convert area to m2
@@ -383,7 +609,20 @@
         tai_TSTAR = tai_TSTAR*rntatil
         tai_M = tai_M*rntatil
         tai_ET = tai_ET*rntatil
-
+# if defined O_mtlm_carbon_13
+        tai_CS13 = tai_CS13*rntatil
+        tai_RESP_S13 = tai_RESP_S13*rntatil
+        tai_BURN13 = tai_BURN13*rntatil
+        tai_NPP13 = tai_NPP13*rntatil
+        tai_CV13 = tai_CV13*rntatil
+# endif
+# if defined O_mtlm_carbon_14
+        tai_CS14 = tai_CS14*rntatil
+        tai_RESP_S14 = tai_RESP_S14*rntatil
+        tai_BURN14 = tai_BURN14*rntatil
+        tai_NPP14 = tai_NPP14*rntatil
+        tai_CV14 = tai_CV14*rntatil
+# endif
       endif
 
       return

@@ -32,7 +32,7 @@
       include "levind.h"
       include "tmngr.h"
 
-# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
       real tmpij(imtm2,jmtm2)
 
       fname = "L_agricfra.nc"
@@ -76,14 +76,6 @@
 #  if defined O_crop_data_transient || defined O_pasture_data_transient || defined O_agric_data_transient
         data_time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         yrv(2) = min(time(ln), max(time(1), data_time))
-#   if defined O_crop_data_transient_repyr || defined O_pasture_data_transient_repyr || defined O_agric_data_transient_repyr
-        if (data_time .gt. agric_yr) then
-          first_time = .true.
-          intrp = .true.
-          yrv(2) = data_time - int(data_time) + agric_yr
-          print*, "Warning => gvsbc: repeating year", agric_yr
-        endif
-#   endif
 #  else
         yrv(2) = min(time(ln), max(time(1), agric_yr))
 #  endif
@@ -109,47 +101,47 @@
             call openfile (fname, iou)
             ib(3) = iyr(1)
             agric(2:imtm1,2:jmtm1,1) = 0.
-#  if defined O_crop_data ||  defined O_crop_data_transient || defined O_agric_data || defined O_agric_data_transient
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
             exists = inqvardef('L_cropfra', iou)
             if (exists) then
               call getvara ('L_cropfra', iou, imtm2*jmtm2, ib, ic, tmpij
      &,         c1, c0)
               agric(2:imtm1,2:jmtm1,1) = agric(2:imtm1,2:jmtm1,1)
-     &                                 + tmpij(1:imtm2,1:jmtm2)*cropf
+     &                                 + tmpij(1:imtm2,1:jmtm2)
             endif
-#  endif
-#  if defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+# endif
+# if defined O_pasture_data || defined O_agric_data
             exists = inqvardef('L_pastfra', iou)
             if (exists) then
               call getvara ('L_pastfra', iou, imtm2*jmtm2, ib, ic, tmpij
      &,         c1, c0)
               agric(2:imtm1,2:jmtm1,1) = agric(2:imtm1,2:jmtm1,1)
-     &                                 + tmpij(1:imtm2,1:jmtm2)*pastf
+     &                                 + tmpij(1:imtm2,1:jmtm2)
             endif
-#  endif
+# endif
             call embmbc (agric(:,:,1))
 
             call openfile (fname, iou)
             ib(3) = iyr(3)
             agric(2:imtm1,2:jmtm1,3) = 0.
-#  if defined O_crop_data ||  defined O_crop_data_transient || defined O_agric_data || defined O_agric_data_transient
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
             exists = inqvardef('L_cropfra', iou)
             if (exists) then
               call getvara ('L_cropfra', iou, imtm2*jmtm2, ib, ic, tmpij
      &,         c1, c0)
               agric(2:imtm1,2:jmtm1,3) = agric(2:imtm1,2:jmtm1,3)
-     &                                 + tmpij(1:imtm2,1:jmtm2)*cropf
+     &                                 + tmpij(1:imtm2,1:jmtm2)
             endif
-#  endif
-#  if defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+# endif
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
             exists = inqvardef('L_pastfra', iou)
             if (exists) then
               call getvara ('L_pastfra', iou, imtm2*jmtm2, ib, ic, tmpij
      &,         c1, c0)
               agric(2:imtm1,2:jmtm1,3) = agric(2:imtm1,2:jmtm1,3)
-     &                                 + tmpij(1:imtm2,1:jmtm2)*pastf
+     &                                 + tmpij(1:imtm2,1:jmtm2)
             endif
-#  endif
+# endif
             call embmbc (agric(1,1,3))
 
           else
@@ -168,24 +160,24 @@
             ib(3) = iyr(n)
             print*, "=> reading agriculture data for year:",yrv(n)
             agric(2:imtm1,2:jmtm1,2) = 0.
-#  if defined O_crop_data ||  defined O_crop_data_transient || defined O_agric_data || defined O_agric_data_transient
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
             exists = inqvardef('L_cropfra', iou)
             if (exists) then
               call getvara ('L_cropfra', iou, imtm2*jmtm2, ib, ic, tmpij
      &,         c1, c0)
               agric(2:imtm1,2:jmtm1,2) = agric(2:imtm1,2:jmtm1,2)
-     &                                 + tmpij(1:imtm2,1:jmtm2)*cropf
+     &                                 + tmpij(1:imtm2,1:jmtm2)
             endif
-#  endif
-#  if defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+# endif
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
             exists = inqvardef('L_pastfra', iou)
             if (exists) then
               call getvara ('L_pastfra', iou, imtm2*jmtm2, ib, ic, tmpij
      &,         c1, c0)
               agric(2:imtm1,2:jmtm1,2) = agric(2:imtm1,2:jmtm1,2)
-     &                                 + tmpij(1:imtm2,1:jmtm2)*pastf
+     &                                 + tmpij(1:imtm2,1:jmtm2)
             endif
-#  endif
+# endif
             call embmbc (agric(1,1,2))
             agric(:,:,1) = agric(:,:,2)
             agric(:,:,3) = agric(:,:,2)
@@ -228,7 +220,7 @@
 # else
             if (iveg(i,j) .gt. 0 .and. tmsk(i,j) .lt. 0.5) then
 # endif
-# if defined O_crop_data || defined O_crop_data_transient || defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
               sbc(i,j,isca) = 1. - (agric(i,j,2)*veg_alb(iagric)
      &                      + veg_alb(iveg(i,j))*(1. - agric(i,j,2)))
               z0 = veg_rl(iveg(i,j))*(1.-agric(i,j,2))

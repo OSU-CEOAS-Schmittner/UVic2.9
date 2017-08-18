@@ -73,7 +73,7 @@
      &, 'F', 'global average soil temperature', ' ', 'K')
 # endif
 # if defined O_save_carbon_totals
-       call defvar ('L_totcarb', iou, 1, id, -c1e20, c1e20, ' ', 'F'
+      call defvar ('L_totcarb', iou, 1, id, -c1e20, c1e20, ' ', 'F'
      &, 'global total land carbon', ' ', 'Pg')
       call defvar ('F_carba2l', iou, 1, id, -c1e20, c1e20, ' ', 'F'
      &, 'global total atmopsphere to land carbon flux'
@@ -92,6 +92,30 @@
      &, 'F', 'global total net primary productivity', ' ', 'Pg yr-1')
       call defvar ('L_veggpp', iou, 1, id, -c1e20, c1e20, ' '
      &, 'F', 'global total gross primary productivity', ' ', 'Pg yr-1')
+#  if defined O_mtlm_carbon_13
+      call defvar ('L_soilcarb13', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total soil carbon 13', ' ', 'Pg')
+      call defvar ('L_soilresp13', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total soil respiration 13 flux', ' ', 'Pg yr-1')
+      call defvar ('L_vegburn13', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total vegetation burning 13 flux', ' ', 'Pg yr-1')
+      call defvar ('L_vegcarb13', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total vegetation carbon 13', ' ', 'Pg')
+      call defvar ('L_vegnpp13', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total net primary productivity 13', ' ', 'Pg yr-1')
+#  endif
+#  if defined O_mtlm_carbon_14
+      call defvar ('L_soilcarb14', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total soil carbon 14', ' ', 'Pg')
+      call defvar ('L_soilresp14', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total soil respiration 14 flux', ' ', 'Pg yr-1')
+      call defvar ('L_vegburn14', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total vegetation burning 14 flux', ' ', 'Pg yr-1')
+      call defvar ('L_vegcarb14', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total vegetation carbon 14', ' ', 'Pg')
+      call defvar ('L_vegnpp14', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total net primary productivity 14', ' ', 'Pg yr-1')
+#  endif
 # else
       call defvar ('L_soilcarb', iou, 1, id, c0, c1e20, ' '
      &, 'F', 'global total soil carbon', ' ', 'kg')
@@ -107,7 +131,31 @@
      &, 'F', 'global total net primary productivity', ' ', 'kg s-1')
       call defvar ('L_veggpp', iou, 1, id, -c1e20, c1e20, ' '
      &, 'F', 'global total gross primary productivity', ' ', 'kg s-1')
-#endif
+#  if defined O_mtlm_carbon_13
+      call defvar ('L_soilcarb13', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total soil carbon 13', ' ', 'kg')
+      call defvar ('L_soilresp13', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total soil respiration 13 flux', ' ', 'kg s-1')
+      call defvar ('L_vegburn13', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total vegetation burning 13 flux', ' ', 'kg s-1')
+      call defvar ('L_vegcarb13', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total vegetation carbon 13', ' ', 'kg')
+      call defvar ('L_vegnpp13', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total net primary productivity 13', ' ', 'kg s-1')
+#  endif
+#  if defined O_mtlm_carbon_14
+      call defvar ('L_soilcarb14', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total soil carbon 14', ' ', 'kg')
+      call defvar ('L_soilresp14', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total soil respiration 14 flux', ' ', 'kg s-1')
+      call defvar ('L_vegburn14', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total vegetation burning 14 flux', ' ', 'kg s-1')
+      call defvar ('L_vegcarb14', iou, 1, id, c0, c1e20, ' '
+     &, 'F', 'global total vegetation carbon 14', ' ', 'kg')
+      call defvar ('L_vegnpp14', iou, 1, id, -c1e20, c1e20, ' '
+     &, 'F', 'global total net primary productivity 14', ' ', 'kg s-1')
+#  endif
+# endif
       call defvar ('L_veghgt', iou, 1, id, -c1e20, c1e20, ' '
      &, 'F', 'global average vegetation height', ' ', 'm')
       call defvar ('L_veglai', iou, 1, id, -c1e20, c1e20, ' '
@@ -138,7 +186,16 @@
       subroutine mtlm_tsi_out (fname, avgper, time, stamp, CS, RESP_S
      &,                        LIT_C_T, BURN, CV, NPP, GPP, HT, LAI
      &,                        LYING_SNOW, TSOIL, TSTAR, M, ET, clnd
-     &,                        cfa2l, ntrec)
+     &,                        cfa2l, ntrec
+# if defined O_mtlm_carbon_13
+     &,                        RESP_S13, NPP13, BURN13
+     &,                        CS13, CV13
+# endif
+# if defined O_mtlm_carbon_14
+     &,                        RESP_S14, NPP14, BURN14
+     &,                        CS14, CV14
+# endif
+     &                         )
 !=======================================================================
 !     output routine for land time step integrals
 
@@ -162,7 +219,12 @@
       real CS, RESP_S, LIT_C_T, BURN, CV, NPP, GPP, HT, LAI, LYING_SNOW
       real TSOIL, TSTAR, M, ET, clnd, cfa2l, avgper, time, tmp
       real c0, c1, C2K, c1e12, kgsPgyr
-
+# if defined O_mtlm_carbon_13
+      real CS13, CV13, RESP_S13, NPP13, BURN13
+# endif
+# if defined O_mtlm_carbon_14
+      real CS14, CV14, RESP_S14, NPP14, BURN14
+# endif
       c0 = 0.
       c1 = 1.
       C2K = 273.15
@@ -196,6 +258,20 @@
       call putvars ('L_vegcarb', iou, ntrec, CV, c1e12, c0)
       call putvars ('L_vegnpp', iou, ntrec, NPP, kgsPgyr, c0)
       call putvars ('L_veggpp', iou, ntrec, GPP, kgsPgyr, c0)
+#  if defined O_mtlm_carbon_13
+      call putvars ('L_soilcarb13', iou, ntrec, CS13, c1e12, c0)
+      call putvars ('L_soilresp13', iou, ntrec, RESP_S13, kgsPgyr, c0)
+      call putvars ('L_vegburn13', iou, ntrec, BURN13, kgsPgyr, c0)
+      call putvars ('L_vegcarb13', iou, ntrec, CV13, c1e12, c0)
+      call putvars ('L_vegnpp13', iou, ntrec, NPP13, kgsPgyr, c0)
+#  endif
+#  if defined O_mtlm_carbon_14
+      call putvars ('L_soilcarb14', iou, ntrec, CS14, c1e12, c0)
+      call putvars ('L_soilresp14', iou, ntrec, RESP_S14, kgsPgyr, c0)
+      call putvars ('L_vegburn14', iou, ntrec, BURN14, kgsPgyr, c0)
+      call putvars ('L_vegcarb14', iou, ntrec, CV14, c1e12, c0)
+      call putvars ('L_vegnpp14', iou, ntrec, NPP14, kgsPgyr, c0)
+#  endif
 # else
       call putvars ('L_soilcarb', iou, ntrec, CS, c1, c0)
       call putvars ('L_soilresp', iou, ntrec, RESP_S, c1, c0)
@@ -204,6 +280,20 @@
       call putvars ('L_vegcarb', iou, ntrec, CV, c1, c0)
       call putvars ('L_vegnpp', iou, ntrec, NPP, c1, c0)
       call putvars ('L_veggpp', iou, ntrec, GPP, c1, c0)
+#  if defined O_mtlm_carbon_13
+      call putvars ('L_soilcarb13', iou, ntrec, CS13, c1, c0)
+      call putvars ('L_soilresp13', iou, ntrec, RESP_S13, c1, c0)
+      call putvars ('L_vegburn13', iou, ntrec, BURN13, c1, c0)
+      call putvars ('L_vegcarb13', iou, ntrec, CV13, c1, c0)
+      call putvars ('L_vegnpp13', iou, ntrec, NPP13, c1, c0)
+#  endif
+#  if defined O_mtlm_carbon_14
+      call putvars ('L_soilcarb14', iou, ntrec, CS14, c1, c0)
+      call putvars ('L_soilresp14', iou, ntrec, RESP_S14, c1, c0)
+      call putvars ('L_vegburn14', iou, ntrec, BURN14, c1, c0)
+      call putvars ('L_vegcarb14', iou, ntrec, CV14, c1, c0)
+      call putvars ('L_vegnpp14', iou, ntrec, NPP14, c1, c0)
+#  endif
 # endif
       call putvars ('L_veghgt', iou, ntrec, HT, c1, c0)
       call putvars ('L_veglai', iou, ntrec, LAI, c1, c0)

@@ -19,6 +19,7 @@
       real alphai, betai
       common /cisop_r/ alphai(imt,km,jmw), betai(imt,km,jmw)
 
+      real addisop
       real ddxt, ddyt, ddzt, Ai_ez, Ai_nz, Ai_bx, Ai_by, K11, K22, K33
       real ahisop, fisop, slmxr, del_dm, s_dmr
 # if defined O_full_tensor
@@ -37,6 +38,7 @@
       common /cisop_r/ K22(imt,km,1:jemw)
       common /cisop_r/ K33(imt,km,jsmw:jemw)
       common /cisop_r/ ahisop, fisop(imt,jmt,km), slmxr
+      common /cisop_r/ addisop(imt,km,jsmw:jemw)
 # if defined O_dm_taper
       common /cisop_r/ del_dm, s_dmr
 # endif

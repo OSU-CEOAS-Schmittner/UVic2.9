@@ -15,7 +15,7 @@
       logical defined
 
       real uext, vext, rnum, npt, dspcrt, rgrav, scl, reltim, rvolgk
-      real rvolgt, rareag, fx, tnew, tsml, tbig, plicin, plicex
+      real rvolgt, rareag, avgper, fx, tnew, tsml, tbig, plicin, plicex
       real buoerr, enleak, dtconv, dtfilt, taux, tauy, erru, errv
       real contu, dchg, cont, tperiod, pwatts, csalt
       real tmbavg, convrt, sumsto, sumdiv, sumflx, sumdif, sumsor
@@ -37,7 +37,6 @@
       include "stdunits.h"
       include "calendar.h"
       include "ctmb.h"
-      include "csbc.h"
       include "coord.h"
       include "cprnts.h"
       include "cregin.h"
@@ -396,42 +395,18 @@
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = time
         call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-        avgtimtsi = time
-#  if !defined O_save_time_relyear0
-!       make output time relative to year 1
-        avgtimtsi = avgtimtsi - 1.
-#  endif
-        avgpertsi = dtts*ntatio*secday
-        if (avgpertsi .le. 1e-6) avgpertsi = 0.
-#  if defined O_save_time_endper
-        tmp = 0.
-#  elif defined O_save_time_startper
-        tmp = 1.
-#  else
-        tmp = 0.5
-#  endif
-#  if defined O_units_time_years
-#   if defined O_calendar_360_day
-        avgtimtsi = avgtimtsi - tmp*avgpertsi/360.
-#   elif defined O_calendar_gregorian
-        avgtimtsi = avgtimtsi - tmp*avgpertsi/365.25
-#   else
-        avgtimtsi = avgtimtsi - tmp*avgpertsi/365.
-#   endif
-#  else
-#   if defined O_calendar_360_day
-        avgtimtsi = avgtimtsi*360. - tmp*avgpertsi
-#   elif defined O_calendar_gregorian
-        avgtimtsi = avgtimtsi*365.25 - tmp*avgpertsi
-#   else
-        avgtimtsi = avgtimtsi*365. - tmp*avgpertsi
-#   endif
-#  endif
 
+        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
+          write (stdout,9601) itt, nstamp, tai_ek, tai_dt, tai_ds, tai_t
+     &,                       tai_s, tai_tvar, tai_svar, tai_scan
+        endif
+
+        call def_tsi
+        call def_tsi_mom (fname)
 #  if defined O_save_carbon_totals
 !       convert from umol cm-3 to Pg (redctn contained 1e-3)
-        tai_cocn = (tai_dic + (tai_p + tai_z + tai_d + tai_di)
-     &             *redctn)*tcellv*12.e-21
+        tai_cocn = (tai_dic + (tai_phyt + tai_zoop + tai_detr 
+     &       + tai_diaz)*redctn)*tcellv*12.e-21
 !       convert from umol cm-2 s-1 to Pg year-1
         tai_cfa2o = tai_dicflx*tcella(1)*yrlen*daylen*12.e-21
 #   if defined O_sed && !defined O_sed_uncoupled
@@ -443,25 +418,53 @@
         tai_cfa2o = 0.
 #  endif
 
-        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
-          write (stdout,9601) itt, nstamp, tai_ek, tai_dt, tai_ds, tai_t
-     &,                       tai_s, tai_tvar, tai_svar, tai_scan
-        endif
+#  if !defined O_save_time_relyear0
+!       make output time relative to year 1
+        time = time - 1.
+#  endif
+        avgper = tsiper*accel
+        if (avgper .le. 1e-6) avgper = 0.
+#  if defined O_save_time_endper
+        tmp = 0.
+#  elif defined O_save_time_startper
+        tmp = 1.
+#  else
+        tmp = 0.5
+#  endif
+#  if defined O_units_time_years
+#   if defined O_calendar_360_day
+        time = time - tmp*avgper/360.
+#   elif defined O_calendar_gregorian
+        time = time - tmp*avgper/365.25
+#   else
+        time = time - tmp*avgper/365.
+#   endif
+#  else
+#   if defined O_calendar_360_day
+        time = time*360. - tmp*avgper
+#   elif defined O_calendar_gregorian
+        time = time*365.25 - tmp*avgper
+#   else
+        time = time*365. - tmp*avgper
+#   endif
+#  endif
 
-        call def_tsi
-        call def_tsi_mom (fname)
-
-        call mom_tsi_out (fname, avgpertsi, avgtimtsi, nstamp, tai_ek
-     &,                   tai_t, tai_s, tai_tvar, tai_svar, tai_dt
-     &,                   tai_ds, tai_scan, tai_hflx, tai_sflx, tai_dic
-     &,                   tai_dicflx, tai_alk, tai_o2, tai_o2flx
-     &,                   tai_po4, tai_p, tai_z, tai_d, tai_no3
-     &,                   tai_di, tai_c14, tai_dc14, tai_c14flx
-     &,                   tai_cfc11, tai_cfc11flx, tai_cfc12
+        call mom_tsi_out (fname, avgper, time, nstamp, tai_ek, tai_t
+     &,                   tai_s, tai_tvar, tai_svar, tai_dt, tai_ds
+     &,                   tai_scan, tai_hflx, tai_sflx, tai_dic
+     &,                   tai_dicflx, tai_dic13, tai_dic13flx 
+     &,                   tai_alk, tai_o2, tai_o2flx
+     &,                   tai_po4, tai_dop, tai_phyt, tai_zoop, tai_detr
+     &,                   tai_no3, tai_don, tai_diaz, tai_din15
+     &,                   tai_don15, tai_phytn15, tai_zoopn15
+     &,                   tai_detrn15, tai_diazn15, tai_doc13 
+     &,                   tai_phytc13, tai_zoopc13, tai_detrc13
+     &,                   tai_diazc13, tai_c14, tai_dc14
+     &,                   tai_c14flx, tai_cfc11, tai_cfc11flx, tai_cfc12
      &,                   tai_cfc12flx, tai_otmax, tai_otmin
      &,                   tai_slh, tai_sspH, tai_ssCO3, tai_ssOc
      &,                   tai_ssOa, tai_sspCO2, tai_cocn, tai_cfa2o
-     &,                   ntrec)
+     &,                   ntrec, tai_dfe, tai_ddfe)
 
         call ta_mom_tsi (0)
       endif
@@ -1872,7 +1875,6 @@
         nta_sscar = nta_sscar + 1
         do j=2,jmtm1
           do i=2,imtm1
-!           sspH is really H+ until the final averaging
             ta_sspH(i,j) = ta_sspH(i,j) + sspH(i,j)
             ta_ssCO3(i,j) = ta_ssCO3(i,j) + ssCO3(i,j)
             ta_ssOc(i,j) = ta_ssOc(i,j) + ssOc(i,j)
@@ -1964,16 +1966,34 @@
         tai_sflx = 0.
         tai_dic = 0.
         tai_dicflx = 0.
+        tai_dic13 = 0.
+        tai_dic13flx = 0.
         tai_dicwflx = 0.
+        tai_dic13wflx = 0.
         tai_alk = 0.
         tai_o2 = 0.
         tai_o2flx = 0.
         tai_po4 = 0.
-        tai_p = 0.
-        tai_z = 0.
-        tai_d = 0.
+        tai_dop = 0.
+        tai_phyt = 0.
+        tai_zoop = 0.
+        tai_detr = 0.
         tai_no3 = 0.
-        tai_di = 0.
+        tai_dfe = 0.
+        tai_ddfe = 0.
+        tai_don = 0.
+        tai_diaz = 0.
+        tai_din15 = 0.
+        tai_don15 = 0.
+        tai_phytn15 = 0.
+        tai_zoopn15 = 0.
+        tai_detrn15 = 0.
+        tai_diazn15 = 0.
+        tai_doc13 = 0.
+        tai_phytc13 = 0.
+        tai_zoopc13 = 0.
+        tai_detrc13 = 0.
+        tai_diazc13 = 0.
         tai_c14 = 0.
         tai_dc14 = 0.
         tai_c14flx = 0.
@@ -2090,8 +2110,16 @@
         tai_dic = tai_dic + tbar(0,idic,1)
         call areaavg (sbc(1,1,idicflx), dmsk, tmp)
         tai_dicflx = tai_dicflx + tmp
+#  if defined O_carbon_13
+        tai_dic13 = tai_dic13 + tbar(0,idic13,1)
+        call areaavg (sbc(1,1,idic13flx), dmsk, tmp)
+        tai_dic13flx = tai_dic13flx + tmp
+#  endif
 #  if defined O_sed && !defined O_sed_uncoupled
         tai_dicwflx = tai_dicwflx + dicwflx
+#   if defined O_carbon_13
+        tai_dic13wflx = tai_dic13wflx + dic13wflx
+#   endif
 #  endif
 #  if defined O_carbon_14
         tai_c14 = tai_c14 + tbar(0,ic14,1)
@@ -2110,12 +2138,35 @@
 # endif
 # if defined O_npzd
         tai_po4 = tai_po4 + tbar(0,ipo4,1)
-        tai_p = tai_p + tbar(0,iphyt,1)
-        tai_z = tai_z + tbar(0,izoop,1)
-        tai_d = tai_d + tbar(0,idetr,1)
+        tai_dop = tai_dop + tbar(0,idop,1)
+        tai_phyt = tai_phyt + tbar(0,iphyt,1)
+        tai_zoop = tai_zoop + tbar(0,izoop,1)
+        tai_detr = tai_detr + tbar(0,idetr,1)
 #  if defined O_npzd_nitrogen
         tai_no3 = tai_no3 + tbar(0,ino3,1)
-        tai_di = tai_di + tbar(0,idiaz,1)
+        tai_don = tai_don + tbar(0,idon,1)
+        tai_diaz = tai_diaz + tbar(0,idiaz,1)
+#   if defined O_npzd_nitrogen_15
+        tai_din15 = tai_din15 + tbar(0,idin15,1)
+        tai_don15 = tai_don15 + tbar(0,idon15,1)
+        tai_phytn15 = tai_phytn15 + tbar(0,iphytn15,1)
+        tai_zoopn15 = tai_zoopn15 + tbar(0,izoopn15,1)
+        tai_detrn15 = tai_detrn15 + tbar(0,idetrn15,1)
+        tai_diazn15 = tai_diazn15 + tbar(0,idiazn15,1)
+#   endif
+#  endif
+#  if defined O_npzd_iron
+        tai_dfe = tai_dfe + tbar(0,idfe,1)
+        tai_ddfe = tai_ddfe + tbar(0,idetrfe,1)
+#  endif
+#  if defined O_carbon_13
+        tai_doc13 = tai_doc13 + tbar(0,idoc13,1)
+        tai_phytc13 = tai_phytc13 + tbar(0,iphytc13,1)
+        tai_zoopc13 = tai_zoopc13 + tbar(0,izoopc13,1)
+        tai_detrc13 = tai_detrc13 + tbar(0,idetrc13,1)
+#   if defined O_npzd_nitrogen
+        tai_diazc13 = tai_diazc13 + tbar(0,idiazc13,1)
+#   endif
 #  endif
 # endif
 # if defined O_cfcs_data || defined O_cfcs_data_transient
@@ -2128,8 +2179,7 @@
 # endif
 # if defined O_save_carbon_carbonate_chem
         dmsk(:,:) = 1.
-        where (kmt(:,:) .eq. 0) dmsk(:,:) = 0.
-!       sspH is really H+ until the final averaging
+        where (sspH(:,:).gt.11.5 .or. sspH(:,:).le.0.5) dmsk(:,:) = 0.
         call areaavg (sspH, dmsk, tmp)
         tai_sspH = tai_sspH + tmp
         call areaavg (ssOc, dmsk, tmp)
@@ -2218,16 +2268,32 @@
         tai_sflx = tai_sflx*rntatio
         tai_dic = tai_dic*rntatio
         tai_dicflx = tai_dicflx*rntatio
+        tai_dic13 = tai_dic13*rntatio
+        tai_dic13flx = tai_dic13flx*rntatio
         tai_dicwflx = tai_dicwflx*rntatio
+        tai_dic13wflx = tai_dic13wflx*rntatio
         tai_alk = tai_alk*rntatio
         tai_o2 = tai_o2*rntatio
         tai_o2flx = tai_o2flx*rntatio
         tai_po4 = tai_po4*rntatio
-        tai_p = tai_p*rntatio
-        tai_z = tai_z*rntatio
-        tai_d = tai_d*rntatio
+        tai_dop = tai_dop*rntatio
+        tai_phyt = tai_phyt*rntatio
+        tai_zoop = tai_zoop*rntatio
+        tai_detr = tai_detr*rntatio
         tai_no3 = tai_no3*rntatio
-        tai_di = tai_di*rntatio
+        tai_don = tai_don*rntatio
+        tai_diaz = tai_diaz*rntatio
+        tai_din15 = tai_din15*rntatio
+        tai_don15 = tai_don15*rntatio
+        tai_phytn15 = tai_phytn15*rntatio
+        tai_zoopn15 = tai_zoopn15*rntatio
+        tai_detrn15 = tai_detrn15*rntatio
+        tai_diazn15 = tai_diazn15*rntatio
+        tai_doc13 = tai_doc13*rntatio
+        tai_phytc13 = tai_phytc13*rntatio
+        tai_zoopc13 = tai_zoopc13*rntatio
+        tai_detrc13 = tai_detrc13*rntatio
+        tai_diazc13 = tai_diazc13*rntatio
         tai_c14 = tai_c14*rntatio
         tai_dc14 = tai_dc14*rntatio
         tai_c14flx = tai_c14flx*rntatio
@@ -2235,13 +2301,13 @@
         tai_cfc11flx = tai_cfc11flx*rntatio
         tai_cfc12 = tai_cfc12*rntatio
         tai_cfc12flx = tai_cfc12flx*rntatio
-!       sspH is really H+ until the final averaging
-        if (tai_sspH .gt. 0.)
-     &    tai_sspH = -alog10(tai_sspH*rntatio)
+        tai_sspH = tai_sspH*rntatio
         tai_ssCO3 = tai_ssCO3*rntatio
         tai_ssOc = tai_ssOc*rntatio
         tai_ssOa = tai_ssOa*rntatio
         tai_sspCO2 = tai_sspCO2*rntatio
+        tai_dfe = tai_dfe*rntatio
+        tai_ddfe = tai_ddfe*rntatio
       endif
 
       return

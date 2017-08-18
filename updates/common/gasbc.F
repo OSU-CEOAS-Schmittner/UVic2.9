@@ -9,15 +9,17 @@
 
       integer ie, is, je, js, i, iem1, isp1, j, jem1, jsp1, k, n
 
-      real sss, sst, xconv, t_in, s_in, dic_in, ta_in, co2_in, pt_in
-      real sit_in, atmpres, pHlo, pHhi, pH, co2star,  dco2star, pCO2
+      real sss, sst, xconv, t_in, s_in, dic_in, ta_in, co2_in
+      real atmpres, pH, co2star,  dco2star, pCO2
       real dpco2, CO3, Omega_c, Omega_a, scco2, piston_vel, avgflxc
       real calday, f, sco2, o2sat, o2sato, o2surf, piston_o2, cfc11ccn
       real cfc12ccn, wt, sccfc, piston_cfc, sol_cfc, cfcsat, ao, tarea
       real tdc14ccn, h_r, d, f1, f2, f3, f4, f5, area, C2K, tmp, zero
-      real depth, hplus
+      real depth
+      real ak, aaqg, adicg, r13a, r13dic, batmc13, bdic13
 
       include "size.h"
+      include "npzd.h"
       include "param.h"
       include "pconst.h"
       include "stdunits.h"
@@ -43,6 +45,12 @@
       include "solve.h"
 # if defined O_mtlm
       include "mtlm.h"
+c#  if defined O_mtlm_carbon_13
+c      include "mtlmc13.h"
+c#  endif
+c#  if defined O_mtlm_carbon_14
+c      include "mtlmc14.h"
+c#  endif
 # endif
 # if defined O_save_carbon_carbonate_chem
       include "diaga.h"
@@ -61,14 +69,24 @@
 !     xconv is constant to convert piston_vel from cm/hr -> cm/s
 !     here it is 100.*a*xconv (100 => m to cm, a=0.337, xconv=1/3.6e+05)
       xconv = 33.7/3.6e+05
+      xconv = xconv*0.75
       C2K = 273.15
 # if defined O_carbon
-      pHlo = 6.
-      pHhi = 10.
-      sit_in = 7.6875e-03 !mol/m^3
-      pt_in = 0.5125e-3   !mol/m^3
       atmpres = 1.0       !atm
       zero = 0.
+#  if defined O_carbon_13
+!     fractionation factors from Zhang et al. 1995 Geochi.        
+!     Cosmochi. Acta
+      ak = 0.99915 ! kinetic fractionation 
+      aaqg = 0.998764           ! aquatic - gas fractionation
+
+#   if defined O_carbon_13_coupled
+      r13a = c13ccn/(co2ccn-c13ccn)
+#   else
+      r13a = (dc13ccn*0.001 + 1.)*rc13std
+#   endif
+      batmc13 = ak*aaqg*r13a
+#  endif
 # endif
 # if defined O_mom
 #  if !defined O_constant_flux_reference || defined O_cfcs_data || defined O_cfcs_data_transient
@@ -83,12 +101,20 @@
 !-----------------------------------------------------------------------
       if (issdic .ne. 0)
      &  call areaavg (sbc(1,1,issdic), dmsk, gaost(idic))
+      if (issdic13 .ne. 0)
+     &  call areaavg (sbc(1,1,issdic13), dmsk, gaost(idic13))
       if (issalk .ne. 0)
      &  call areaavg (sbc(1,1,issalk), dmsk, gaost(ialk))
       if (isso2 .ne. 0)
      &  call areaavg (sbc(1,1,isso2), dmsk, gaost(io2))
       if (isspo4 .ne. 0)
      &  call areaavg (sbc(1,1,isspo4), dmsk, gaost(ipo4))
+      if (issdop .ne. 0)
+     &  call areaavg (sbc(1,1,issdop), dmsk, gaost(idop))
+#   if defined O_npzd_iron
+      if (issdfe .ne. 0)
+     &  call areaavg (sbc(1,1,issdfe), dmsk, gaost(idfe))
+#   endif
 #   if !defined O_npzd_no_vflux
       if (issphyt .ne. 0)
      &  call areaavg (sbc(1,1,issphyt), dmsk, gaost(iphyt))
@@ -96,12 +122,44 @@
      &  call areaavg (sbc(1,1,isszoop), dmsk, gaost(izoop))
       if (issdetr .ne. 0)
      &  call areaavg (sbc(1,1,issdetr), dmsk, gaost(idetr))
+#   if defined O_npzd_iron
+      if (issdetrfe .ne. 0)
+     &  call areaavg (sbc(1,1,issdetrfe), dmsk, gaost(idetrfe))
+#   endif
 #   endif
       if (issno3 .ne. 0)
      &  call areaavg (sbc(1,1,issno3), dmsk, gaost(ino3))
+      if (issdon .ne. 0)
+     &  call areaavg (sbc(1,1,issdon), dmsk, gaost(idon))
 #   if !defined O_npzd_no_vflux
       if (issdiaz .ne. 0)
      &  call areaavg (sbc(1,1,issdiaz), dmsk, gaost(idiaz))
+#   endif
+      if (issdin15 .ne. 0) 
+     &  call areaavg (sbc(1,1,issdin15), dmsk, gaost(idin15))
+      if (issdon15 .ne. 0)
+     &  call areaavg (sbc(1,1,issdon15), dmsk, gaost(idon15))
+#   if !defined O_npzd_no_vflux
+      if (issphytn15 .ne. 0)
+     &  call areaavg (sbc(1,1,issphytn15), dmsk, gaost(iphytn15))
+      if (isszoopn15 .ne. 0)
+     &  call areaavg (sbc(1,1,isszoopn15), dmsk, gaost(izoopn15))
+      if (issdetrn15 .ne. 0)
+     &  call areaavg (sbc(1,1,issdetrn15), dmsk, gaost(idetrn15))
+      if (issdiazn15 .ne. 0)
+     &  call areaavg (sbc(1,1,issdiazn15), dmsk, gaost(idiazn15))
+#   endif
+      if (issdoc13 .ne. 0)
+     &  call areaavg (sbc(1,1,issdoc13), dmsk, gaost(idoc13))
+#   if !defined O_npzd_no_vflux
+      if (issphytc13 .ne. 0)
+     &  call areaavg (sbc(1,1,issphytc13), dmsk, gaost(iphytc13))
+      if (isszoopc13 .ne. 0)
+     &  call areaavg (sbc(1,1,isszoopc13), dmsk, gaost(izoopc13))
+      if (issdetrc13 .ne. 0)
+     &  call areaavg (sbc(1,1,issdetrc13), dmsk, gaost(idetrc13))
+      if (issdiazc13 .ne. 0)
+     &  call areaavg (sbc(1,1,issdiazc13), dmsk, gaost(idiazc13))
 #   endif
       if (issc14 .ne. 0)
      &  call areaavg (sbc(1,1,issc14), dmsk, gaost(ic14))
@@ -141,6 +199,9 @@
 # endif
 # if defined O_carbon
       sbc(:,:,idicflx) = 0.
+#  if defined O_carbon_13
+      sbc(:,:,idic13flx) = 0.
+#  endif
 #  if defined O_carbon_14
       sbc(:,:,ic14flx) = 0.
 #  endif
@@ -153,15 +214,45 @@
 # endif
 # if defined O_npzd
       sbc(:,:,ipo4flx) = 0.
+      sbc(:,:,idopflx) = 0.
 #  if !defined O_npzd_no_vflux
       sbc(:,:,iphytflx) = 0.
       sbc(:,:,izoopflx) = 0.
       sbc(:,:,idetrflx) = 0.
 #  endif
+#  if defined O_npzd_iron
+      sbc(:,:,idfeflx) = 0. 
+      sbc(:,:,idfeadep) = 0. 
+#   if !defined O_npzd_no_vflux
+      sbc(:,:,idetrfeflx) = 0.
+#   endif
+#  endif
 #  if defined O_npzd_nitrogen
       sbc(:,:,ino3flx) = 0.
+      sbc(:,:,idonflx) = 0.
 #   if !defined O_npzd_no_vflux
       sbc(:,:,idiazflx) = 0.
+#   endif
+#   if defined O_npzd_nitrogen_15
+      sbc(:,:,idin15flx) = 0.
+      sbc(:,:,idon15flx) = 0.
+#    if !defined O_npzd_no_vflux
+      sbc(:,:,iphytn15flx) = 0.
+      sbc(:,:,izoopn15flx) = 0.
+      sbc(:,:,idetrn15flx) = 0.
+      sbc(:,:,idiazn15flx) = 0.
+#    endif
+#   endif
+#   if defined O_carbon_13
+      sbc(:,:,idoc13flx) = 0.
+#    if !defined O_npzd_no_vflux
+      sbc(:,:,iphytc13flx) = 0.
+      sbc(:,:,izoopc13flx) = 0.
+      sbc(:,:,idetrc13flx) = 0.
+#     if defined O_npzd_nitrogen
+      sbc(:,:,idiazc13flx) = 0.
+#     endif
+#    endif
 #   endif
 #  endif
 # endif
@@ -343,21 +434,11 @@
 #   else
             co2_in = co2ccn
 #   endif
-#   if defined O_carbon_carbonate_approx
-!           use previous value of hplus for next guess
-            hplus = hSWS(i,j)
-#   endif
-            call co2calc_SWS (t_in, s_in, dic_in, ta_in, co2_in, pt_in
-     &,                       sit_in, atmpres, zero, pHlo, pHhi, pH
-     &,                       co2star, dco2star, pCO2, hplus, CO3
-     &,                       Omega_c, Omega_a)
-#   if defined O_carbon_carbonate_approx
-!           save hplus for next guess
-            hSWS(i,j) = hplus
-#   endif
+            call co2calc_SWS (t_in, s_in, dic_in, ta_in, co2_in, atmpres
+     &,                       zero, pH, co2star, dco2star, pCO2, dpco2
+     &,                       CO3, Omega_c, Omega_a)
 #   if defined O_save_carbon_carbonate_chem
-!           sspH is really H+ until the final averaging
-            sspH(i,j) = hplus
+            sspH(i,j) = pH
             ssCO3(i,j) = CO3
             ssOc(i,j) = Omega_c
             ssOa(i,j) = Omega_a
@@ -373,6 +454,20 @@
 #   if defined O_carbon_co2_2d
 !           convert from umol cm-2 s-1 => g cm-2 s-1
             flux(i,j,ico2) = sbc(i,j,idicflx)*12.e-6 + flux(i,j,ico2)
+#   endif
+#   if defined O_carbon_13
+            adicg = 1.01051 - 1.05e-4*sst ! DIC-gas fractionation
+
+            r13dic = sbc(i,j,issdic13)
+     &               / (sbc(i,j,issdic)-sbc(i,j,issdic13))
+            r13dic = min(r13dic, 2.*rc13std)
+            r13dic = max(r13dic, 0.5*rc13std)
+            bdic13 = ak*aaqg*r13dic/adicg
+
+            sbc(i,j,idic13flx) = piston_vel
+     &           *((batmc13/(1+batmc13))*(dco2star + co2star)
+     &           - (bdic13/(1+bdic13))*co2star)
+c            sbc(i,j,idic13flx) = sbc(i,j,idicflx)*rc13std/(1+rc13std)
 #   endif
 #   if defined O_carbon_14
 
@@ -392,7 +487,7 @@
 #    endif
 
             sbc(i,j,ic14flx) = piston_vel*((dco2star + co2star)
-     &                         *(1 + dc14ccn*0.001)*rstd
+     &                         *(1 + dc14ccn*0.001)*rc14std
      &                       - co2star*sbc(i,j,issc14)/sbc(i,j,issdic))
 #   endif
 #  endif
@@ -488,11 +583,26 @@
 !           convert from kg m-2 s-1 => umol cm-2 s-1
             sbc(i,j,idicflx) = (sbc(i,j,inpp) - sbc(i,j,isr)
      &                       - sbc(i,j,iburn))*0.1/12.e-6
+#   if defined O_carbon_13
+#    if defined O_mtlm_carbon_13
+            sbc(i,j,idic13flx) = (sbc(i,j,inpp13) - sbc(i,j,isr13)
+     &                       - sbc(i,j,iburn13))*0.1/12.e-6
+#    else
+            sbc(i,j,idic13flx) = (sbc(i,j,inpp) - sbc(i,j,isr)
+     &                       - sbc(i,j,iburn))*0.1/12.e-6
+     &                         *rc13std/(1+rc13std)
+#    endif
+#   endif
 #  endif
 #  if defined O_carbon_14
-!           use the carbon flux scaled by rstd for c14
+#   if defined O_mtlm_carbon_14
+            sbc(i,j,ic14flx) = (sbc(i,j,inpp14) - sbc(i,j,isr14)
+     &                       - sbc(i,j,iburn14))*0.1/12.e-6
+#   else
+!           use the carbon flux scaled by rc14std for c14
             sbc(i,j,ic14flx) = (sbc(i,j,inpp) - sbc(i,j,isr)
-     &                       - sbc(i,j,iburn))*rstd*0.1/12.e-6
+     &                       - sbc(i,j,iburn))*rc14std*0.1/12.e-6
+#   endif
 #  endif
 # endif
           endif
@@ -508,6 +618,9 @@
 !     set boundary conditions for carbon
 !-----------------------------------------------------------------------
       call setbcx (sbc(1,1,idicflx), imt, jmt)
+#  if defined O_carbon_13
+      call setbcx (sbc(1,1,idic13flx), imt, jmt)
+#  endif
 #  if defined O_carbon_co2_2d
 #   if !defined O_co2ccn_user && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
       flux(:,:,ico2) = flux(:,:,ico2) - co2emit*co2dist(:,:,2)
@@ -518,6 +631,15 @@
       call areaavg (sbc(1,1,idicflx), dmsk, avgflxc)
 #   if !defined O_co2ccn_user && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
       co2ccn = co2ccn + (co2emit - avgflxc*12.e-6)*segtim*daylen*gtoppm
+#   endif
+#   if defined O_carbon_13
+      dmsk(:,:) = 1.
+      call areaavg (sbc(1,1,idic13flx), dmsk, avgflxc)
+#    if defined O_carbon_13_coupled
+      c13ccn = c13ccn + (co2emit - avgflxc*12.e-6)*segtim*daylen*gtoppm
+!     calculate dc13ccn from c13ccn and co2ccn
+      dc13ccn = 1000.*(c13ccn/(co2ccn-c13ccn)/rc13std - 1.)
+#    endif
 #   endif
 #  endif
       carbemit = carbemit + co2emit*atmsa*segtim*daylen*1e-15
@@ -531,7 +653,7 @@
 #   if defined O_carbon_14_coupled
       c14ccn = c14ccn + (c14prod - avgflxc)*12.e-6*segtim*daylen*gtoppm
 !     calculate dc14ccn from c14ccn and co2ccn
-      dc14ccn = 1000.*(c14ccn/co2ccn/rstd - 1.)
+      dc14ccn = 1000.*(c14ccn/co2ccn/rc14std - 1.)
 #   endif
 
 !-----------------------------------------------------------------------

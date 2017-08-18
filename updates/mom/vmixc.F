@@ -16,9 +16,9 @@
       implicit none
 
       integer i, k, j, ip, kr, jq, js, je, istrt, is, iend, ie, jstrt
-      integer jend, jrow, joff, ks
+      integer jend, jrow, joff, ks, k1
 
-      real zn2, hab, zkappa
+      real zn2, hab, zkappa, qk1, qo1, edr, q2
 
       include "size.h"
       include "param.h"
@@ -68,7 +68,20 @@
       do j=jstrt,jend
         jrow = j + joff
         do i=istrt,iend
-          do k=1,km
+          if (abs(tlat(i,jrow)) .lt. 30.) then 
+	    qk1 = 0.33
+	    qo1 = 0.33
+	  else
+	    qk1 = 1.
+	    qo1 = 1.
+	  endif
+          if (abs(tlat(i,jrow)) .lt. 70.) then 
+            q2 = 0.33
+	  else
+            q2 = 1.
+	  endif
+c          q2=0.5
+          do k=1,kmt(i,jrow)-1
             visc_cbu(i,k,j) = kappa_m
 #  if defined O_tidal_kv && defined O_isopycmix
 
@@ -79,26 +92,38 @@
 !           drodzb is defined in isopyc.h
 
 !           ZN2 is defined on T-cell bottom (zw pt)
-            ZN2 = -gravrho0r*drodzb(i,k,j,0)
+            ZN2 = max(-gravrho0r*drodzb(i,k,j,0),1e-8)
 
-!           height above bottom
-            if (kmt(i,jrow) .ne. 0.0) then
-              hab = zw(k) - zw(kmt(i,jrow) - 1)
-            else
-              hab = 0.0
-            endif
-            if (Zn2 .ne. 0.0) then
-              zkappa = 0.33*ogamma*edr(i,jrow)*exp(hab*zetar)/
-     &                 (ZN2*(1-exp(-zetar*zw(kmt(i,jrow)))))
-            else
-              zkappa = 0.0
-            endif
+!           subgrid-scale scheme: sum over all levels below k
+            edr = 0.
+            do k1=k+1,kmt(i,jrow)
+!              height above bottom
+               hab = zw(k) - zw(k1)
+               edr = edr + (q2*(edrm2(i,k1,jrow)+edrs2(i,k1,jrow))
+     &                   + qk1*edrk1(i,k1,jrow) + qo1*edro1(i,k1,jrow))
+     &                   *exp(hab*zetar)/(1-exp(-zetar*zw(k1)))
+            enddo
+            zkappa = ogamma*edr/ZN2
 
+! Andreas: high mixing in Southern Ocean below 500 m as in observations
+            zkappa = max(zkappa,tanh((zw(k)-50000.)/10000)*
+     &                          (1-tanh((tlat(i,j+joff)+40)/8))/2)
+c            zkappa = max(zkappa,tanh((zw(k)-50000.)/10000)*
+c     &                          (1-(1-tanh((tlat(i,j+joff)-50)/8))/2))
+            
 !           limit diff_cbt
 #   if defined O_bryan_lewis_vertical
-            diff_cbt(i,k,j) = max(Ahv(k), min(10., zkappa + Ahv(k)))
+            diff_cbt(i,k,j) = max(Ahv(k), min(100., zkappa + Ahv(k)))
 #   else
-            diff_cbt(i,k,j) = max(kappa_h, min(10., zkappa + kappa_h))
+c            diff_cbt(i,k,j) = max(kappa_h, min(100., zkappa + kappa_h))
+            if ((k .gt. 2).and.(tlat(i,j).ge.-25)
+     &           .and.(tlat(i,j).le.25)) then
+               diff_cbt(i,k,j) = max(kappa_h/2.
+     &,             min(100., zkappa + kappa_h/2.))
+            else
+               diff_cbt(i,k,j) = max(kappa_h, min(100.
+     &,             zkappa + kappa_h))
+            endif
 #   endif
 #  elif defined O_bryan_lewis_vertical
             diff_cbt(i,k,j) = Ahv(k)
@@ -141,9 +166,8 @@
 
       call ppmix (joff, js, je, istrt, iend)
 # endif
-# if defined O_isopycmix || defined O_redi_diffusion
+# if defined O_save_kv
 
-#  if defined O_save_kv
 !-----------------------------------------------------------------------
 !     accumulate time average diapycnal (without K33) diffusivity
 !-----------------------------------------------------------------------
@@ -159,8 +183,9 @@
           enddo
         enddo
       endif
+# endif
+# if defined O_isopycmix || defined O_redi_diffusion
 
-#  endif
 !-----------------------------------------------------------------------
 !     Add K33 component to vertical diffusion coefficient
 !-----------------------------------------------------------------------

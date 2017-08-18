@@ -280,7 +280,7 @@
 !     osege  =  true on the last time step of an ocean segment in mom.F
 !               otherwise false.
 
-      character(8) :: rununits
+      character(len=8) :: rununits
       common /switc_c/ rununits
 
       integer nmix, ieoday,ieoweek,ieo2wks
@@ -512,10 +512,9 @@
       common /switc_i/ itestper, nsw, ialarm(maxsw), iinterval(maxsw)
       common /switc_i/ iperiod(maxsw), ilastsw(maxsw)
 
-      logical testts, testperts, cplts, tsicpl, tavgcpl, on, lastts
-      logical nextts
-      common /switc_l/ testts, testperts, cplts, tsicpl, tavgcpl
-      common /switc_l/ on(maxsw), lastts(maxsw), nextts(maxsw)
+      logical testts, testperts, on, lastts, nextts
+      common /switc_l/ testts, testperts, on(maxsw), lastts(maxsw)
+      common /switc_l/ nextts(maxsw)
 
       real testint, testper
       common /switc_r/ testint, testper

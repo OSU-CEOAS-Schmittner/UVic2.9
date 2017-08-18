@@ -16,7 +16,7 @@
       integer ie, is, je, js, ntrec, nyear, nmonth, nday, nhour, nmin
       integer nsec
 
-      real time, tmp
+      real avgper, time, tmp
 
       include "size.h"
       include "param.h"
@@ -63,7 +63,38 @@
         tai_cfl2o = 0.
 #  endif
 
-        call sed_tsi_out (fname, avgpertsi, avgtimtsi, stamp, tai_ttrcal
+#  if !defined O_save_time_relyear0
+!       make output time relative to year 1
+        time = time - 1.
+#  endif
+        avgper = tsiper*accel
+        if (avgper .le. 1e-6) avgper = 0.
+#  if defined O_save_time_endper
+        tmp = 0.
+#  elif defined O_save_time_startper
+        tmp = 1.
+#  else
+        tmp = 0.5
+#  endif
+#  if defined O_units_time_years
+#   if defined O_calendar_360_day
+        time = time - tmp*avgper/360.
+#   elif defined O_calendar_gregorian
+        time = time - tmp*avgper/365.25
+#   else
+        time = time - tmp*avgper/365.
+#   endif
+#  else
+#   if defined O_calendar_360_day
+        time = time*360. - tmp*avgper
+#   elif defined O_calendar_gregorian
+        time = time*365.25 - tmp*avgper
+#   else
+        time = time*365. - tmp*avgper
+#   endif
+#  endif
+
+        call sed_tsi_out (fname, avgper, time, stamp, tai_ttrcal
      &,   tai_rain_cal, tai_cal, tai_calmass, tai_calmass_bur
      &,   tai_co3, tai_co3sat, tai_weathflx, tai_rainr, tai_carblith
      &,   tai_cfo2s, tai_cfl2o, ntrec)
@@ -96,11 +127,41 @@
         call def_tavg
         call def_tavg_sed (fname)
 
+#  if !defined O_save_time_relyear0
+!       make output time relative to year 1
+        time = time - 1.
+#  endif
+        avgper = timavgper*accel
+        if (avgper .le. 1e-6) avgper = 0.
+#  if defined O_save_time_endper
+        tmp = 0.
+#  elif defined O_save_time_startper
+        tmp = 1.
+#  else
+        tmp = 0.5
+#  endif
+#  if defined O_units_time_years
+#   if defined O_calendar_360_day
+        time = time - tmp*avgper/360.
+#   elif defined O_calendar_gregorian
+        time = time - tmp*avgper/365.25
+#   else
+        time = time - tmp*avgper/365.
+#   endif
+#  else
+#   if defined O_calendar_360_day
+        time = time*360. - tmp*avgper
+#   elif defined O_calendar_gregorian
+        time = time*365.25 - tmp*avgper
+#   else
+        time = time*365. - tmp*avgper
+#   endif
+#  endif
+
         call sed_tavg_out (fname, is, ie, js, je, imt, jmt, xt, yt, xu
-     &,   yu, dxt, dyt, dxu, dyu, avgpertavg, avgtimtavg, stamp
-     &,   ta_ttrcal, ta_rain_cal, ta_cal, ta_calmass, ta_calmass_bur
-     &,   ta_co3, ta_co3sat, ta_rainr, map_sed, kmt, tlat, tlon, tgarea
-     &,   ntrec)
+     &,   yu, dxt, dyt, dxu, dyu, avgper, time, stamp, ta_ttrcal
+     &,   ta_rain_cal, ta_cal, ta_calmass, ta_calmass_bur, ta_co3
+     &,   ta_co3sat, ta_rainr, map_sed, kmt, tlat, tlon, tgarea, ntrec)
 
         write (*,'(a,i5,a,a,a,a)') '=> Sed time means #'
      &,   ntrec, ' written to ',trim(fname),' on ', stamp

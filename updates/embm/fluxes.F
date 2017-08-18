@@ -195,7 +195,7 @@
             fm = esatm*(tair + C2K)**4
             fg = rhoatm
 !           calculate stomatal resistance
-# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+# if defined O_crop_data ||  defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
             sr = (1.-agric(i,j,2))*veg_rs(iveg(i,j))
      &         + agric(i,j,2)*veg_rs(iagric)
             dalt_v = veg_dalt(i,j)

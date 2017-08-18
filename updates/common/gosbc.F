@@ -43,7 +43,6 @@
 # if defined O_fwa
       include "fwa.h"
       include "cregin.h"
-      include "tmngr.h"
 # endif
 # if defined O_sed && !defined O_sed_uncoupled
       include "sed.h"
@@ -176,13 +175,16 @@
 #  if defined O_carbon
             sbc(i,j,inpp) =  sbc(i,j,inpp)*f1l
             sbc(i,j,isr) =  sbc(i,j,isr)*f1l
-#   if defined O_reproduce_updates_01
-#    if defined O_mtlm_segday
-            sbc(i,j,iburn) =  sbc(i,j,iburn)*f1l/segtim
-#    else
-            sbc(i,j,iburn) =  sbc(i,j,iburn)*f1l
-#    endif
-#   endif
+#  endif
+#  if defined O_mtlm_carbon_13
+            sbc(i,j,inpp13) =  sbc(i,j,inpp13)*f1l
+            sbc(i,j,isr13) =  sbc(i,j,isr13)*f1l
+            sbc(i,j,iburn13) =  sbc(i,j,iburn13)*f1l
+#  endif
+#  if defined O_mtlm_carbon_14
+            sbc(i,j,inpp14) =  sbc(i,j,inpp14)*f1l
+            sbc(i,j,isr14) =  sbc(i,j,isr14)*f1l
+            sbc(i,j,iburn14) =  sbc(i,j,iburn14)*f1l
 #  endif
           else
             sbc(i,j,iro) = sbc(i,j,iro)*f1a
@@ -192,9 +194,16 @@
 #  if defined O_mtlm && defined O_carbon
             sbc(i,j,inpp) = 0.
             sbc(i,j,isr) = 0.
-#   if defined O_reproduce_updates_01
-            sbc(i,j,iburn) = 0.
-#   endif
+#  endif
+#  if defined O_mtlm_carbon_13
+            sbc(i,j,inpp13) = 0.
+            sbc(i,j,isr13) = 0.
+            sbc(i,j,iburn13) = 0.
+#  endif
+#  if defined O_mtlm_carbon_14
+            sbc(i,j,inpp14) = 0.
+            sbc(i,j,isr14) = 0.
+            sbc(i,j,iburn14) = 0.
 #  endif
           endif
         enddo
@@ -206,6 +215,16 @@
 #  if defined O_carbon
       call setbcx (sbc(1,1,inpp), imt, jmt)
       call setbcx (sbc(1,1,isr), imt, jmt)
+#  endif
+#  if defined O_mtlm_carbon_13
+      call setbcx (sbc(1,1,inpp13), imt, jmt)
+      call setbcx (sbc(1,1,isr13), imt, jmt)
+      call setbcx (sbc(1,1,iburn13), imt, jmt)
+#  endif
+#  if defined O_mtlm_carbon_14
+      call setbcx (sbc(1,1,inpp14), imt, jmt)
+      call setbcx (sbc(1,1,isr14), imt, jmt)
+      call setbcx (sbc(1,1,iburn14), imt, jmt)
 #  endif
 # else
       sbc(:,:,iro) = sbc(:,:,iro)*f1a
@@ -246,6 +265,9 @@
           if (kmt(i,j) .ne. 0.) then
 #   if defined O_carbon
             sbc(i,j,idicflx) = sbc(i,j,idicflx) + disch(i,j)*tmp
+#    if defined O_carbon_13
+              sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + dic13ocn*tmp
+#    endif
 #   if defined O_npzd_alk
             sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + disch(i,j)*2.*tmp
 #   endif
@@ -349,6 +371,9 @@
             vflux(i,j) = tmp
 #   if defined O_carbon
             sbc(i,j,idicflx) = sbc(i,j,idicflx) + gaost(idic)*tmp
+#    if defined O_carbon_13
+            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + gaost(idic13)*tmp
+#    endif
 #    if defined O_carbon_14
             sbc(i,j,ic14flx) = sbc(i,j,ic14flx) + gaost(ic14)*tmp
 #    endif
@@ -361,6 +386,7 @@
 #   endif
 #   if defined O_npzd
             sbc(i,j,ipo4flx) = sbc(i,j,ipo4flx) + gaost(ipo4)*tmp
+            sbc(i,j,idopflx) = sbc(i,j,idopflx) + gaost(idop)*tmp
 #    if !defined O_npzd_no_vflux
             sbc(i,j,iphytflx) = sbc(i,j,iphytflx) + gaost(iphyt)*tmp
             sbc(i,j,izoopflx) = sbc(i,j,izoopflx) + gaost(izoop)*tmp
@@ -368,10 +394,34 @@
 #    endif
 #    if defined O_npzd_nitrogen
             sbc(i,j,ino3flx) = sbc(i,j,ino3flx) + gaost(ino3)*tmp
+            sbc(i,j,idonflx) = sbc(i,j,idonflx) + gaost(idon)*tmp
 #     if !defined O_npzd_no_vflux
             sbc(i,j,idiazflx) = sbc(i,j,idiazflx) + gaost(idiaz)*tmp
 #     endif
+#     if defined O_npzd_nitrogen_15
+            sbc(i,j,idin15flx) = sbc(i,j,idin15flx) + gaost(idin15)*tmp
+            sbc(i,j,idon15flx) = sbc(i,j,idon15flx) + gaost(idon15)*tmp
+#      if !defined O_npzd_no_vflux 
+            sbc(i,j,iphytn15flx) = sbc(i,j,iphytn15flx) 
+     &                          + gaost(iphytn15)*tmp
+            sbc(i,j,izoopn15flx) = sbc(i,j,izoopn15flx) 
+     &                          + gaost(izoopn15)*tmp
+            sbc(i,j,idetrn15flx) = sbc(i,j,idetrn15flx) 
+     &                          + gaost(idetrn15)*tmp
+            sbc(i,j,idiazn15flx) = sbc(i,j,idiazn15flx) 
+     &                          + gaost(idiazn15)*tmp
+#      endif
+#     endif
 #    endif
+#    if defined O_npzd_iron
+            sbc(i,j,idfeflx) = sbc(i,j,idfeflx) + gaost(idfe)*tmp
+#     if !defined O_npzd_no_vflux
+          sbc(i,j,idetrfeflx) = sbc(i,j,idetrfeflx) + gaost(idetrfe)*tmp
+#     endif
+#    endif
+#   endif
+#   if defined O_carbon_13
+            sbc(i,j,idoc13flx) = sbc(i,j,idoc13flx) + gaost(idoc13)*tmp
 #   endif
 #   if defined O_cfcs_data || defined O_cfcs_data_transient
             sbc(i,j,icfc11flx) = sbc(i,j,icfc11flx) + gaost(icfc11)*tmp
@@ -382,6 +432,9 @@
       enddo
 #   if defined O_carbon
       call setbcx (sbc(1,1,idicflx), imt, jmt)
+#    if defined O_carbon_13
+      call setbcx (sbc(1,1,idic13flx), imt, jmt)
+#    endif
 #    if defined O_carbon_14
       call setbcx (sbc(1,1,ic14flx), imt, jmt)
 #    endif
@@ -394,15 +447,45 @@
 #   endif
 #   if defined O_npzd
       call setbcx (sbc(1,1,ipo4flx), imt, jmt)
+      call setbcx (sbc(1,1,idopflx), imt, jmt)
 #    if !defined O_npzd_no_vflux
       call setbcx (sbc(1,1,iphytflx), imt, jmt)
       call setbcx (sbc(1,1,izoopflx), imt, jmt)
       call setbcx (sbc(1,1,idetrflx), imt, jmt)
 #    endif
+#    if defined O_npzd_iron
+      call setbcx (sbc(1,1,idfeflx), imt, jmt)
+      call setbcx (sbc(1,1,idfeadep), imt, jmt)
+#     if !defined O_npzd_no_vflux
+      call setbcx (sbc(1,1,idetrfeflx), imt, jmt)
+#     endif
+#    endif
 #    if defined O_npzd_nitrogen
       call setbcx (sbc(1,1,ino3flx), imt, jmt)
+      call setbcx (sbc(1,1,idonflx), imt, jmt)
 #     if !defined O_npzd_no_vflux
       call setbcx (sbc(1,1,idiazflx), imt, jmt)
+#     endif
+#     if defined O_npzd_nitrogen_15
+      call setbcx (sbc(1,1,idin15flx), imt, jmt)
+      call setbcx (sbc(1,1,idon15flx), imt, jmt)
+#      if !defined O_npzd_no_vflux
+      call setbcx (sbc(1,1,iphytn15flx), imt, jmt)
+      call setbcx (sbc(1,1,izoopn15flx), imt, jmt)
+      call setbcx (sbc(1,1,idetrn15flx), imt, jmt)
+      call setbcx (sbc(1,1,idiazn15flx), imt, jmt)
+#      endif
+#     endif
+#     if defined O_carbon_13
+      call setbcx (sbc(1,1,idoc13flx), imt, jmt)
+#      if !defined O_npzd_no_vflux
+      call setbcx (sbc(1,1,iphytc13flx), imt, jmt)
+      call setbcx (sbc(1,1,izoopc13flx), imt, jmt)
+      call setbcx (sbc(1,1,idetrc13flx), imt, jmt)
+#       if defined O_npzd_nitrogen
+      call setbcx (sbc(1,1,idiazc13flx), imt, jmt)
+#       endif
+#      endif
 #     endif
 #    endif
 #   endif

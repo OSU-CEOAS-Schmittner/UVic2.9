@@ -19,18 +19,22 @@
       integer istrt, iend, i, k, j, ip, kr, jq, n, jp, jrow, iou, js
       integer je, limit, joff, is, ie, kmx, m, kb, idiag, index
       integer it(10), iu(10), ib(10), ic(10), nfnpzd, mfnpzd, mxfnpzd
-      integer id_time, id_xt, id_yt, id_zt
+      integer id_time, id_xt, id_yt, id_zt,fe_jlo,fe_m,fe_k,fe_n
 
       logical inqvardef, exists
 
-      real rctheta, declin, gl, impo, expo, npp, time
-      real remi, excr, graz, morp, morpt, morz, temp, swr, dayfrac
-      real phin, dz, prca, dprca, nud, bct, tap, fo2, so2, ai, hi, hs
-      real npp_D, graz_D, morp_D, no3flag, deni, nfix
+      parameter (fe_n = 14)
+
+      real time
       real t_i, t_j, dz_t2r, dz_tr, dz_wtr, dx_t2r, dx_tr, dy_t2r
       real dy_tr, adv_tx, adv_ty, adv_tz, adv_txiso, adv_tyiso
       real adv_tziso, diff_tx, diff_ty, diff_tz, zmax, cont, drho
-      real drhom1, wt, ahbi_cstr, ahbi_csu_dyur, gamma, rrstd, fy, fyz
+      real drhom1, wt, ahbi_cstr, ahbi_csu_dyur, gamma, fy, fyz
+      real felimit
+      real fe_dy, fe_conc, fe_x(fe_n), fe_y(fe_n), bctz, felimit_D
+
+      real expofe, impofe, feorgads, remife, thetamax, deffe, fecol
+      real thetachl, chl, chl_D, feprime, fesed, bfe, sgb
 
       include "size.h"
       include "param.h"
@@ -52,6 +56,7 @@
       include "vmixc.h"
 # if defined O_save_convection || defined O_carbon_14
       include "diaga.h"
+      real rrc14std
 # endif
 # if defined O_ice
 #  if defined O_ice_cpts
@@ -60,9 +65,31 @@
       include "ice.h"
 # endif
 # if defined O_npzd
+      real t_in(km), po4_in(km)
+#  if defined O_npzd_o2
+      real o2_in(km)
+#  endif
+#  if defined O_carbon_13
+      real s_in(km), dic_in(km), alk_in(km), co2_in, dic13_in(km)
+#  endif
+#  if defined O_npzd_nitrogen
+      real no3_in(km), sgb_in(km)
+#   if defined O_npzd_nitrogen_15
+      real din15_in(km)
+#   endif
+#  endif
+#  if defined O_npzd_fe_limitation
+      real felimit_in(km), felimit_D_in(km)
+#  endif
+      real expo, tnpzd(km,ntnpzd)
 #  if defined O_embm
       include "atm.h"
+#   if defined O_carbon_13
+      include "cembm.h"
+#   endif
 #  endif
+# endif
+# if defined O_npzd || O_carbon_14
       include "npzd.h"
 # endif
 # if defined O_carbon_fnpzd
@@ -75,10 +102,8 @@
 # if defined O_plume
       real  work(imt,km,jsmw:jemw)
 # endif
-# if defined O_npzd
-      real snpzd(ntnpzd), tnpzd(ntnpzd)
-# endif
 # if defined O_npzd || defined O_carbon_14
+      real ai, hi, hs, rctheta, dayfrac, swr, declin
       real src(imt,km,jsmw:jemw,nsrc)
 # endif
 # if defined O_carbon_fnpzd
@@ -184,7 +209,7 @@
 !     build coefficients to minimize advection and diffusion computation
 !-----------------------------------------------------------------------
 
-#if defined O_fourth_order_tracer_advection || defined O_fct || defined O_quicker || defined O_pressure_gradient_average || defined O_biharmonic || defined O_isopycmix
+# if defined O_fourth_order_tracer_advection || defined O_fct || defined O_quicker || defined O_pressure_gradient_average || defined O_biharmonic || defined O_isopycmix
       limit = min(je+1+joff,jmt) - joff
       do j=js,limit
 # else
@@ -254,38 +279,30 @@
       enddo
 # endif
 # if defined O_npzd
-
 !-----------------------------------------------------------------------
-!     calculation of biological interactions
+!     ocean biogeochemistry and isotopes
 !-----------------------------------------------------------------------
-
       declin = sin((mod(relyr,1.) - 0.22)*2.*pi)*0.4   ! declination
 
-      do k=1,km
-        twodt(k) = c2dtts*dtxcel(k)
-        nbio(k) = twodt(k)/dtnpzd
-        dtbio(k) = twodt(k)/nbio(k)
-        rdtts(k) = 1./twodt(k)
-        rnbio(k) = 1./nbio(k)
-      enddo
-      tap = 2.*alpha*par
+      nbio = c2dtts/dtnpzd 
+      dtbio = c2dtts/nbio
+      rdtts = 1./c2dtts
+      rnbio = 1./nbio
+
 
       do j=js,je
         jrow = j + joff
-
         do i=is,ie
-
           if (kmt(i,jrow) .gt. 0) then
-
 #  if defined O_ice
 #   if defined O_ice_cpts
             ai = 0.
             hi = 0.
             hs = 0.
             do n=1,ncat
-              ai =  ai + A(i,jrow,2,n)
-              hi =  hi + heff(i,jrow,2,n)
-              hs =  hs + hseff(i,jrow,2,n)
+               ai =  ai + A(i,jrow,2,n)
+               hi =  hi + heff(i,jrow,2,n)
+               hs =  hs + hseff(i,jrow,2,n)
             enddo
 #   else
             ai = aice(i,jrow,2)
@@ -297,228 +314,204 @@
             hi = 0.
             hs = 0.
 #  endif
-!           calculate day fraction and incoming solar
-!           angle of incidence = lat - declin, refraction index = 1.33
+!     calculate day fraction and incoming solar
+!     angle of incidence = lat - declin, refraction index = 1.33
             rctheta = max(-1.5, min(1.5, tlat(i,jrow)/radian - declin))
             rctheta = kw/sqrt(1. - (1. - cos(rctheta)**2.)/1.33**2.)
             dayfrac = min( 1., -tan(tlat(i,jrow)/radian)*tan(declin))
             dayfrac = max(1e-12, acos(max(-1., dayfrac))/pi)
 #  if defined O_embm
-            swr = dnswr(i,jrow)*1e-3*(1. + ai*(exp(-ki*(hi + hs)) - 1.))
+            swr = tap*dnswr(i,jrow)*1e-3*(1. + ai*(exp(-ki*(hi + hs))
+     &                                          - 1.))
 #  else
-            swr = 200.
+            swr = tap*200.
 #  endif
-            expo = 0.0
-            impo = 0.0
-            phin = 0.0 ! integrated phytoplankton
-            prca = 0.0 ! integrated production of calcite
 
-            kmx = min(kmt(i,jrow), kpzd)
-            do k=1,kmx
-
-!-----------------------------------------------------------------------
-!             limit tracers to positive values
-!-----------------------------------------------------------------------
-
-              tnpzd(1) = max(t(i,k,j,ipo4,taum1), trcmin)
-              tnpzd(2) = max(t(i,k,j,iphyt,taum1), trcmin)
-              tnpzd(3) = max(t(i,k,j,izoop,taum1), trcmin)
-              tnpzd(4) = max(t(i,k,j,idetr,taum1), trcmin)
+!        set prognostic variables
+            tnpzd(:,1) = t(i,:,j,ipo4,taum1)
+            tnpzd(:,2) = t(i,:,j,idop,taum1)
+            tnpzd(:,3) = t(i,:,j,iphyt,taum1)
+            tnpzd(:,4) = t(i,:,j,izoop,taum1)
+            tnpzd(:,5) = t(i,:,j,idetr,taum1)
 #  if defined O_npzd_nitrogen
-              tnpzd(5) = max(t(i,k,j,ino3,taum1), trcmin)
-              tnpzd(6) = max(t(i,k,j,idiaz,taum1), trcmin)
-#  endif
-
-              swr = swr*exp(-kc*phin)
-              phin = phin + tnpzd(2)*dzt(k)
-              gl = tap*swr*exp(ztt(k)*rctheta)
-              impo = expo*dztr(k)
-              bct = bbio**(cbio*t(i,k,j,itemp,taum1))
-#  if defined O_npzd_o2
-!             decrease remineralisation rate in oxygen minimum zone
-              nud = nud0*(0.65+0.35*tanh(t(i,k,j,io2,taum1)*1000.-6.))
-#  else
-              nud = nud0
-#  endif
-
-!-----------------------------------------------------------------------
-!             call the npzd model
-!-----------------------------------------------------------------------
-
-              call npzd_src (tnpzd, nbio(k), dtbio(k), gl, bct, impo
-     &,                      dzt(k), dayfrac, wd(k), rkwz(k), nud
-     &,                      snpzd, expo, graz, morp, morz
-#  if defined O_save_npzd
-     &,                      npp, morpt, remi, excr
-#   if defined O_npzd_nitrogen
-     &,                      npp_D, graz_D, morp_D, nfix
+            tnpzd(:,6) = t(i,:,j,idic,taum1)
+            tnpzd(:,7) = t(i,:,j,ino3,taum1)
+            tnpzd(:,8) = t(i,:,j,idon,taum1)
+            tnpzd(:,9) = t(i,:,j,idiaz,taum1)
+#   if defined O_npzd_nitrogen_15
+            tnpzd(:,10) = t(i,:,j,idin15,taum1)
+            tnpzd(:,11) = t(i,:,j,idon15,taum1)
+            tnpzd(:,12) = t(i,:,j,iphytn15,taum1)
+            tnpzd(:,13) = t(i,:,j,izoopn15,taum1)
+            tnpzd(:,14) = t(i,:,j,idetrn15,taum1)
+            tnpzd(:,15) = t(i,:,j,idiazn15,taum1)
 #   endif
 #  endif
-     &                      )
-
-              snpzd(1:4) = snpzd(1:4)*rdtts(k)
-#  if defined O_npzd_nitrogen
-              snpzd(5:6) = snpzd(5:6)*rdtts(k)
+#  if defined O_npzd_iron
+            tnpzd(:,22) = t(i,:,j,idfe,taum1)
+            tnpzd(:,23) = t(i,:,j,idetrfe,taum1)
 #  endif
-              expo = expo*rnbio(k)
-#  if defined O_save_npzd
-              rexpo(i,k,j) = expo
-              rgraz(i,k,j) = graz*rnbio(k)
-              rmorp(i,k,j) = morp*rnbio(k)
-              rmorz(i,k,j) = morz*rnbio(k)
-              rnpp(i,k,j) = npp*rnbio(k)
-              rmorpt(i,k,j) = morpt*rnbio(k)
-              rremi(i,k,j) = remi*rnbio(k)
-              rexcr(i,k,j) = excr*rnbio(k)
+
+#  if defined O_carbon_13
+            tnpzd(:,16) = t(i,:,j,idic13,taum1)
+            tnpzd(:,17) = t(i,:,j,idoc13,taum1)
+            tnpzd(:,18) = t(i,:,j,iphytc13,taum1)
+            tnpzd(:,19) = t(i,:,j,izoopc13,taum1)
+            tnpzd(:,20) = t(i,:,j,idetrc13,taum1)
 #   if defined O_npzd_nitrogen
-              rnpp_D(i,k,j) = npp_D*rnbio(k)
-              rgraz_D(i,k,j) = graz_D*rnbio(k)
-              rmorp_D(i,k,j) = morp_D*rnbio(k)
-              rnfix(i,k,j) = nfix*rnbio(k)
+            tnpzd(:,21) = t(i,:,j,idiazc13,taum1)
 #   endif
 #  endif
-!-----------------------------------------------------------------------
-!             calculate detritus at the bottom and remineralize
-!-----------------------------------------------------------------------
+!        set other input variables
+            t_in(:) = t(i,:,j,itemp,taum1) !degree Celsius
+            po4_in(:) = t(i,:,j,ipo4,taum1)
+            o2_in(:) = t(i,:,j,io2,taum1)*1000. ! uM
+#  if defined O_carbon_13
+            s_in(:) = 1.e3*t(i,:,j,isalt,taum1) + 35.0
+            dic_in(:) = t(i,:,j,idic,taum1) !mol/m^3
+            alk_in(:)  = t(i,:,j,ialk,taum1) !eq/m^3
+#   if defined O_carbon_co2_2d
+            co2_in = at(i,j,2,ico2)
+#   else
+            co2_in = co2ccn
+#   endif
+            dic13_in(:) = tnpzd(:,16) !mol/m^3
+#  endif
+#  if defined O_npzd_nitrogen
+            no3_in(:) = tnpzd(:,7)
+#   if defined O_npzd_nitrogen_15
+            din15_in(:) = tnpzd(:,10)
+#   endif
+            sgb_in(:) = sg_bathy(i,j,:)
 
-              if (k .eq. kmt(i,jrow)) then
+#  endif
+#  if defined O_npzd_fe_limitation
+            do k=1,kmt(i,jrow)
+               call fe_limit(i,j,k,felimit_in(k),felimit_D_in(k))
+            enddo
+#  endif
+!  end input
+            call mobi (kmt(i,jrow), c2dtts, rctheta, dayfrac, swr, tnpzd
+     &,                t_in, po4_in
+# if defined O_npzd_o2
+     &,                o2_in
+# endif
+# if defined O_carbon_13
+     &,                s_in, dic_in, alk_in, co2_in, dic13_in
+# endif
+# if defined O_npzd_nitrogen
+     &,                no3_in, sgb_in
+#  if defined O_npzd_nitrogen_15
+     &,                din15_in
+#  endif
+# endif
+#  if defined O_npzd_fe_limitation
+     &,                felimit_in, felimit_D_in
+# endif
+# if defined O_sed
+     &,                sedcorgflx, sedcalflx)
+# endif
+     &,                src(i,:,j,:))
+
+
+#  if defined O_npzd_iron
+!Add Fe from dust:
+                src(i,1,j,isdfe) = src(i,1,j,isdfe) +    ! comes in mol/m2/s gets converted to mmol/m3/s
+     &          sbc(i,j,idfeadep)*1000./(dzt(1)/100.)  !dzt is in cm
+!Add hydrothermal Fe:
+               do k=1,kmt(i,j)
+                src(i,k,j,isdfe) = src(i,k,j,isdfe) +
+     &          fe_hydr(i,j,k)
+               enddo
+#  endif
+
+
 #  if defined O_sed
-                if (addflxo .and. eots)
-     &            sbc(i,jrow,irorg) = sbc(i,jrow,irorg)
-     &                              + expo*redctn*twodt(1)*dzt(k)
-#  endif
-#  if defined O_save_npzd
-                rremi(i,k,j) = rremi(i,k,j) + expo
-#  endif
-                snpzd(1) = snpzd(1) + redptn*expo
-#  if defined O_npzd_nitrogen
-                snpzd(5) = snpzd(5) + expo
-#  endif
-              endif
-
-!-----------------------------------------------------------------------
-!             set source terms
-!-----------------------------------------------------------------------
-
-              src(i,k,j,ispo4) = snpzd(1)
-              src(i,k,j,isphyt) = snpzd(2)
-              src(i,k,j,iszoop) = snpzd(3)
-              src(i,k,j,isdetr) = snpzd(4)
-#  if defined O_npzd_nitrogen
-              src(i,k,j,isno3) = snpzd(5)
-              src(i,k,j,isdiaz) = snpzd(6)
-#  endif
-!             production of calcite
-              dprca = (morp+morz+graz*(1.-gamma1))*capr*redctn*rnbio(k)
-              prca = prca + dprca*dzt(k)
-#  if defined O_carbon
-              src(i,k,j,isdic) = (snpzd(1)*redctp - dprca)
-#  endif
-#  if defined O_npzd_alk
-              src(i,k,j,isalk) = (-snpzd(1)*redntp*1.e-3 - 2.*dprca)
+            if (addflxo .and. eots) then
+               sbc(i,jrow,irorg) = sbc(i,jrow,irorg) + sedcorgflx
+               sbc(i,jrow,ircal) = sbc(i,jrow,ircal) + sedcalflx
+            endif
 #  endif
 #  if defined O_time_averages && defined O_save_npzd
 
 !-----------------------------------------------------------------------
 !             accumulate time averages
 !-----------------------------------------------------------------------
-
-              if (timavgperts .and. .not. euler2) then
-                ta_rnpp(i,k,jrow) = ta_rnpp(i,k,jrow) + rnpp(i,k,j)
-                ta_rgraz(i,k,jrow) = ta_rgraz(i,k,jrow) + rgraz(i,k,j)
-                ta_rmorp(i,k,jrow) = ta_rmorp(i,k,jrow) + rmorp(i,k,j)
-                ta_rmorpt(i,k,jrow)= ta_rmorpt(i,k,jrow) + rmorpt(i,k,j)
-                ta_rmorz(i,k,jrow) = ta_rmorz(i,k,jrow) + rmorz(i,k,j)
-                ta_rexcr(i,k,jrow) = ta_rexcr(i,k,jrow) + rexcr(i,k,j)
-#   if defined O_npzd_nitrogen
-                ta_rnpp_D(i,k,jrow) = ta_rnpp_D(i,k,jrow)
-     &                              + rnpp_D(i,k,j)
-                ta_rgraz_D(i,k,jrow) = ta_rgraz_D(i,k,jrow)
-     &                               + rgraz_D(i,k,j)
-                ta_rmorp_D(i,k,jrow) = ta_rmorp_D(i,k,jrow)
-     &                               + rmorp_D(i,k,j)
-                ta_rnfix(i,k,jrow) = ta_rnfix(i,k,jrow) + rnfix(i,k,j)
-#   endif
-              endif
-#  endif
-!             calculate total export to get total import for next layer
-              expo = expo*dzt(k)
-
-            enddo
-
-#  if defined O_npzd_o2
-            kmx = kmt(i,jrow)
-            do k=1,kmx
-!             limit oxygen consumption below concentrations of
-!             5umol/kg as recommended in OCMIP
-              fo2 = 0.5*tanh(t(i,k,j,io2,taum1)*1000. - 5.)
-!             sink of oxygen
-              so2 = src(i,k,j,ispo4)*redotp
-              src(i,k,j,iso2) = -so2*(0.5 + fo2)
-#   if defined O_npzd_nitrogen
-!             add denitrification as source term for NO3
-              no3flag = 0.5+sign(0.5,t(i,k,j,ino3,taum1)-trcmin)
-!             800 = 0.8*1000 = (elec/mol O2)/(elec/mol NO3)*(mmol/mol)
-              deni = 800.*no3flag*so2*(0.5 - fo2)
-              src(i,k,j,isno3) = src(i,k,j,isno3) - deni
-#    if defined O_save_npzd
-              rdeni(i,k,jrow) = deni
-#    endif
-#   endif
-            enddo
-#  endif
-
-!-----------------------------------------------------------------------
-!           remineralize calcite
-!-----------------------------------------------------------------------
-            kmx = kmt(i,jrow)
-            do k=1,kmx-1
-#  if defined O_carbon
-              src(i,k,j,isdic) = src(i,k,j,isdic) + prca*rcak(k)
-#  endif
-#  if defined O_npzd_alk
-              src(i,k,j,isalk) = src(i,k,j,isalk) + 2.*prca*rcak(k)
-#  endif
-            enddo
-#  if defined O_sed
-            if (addflxo .and. eots)
-     &        sbc(i,jrow,ircal) = sbc(i,jrow,ircal) + (prca*rcab(kmx)
-     &                          - prca*rcak(kmx))*twodt(1)*dzt(kmx)
-#  endif
-#  if defined O_carbon
-            src(i,kmx,j,isdic) = src(i,kmx,j,isdic) + prca*rcab(kmx)
-#  endif
-#  if defined O_npzd_alk
-            src(i,kmx,j,isalk) = src(i,kmx,j,isalk) + 2.*prca*rcab(kmx)
-#  endif
-#  if defined O_time_averages && defined O_save_npzd
-
-!-----------------------------------------------------------------------
-!           accumulate time averages for full depth variables
-!-----------------------------------------------------------------------
             if (timavgperts .and. .not. euler2) then
-              kmx = kmt(i,jrow)
-              expo = prca
-              ta_rprocal(i,jrow) =  ta_rprocal(i,jrow) + prca
-              do k=1,kmx
-                expo = expo*dztr(k)
-                ta_rremi(i,k,jrow) = ta_rremi(i,k,jrow) + rremi(i,k,j)
-                ta_rexpo(i,k,jrow) = ta_rexpo(i,k,jrow) + rexpo(i,k,j)
-                expo = expo - prca*rcak(k)
-                ta_rexpocal(i,k,jrow) = ta_rexpocal(i,k,jrow) + expo
-                expo = expo*dzt(k)
-#   if defined O_npzd_nitrogen && defined O_npzd_o2
-                ta_rdeni(i,k,jrow) = ta_rdeni(i,k,jrow) + rdeni(i,k,j)
+             expo = rprca
+             ta_rprocal(i,jrow) =  ta_rprocal(i,jrow) + rprca
+             do k = 1, kmt(i,jrow)
+              ta_rnpp(i,k,jrow) = ta_rnpp(i,k,jrow) + rnpp(k)
+              ta_rnpp_dop(i,k,jrow) = ta_rnpp_dop(i,k,jrow) 
+     &             + rnpp_dop(k)
+              ta_rgraz(i,k,jrow) = ta_rgraz(i,k,jrow) + rgraz(k)
+              ta_rgraz_Z(i,k,jrow) = ta_rgraz_Z(i,k,jrow) + rgraz_Z(k)
+              ta_rgraz_Det(i,k,jrow) = ta_rgraz_Det(i,k,jrow)
+     &                                 + rgraz_Det(k)
+              ta_rmorp(i,k,jrow) = ta_rmorp(i,k,jrow) + rmorp(k)
+              ta_rmorpt(i,k,jrow)= ta_rmorpt(i,k,jrow) + rmorpt(k)
+              ta_rmorz(i,k,jrow) = ta_rmorz(i,k,jrow) + rmorz(k)
+              ta_rexcr(i,k,jrow) = ta_rexcr(i,k,jrow) + rexcr(k)
+#   if defined O_npzd_nitrogen
+              ta_rnpp_D(i,k,jrow) = ta_rnpp_D(i,k,jrow) + rnpp_D(k)
+              ta_rnpp_D_dop(i,k,jrow) = ta_rnpp_D_dop(i,k,jrow) 
+     &             + rnpp_D_dop(k)
+              ta_rgraz_D(i,k,jrow) = ta_rgraz_D(i,k,jrow) + rgraz_D(k)
+              ta_rmorp_D(i,k,jrow) = ta_rmorp_D(i,k,jrow) + rmorp_D(k)
+              ta_rmorpt_D(i,k,jrow) = ta_rmorpt_D(i,k,jrow)
+     &                               + rmorpt_D(k)
+              ta_rnfix(i,k,jrow) = ta_rnfix(i,k,jrow) + rnfix(k)
+              ta_rbdeni(i,k,jrow) = ta_rbdeni(i,k,jrow) + rbdeni(k)
 #   endif
-              enddo
+
+#   if defined O_npzd_iron
+#   if defined O_npzd_iron_diagnostics
+                ta_rfeorgads(i,k,jrow) = ta_rfeorgads(i,k,jrow)
+     &                              + rfeorgads(k)
+                ta_rdeffe(i,k,jrow) = ta_rdeffe(i,k,jrow)
+     &                              + rdeffe(k)
+                ta_rfeprime(i,k,jrow) = ta_rfeprime(i,k,jrow)
+     &                              + rfeprime(k)
+                ta_rfesed(i,k,jrow) = ta_rfesed(i,k,jrow)
+     &                              + rfesed(k)
+                ta_rbfe(i,k,jrow) = ta_rbfe(i,k,jrow)
+     &                              + rbfe(k)
+                ta_rfecol(i,k,jrow) = ta_rfecol(i,k,jrow)
+     &                              + rfecol(k)
+#   endif
+#   endif
+#   if defined O_npzd_extra_diagnostics
+              ta_ravej(i,k,jrow) = ta_ravej(i,k,jrow) + ravej(k)
+              ta_ravej_D(i,k,jrow) = ta_ravej_D(i,k,jrow) + ravej_D(k)
+              ta_rgmax(i,k,jrow) = ta_rgmax(i,k,jrow) + rgmax(k)
+              ta_rno3P(i,k,jrow) = ta_rno3P(i,k,jrow) + rno3P(k)
+              ta_rpo4P(i,k,jrow) = ta_rpo4P(i,k,jrow) + rpo4P(k)
+              ta_rpo4_D(i,k,jrow) = ta_rpo4_D(i,k,jrow) + rpo4_D(k)
+#   endif
+              expo = expo*dztr(k)
+              ta_rremi(i,k,jrow) = ta_rremi(i,k,jrow) + rremi(k)
+              ta_rexpo(i,k,jrow) = ta_rexpo(i,k,jrow) + rexpo(k)
+              expo = expo - rprca*rcak(k)
+              ta_rexpocal(i,k,jrow) = ta_rexpocal(i,k,jrow) + expo
+              expo = expo*dzt(k)
+#   if defined O_npzd_nitrogen && defined O_npzd_o2
+              ta_rwcdeni(i,k,jrow) = ta_rwcdeni(i,k,jrow) 
+     &           + rwcdeni(k)
+#   endif
+#   if defined O_npzd_iron
+                ta_rremife(i,k,jrow) = ta_rremife(i,k,jrow) 
+     &               + rremife(k)
+                ta_rexpofe(i,k,jrow) = ta_rexpofe(i,k,jrow)
+     &               + rexpofe(k)
+#   endif 
+!
+             enddo
             endif
 #  endif
-
           endif
-
         enddo
-
       enddo
+
 # endif
 # if defined O_carbon_fnpzd
 
@@ -633,7 +626,7 @@
           if (kmt(i,jrow) .gt. 0) then
             do k=1,kmt(i,jrow)
 #  if defined O_npzd
-              src(i,k,j,isc14) = src(i,k,j,isdic)*rstd
+              src(i,k,j,isc14) = src(i,k,j,isdic)*rc14std
      &                         - 3.836e-12*t(i,k,j,ic14,taum1)
 #  else
               src(i,k,j,isc14) = - 3.836e-12*t(i,k,j,ic14,taum1)
@@ -1017,6 +1010,9 @@
 # endif
 # if defined O_carbon
       call asbct (joff, js, je, istrt, iend, issdic, idic)
+#  if defined O_carbon_13
+      call asbct (joff, js, je, istrt, iend, issdic13, idic13)
+#  endif
 #  if defined O_carbon_14
       call asbct (joff, js, je, istrt, iend, issc14, ic14)
 #  endif
@@ -1029,6 +1025,7 @@
 # endif
 # if defined O_npzd
       call asbct (joff, js, je, istrt, iend, isspo4, ipo4)
+      call asbct (joff, js, je, istrt, iend, issdop, idop)
 #  if !defined O_npzd_no_vflux
       call asbct (joff, js, je, istrt, iend, issphyt, iphyt)
       call asbct (joff, js, je, istrt, iend, isszoop, izoop)
@@ -1036,12 +1033,40 @@
 #  endif
 #  if defined O_npzd_nitrogen
       call asbct (joff, js, je, istrt, iend, issno3, ino3)
+      call asbct (joff, js, je, istrt, iend, issdon, idon)
 #   if !defined O_npzd_no_vflux
       call asbct (joff, js, je, istrt, iend, issdiaz, idiaz)
 #   endif
+#   if defined O_npzd_nitrogen_15
+      call asbct (joff, js, je, istrt, iend, issdin15, idin15)
+      call asbct (joff, js, je, istrt, iend, issdon15, idon15)
+#    if !defined O_npzd_no_vflux
+      call asbct (joff, js, je, istrt, iend, issphytn15, iphytn15)
+      call asbct (joff, js, je, istrt, iend, isszoopn15, izoopn15)
+      call asbct (joff, js, je, istrt, iend, issdetrn15, idetrn15) 
+      call asbct (joff, js, je, istrt, iend, issdiazn15, idiazn15)
+#    endif
+#   endif
+#  endif
+#  if defined O_npzd_iron
+      call asbct (joff, js, je, istrt, iend, issdfe, idfe)
+#   if !defined O_npzd_no_vflux
+      call asbct (joff, js, je, istrt, iend, issdetrfe, idetrfe)
+#   endif
+#  endif
+#  if defined O_carbon_13
+      call asbct (joff, js, je, istrt, iend, issdoc13, idoc13)
+#   if !defined O_npzd_no_vflux
+      call asbct (joff, js, je, istrt, iend, issphytc13, iphytc13)
+      call asbct (joff, js, je, istrt, iend, isszoopc13, izoopc13)
+      call asbct (joff, js, je, istrt, iend, issdetrc13, idetrc13)
+#    if defined O_npzd_nitrogen
+      call asbct (joff, js, je, istrt, iend, issdiazc13, idiazc13)
+#    endif
+#   endif
 #  endif
 # endif
-# if defined O_cfcs_data || defined O_cfcs_data_transient
+# if defined O_cfcs_data || O_cfcs_data_transient
       call asbct (joff, js, je, istrt, iend, isscfc11, icfc11)
       call asbct (joff, js, je, istrt, iend, isscfc12, icfc12)
 # endif
@@ -1085,16 +1110,16 @@
 !-----------------------------------------------------------------------
 
       if (tsiperts .or. timavgperts) then
-        rrstd = 1000./rstd
+        rrc14std = 1000./rc14std
         do j=js,je
           jrow = j + joff
           do k=1,km
             do i=istrt,iend
-              dc14(i,k,j) = (rrstd*t(i,k,j,ic14,taup1)
+              dc14(i,k,j) = (rrc14std*t(i,k,j,ic14,taup1)
      &                      /(t(i,k,j,idic,taup1) + epsln) - 1000.)
      &                      *tmask(i,k,j)
             enddo
-          enddo
+          enddo 
         enddo
       endif
       if (tsiperts .and. eots) then
@@ -1838,3 +1863,4 @@
 
       return
       end
+!

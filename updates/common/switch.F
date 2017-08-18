@@ -457,18 +457,6 @@
 
       tsits = avg_alarm(itsiint, ihalfstep, tsiint, tsiper, iref, 0)
       tsiperts = on(itsiint)
-# if defined O_align_coupling_output
-      if (tsits) tsicpl = .true.
-      if (tsicpl) then
-        tsiperts = .true.
-        if (cplts) then
-          tsits = .true.
-          tsicpl = .false.
-        else
-          tsits = .false.
-        endif 
-      endif
-# endif
 #endif
 #if defined O_time_averages
 
@@ -477,25 +465,13 @@
 !     on the "averaging" grid?
 !-----------------------------------------------------------------------
 
-# if defined O_time_averages_monthly_continuous
+# if defined O_time_averages_monthly
       timavgts    = eomon
       timavgperts = .true.
 # else
       timavgts = avg_alarm(itimavgint, ihalfstep, timavgint
      &,                        timavgper, iref, 0)
       timavgperts = on(itimavgint)
-# endif
-# if defined O_align_coupling_output
-      if (timavgts) tavgcpl = .true.
-      if (tavgcpl) then
-        timavgperts = .true.
-        if (cplts) then
-          timavgts = .true.
-          tavgcpl = .false.
-        else
-          timavgts = .false.
-        endif 
-      endif
 # endif
 #endif
 #if defined O_xbts

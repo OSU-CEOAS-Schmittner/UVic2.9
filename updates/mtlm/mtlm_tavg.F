@@ -173,6 +173,26 @@
       call defvar ('L_vegburn', iou , 3, it, -c1e20, c1e20, ' ', 'F'
      &,   'total vegetation burning', 'burning_carbon_flux'
      &,   'kg m-2 s-1')
+# if defined O_mtlm_carbon_13
+      call defvar ('L_soilcarb13', iou , 3, it, -c1e20, c1e20, ' ', 'F'
+     &,   'soil carbon 13', 'soil_carbon_13_content', 'kg m-2 ')
+      call defvar ('L_soilresp13', iou , 3, it, -c1e20, c1e20, ' ', 'F'
+     &,   'soil respiration 13', 'soil_respiration_carbon_13_flux'
+     &,   'kg m-2 s-1')
+      call defvar ('L_vegburn13', iou , 3, it, -c1e20, c1e20, ' ', 'F'
+     &,   'total vegetation 13 burning', 'burning_carbon_13_flux'
+     &,   'kg m-2 s-1')
+# endif
+# if defined O_mtlm_carbon_14
+      call defvar ('L_soilcarb14', iou , 3, it, -c1e20, c1e20, ' ', 'F'
+     &,   'soil carbon 14', 'soil_carbon_14_content', 'kg m-2 ')
+      call defvar ('L_soilresp14', iou , 3, it, -c1e20, c1e20, ' ', 'F'
+     &,   'soil respiration 14', 'soil_respiration_carbon_14_flux'
+     &,   'kg m-2 s-1')
+      call defvar ('L_vegburn14', iou , 3, it, -c1e20, c1e20, ' ', 'F'
+     &,   'total vegetation 14 burning', 'burning_carbon_14_flux'
+     &,   'kg m-2 s-1')
+# endif
 # if !defined O_embm
       call defvar ('L_skintemp', iou , 3, it, -c1e20, c1e20, ' ', 'F'
 #  if defined O_units_temperature_Celsius
@@ -207,7 +227,22 @@
      &,   'leaf area index ', 'leaf_area_index', '1')
       call defvar ('L_vegcarb', iou , 4, it, -c1e20, c1e20, ' ', 'F'
      &,   'vegetation carbon', 'vegetation_carbon_content', 'kg m-2 ')
-
+# if defined O_mtlm_carbon_13
+      call defvar ('L_vegnpp13', iou , 4, it, -c1e20, c1e20, ' ', 'F'
+     &,   'net primary productivity 13C'
+     &,   'net_primary_productivity_of_carbon_13', 'kg m-2 s-1')
+      call defvar ('L_vegcarb13', iou , 4, it, -c1e20, c1e20, ' ', 'F'
+     &,   'vegetation carbon 13', 'vegetation_carbon_13_content'
+     &,   'kg m-2 ')
+# endif
+# if defined O_mtlm_carbon_14
+      call defvar ('L_vegnpp14', iou , 4, it, -c1e20, c1e20, ' ', 'F'
+     &,   'net primary productivity 14C'
+     &,   'net_primary_productivity_of_carbon_14', 'kg m-2 s-1')
+      call defvar ('L_vegcarb14', iou , 4, it, -c1e20, c1e20, ' ', 'F'
+     &,   'vegetation carbon 14', 'vegetation_carbon_14_content'
+     &,   'kg m-2 ')
+# endif
 !-----------------------------------------------------------------------
 !     define 4d data (x,y,type,t)
 !-----------------------------------------------------------------------
@@ -232,6 +267,14 @@
      &,                         stamp, land_map, TS1,  CS, RESP_S
      &,                         LIT_C_T, BURN, FRAC, GPP, NPP, HT, LAI
      &,                         C_VEG
+# if defined O_mtlm_carbon_13
+     &,                         RESP_S13, NPP13, BURN13
+     &,                         CS13, C_VEG13
+# endif
+# if defined O_mtlm_carbon_14
+     &,                         RESP_S14, NPP14, BURN14
+     &,                         CS14, C_VEG14
+# endif
 #if !defined O_embm
      &,                         TSTAR_GB, ALBLAND, ET, M
 #endif
@@ -284,6 +327,14 @@
       real BURN(POINTS), FRAC(POINTS,NTYPE), GPP(POINTS,NPFT)
       real NPP(POINTS,NPFT), HT(POINTS,NPFT), LAI(POINTS,NPFT)
       real C_VEG(POINTS,NPFT)
+# if defined O_mtlm_carbon_13
+      real RESP_S13(POINTS), NPP13(POINTS,NPFT), BURN13(POINTS)
+      real CS13(POINTS), C_VEG13(POINTS,NPFT)
+# endif
+# if defined O_mtlm_carbon_14
+      real RESP_S14(POINTS), NPP14(POINTS,NPFT), BURN14(POINTS)
+      real CS14(POINTS), C_VEG14(POINTS,NPFT)
+# endif
       real tlat(ids:ide,jds:jde), tlon(ids:ide,jds:jde)
       real tgarea(ids:ide,jds:jde)
       real, allocatable :: tmpij(:,:), tmpijm(:,:)
@@ -453,6 +504,34 @@
       tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
       call putvaramsk ('L_vegburn', iou, ln, ib, ic, tmpij, tmpijm
      &, c1, c0)
+# if defined O_mtlm_carbon_13
+      call unloadland (POINTS, CS13, imt, jmt, land_map, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvaramsk ('L_soilcarb13', iou, ln, ib, ic, tmpij, tmpijm
+     &, c1, c0)
+      call unloadland (POINTS, RESP_S13, imt, jmt, land_map, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvaramsk ('L_soilresp13', iou, ln, ib, ic, tmpij, tmpijm
+     &, c1, c0)
+      call unloadland (POINTS, BURN13, imt, jmt, land_map, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvaramsk ('L_vegburn13', iou, ln, ib, ic, tmpij, tmpijm
+     &, c1, c0)
+# endif
+# if defined O_mtlm_carbon_14
+      call unloadland (POINTS, CS14, imt, jmt, land_map, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvaramsk ('L_soilcarb14', iou, ln, ib, ic, tmpij, tmpijm
+     &, c1, c0)
+      call unloadland (POINTS, RESP_S14, imt, jmt, land_map, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvaramsk ('L_soilresp14', iou, ln, ib, ic, tmpij, tmpijm
+     &, c1, c0)
+      call unloadland (POINTS, BURN14, imt, jmt, land_map, data)
+      tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+      call putvaramsk ('L_vegburn14', iou, ln, ib, ic, tmpij, tmpijm
+     &, c1, c0)
+# endif
 # if !defined O_embm
       call unloadland (POINTS, TSTAR_GB, imt, jmt, land_map, data)
       tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
@@ -509,6 +588,26 @@
         tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
         call putvaramsk ('L_vegcarb', iou, ln, ib, ic, tmpij, tmpijm
      &,   c1, c0)
+# if defined O_mtlm_carbon_13
+        call unloadland (POINTS, NPP13(1,n), imt, jmt, land_map, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvaramsk ('L_vegnpp13', iou, ln, ib, ic, tmpij, tmpijm
+     &,   c1, c0)
+        call unloadland (POINTS, C_VEG13(1,n), imt, jmt, land_map, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvaramsk ('L_vegcarb13', iou, ln, ib, ic, tmpij, tmpijm
+     &,   c1, c0)
+# endif
+# if defined O_mtlm_carbon_14
+        call unloadland (POINTS, NPP14(1,n), imt, jmt, land_map, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvaramsk ('L_vegnpp14', iou, ln, ib, ic, tmpij, tmpijm
+     &,   c1, c0)
+        call unloadland (POINTS, C_VEG14(1,n), imt, jmt, land_map, data)
+        tmpij(ils:ile,jls:jle) = data(ils:ile,jls:jle)
+        call putvaramsk ('L_vegcarb14', iou, ln, ib, ic, tmpij, tmpijm
+     &,   c1, c0)
+# endif
       enddo
 
 !-----------------------------------------------------------------------

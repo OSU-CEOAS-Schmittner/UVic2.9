@@ -48,6 +48,9 @@
 # if defined O_ice_evp && defined O_ice
       include "evp.h"
 # endif
+# if defined O_carbon_13 && defined O_carbon_13_coupled && !defined O_c13ccn_data && !defined O_c13ccn_data_transient
+      include "npzd.h"
+# endif
       include "tmngr.h"
       include "switch.h"
 
@@ -126,10 +129,26 @@
       call getvars ('co2ccn', iou, ntrec, tmp, c1, c0)
       co2ccn = tmp
 # endif
+# if defined O_carbon_13 && defined O_carbon_13_coupled && !defined O_c13ccn_data && !defined O_c13ccn_data_transient
+      tmp = c13ccn
+      if (inqvardef('c13ccn', iou)) then
+         call getvars ('c13ccn', iou, ntrec, tmp, c1, c0)
+         c13ccn = tmp
+         dc13ccn = 1000.*(c13ccn/(co2ccn-c13ccn)/rc13std - 1.)
+      else
+         c13ccn = (1 + dc13ccn*0.001)*rc13std*co2ccn
+     &      /(1+(1 + dc13ccn*0.001)*rc13std)
+      endif
+      print*,"c13ccn=",c13ccn
+      print*,"dc13ccn=",dc13ccn
+# endif
 # if defined O_carbon_14 && defined O_carbon_14_coupled && !defined O_c14ccn_data && !defined O_c14ccn_data_transient
       tmp = c14ccn
       call getvars ('c14ccn', iou, ntrec, tmp, c1, c0)
       c14ccn = tmp
+      dc14ccn = 1000.*(c14ccn/(co2ccn-c14ccn)/rc14std - 1.)
+      print*,"c14ccn=",c14ccn
+      print*,"dc14ccn=",dc14ccn
 # endif
 # if defined O_co2emit_track_co2
       tmp = ntrack_co2
@@ -270,6 +289,11 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdic)
       call getvara ('sbc_ssdic', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdic) = tmpij(ils:ile,jls:jle)
+#  if defined O_carbon_13
+       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdic13)
+      call getvara ('sbc_ssdic13', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdic13) = tmpij(ils:ile,jls:jle)
+#  endif
 #  if defined O_carbon_14
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issc14)
       call getvara ('sbc_ssc14', iou, ln, ib, ic, tmpij, c1, c0)
@@ -280,6 +304,9 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isspo4)
       call getvara ('sbc_sspo4', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,isspo4) = tmpij(ils:ile,jls:jle)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
+      call getvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdop) = tmpij(ils:ile,jls:jle)
 # endif
 # if defined O_npzd_o2
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isso2)
@@ -295,6 +322,27 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issno3)
       call getvara ('sbc_ssno3', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issno3) = tmpij(ils:ile,jls:jle)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon)
+      call getvara ('sbc_ssdon', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdon) = tmpij(ils:ile,jls:jle)
+#  if defined O_npzd_nitrogen_15
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdin15)
+      call getvara ('sbc_ssdin15', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdin15) = tmpij(ils:ile,jls:jle)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon15)
+      call getvara ('sbc_ssdon15', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdon15) = tmpij(ils:ile,jls:jle)
+#  endif
+# endif
+# if defined O_npzd_iron
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdfe)
+      call getvara ('sbc_ssdfe', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdfe) = tmpij(ils:ile,jls:jle)
+# endif
+# if defined O_carbon_13
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdoc13)
+      call getvara ('sbc_ssdoc13', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdoc13) = tmpij(ils:ile,jls:jle)
 # endif
 # if defined O_ism || defined O_landice_data_transient
       if (use_ice_data) then
@@ -472,11 +520,6 @@
       call getvara ('sulph', iou, ln, ib, ic, tmpij, c1, c0)
       sulph(ils:ile,jls:jle,2) = tmpij(ils:ile,jls:jle)
 # endif
-# if defined O_carbon_carbonate_approx
-      tmpij(ils:ile,jls:jle) = hSWS(ils:ile,jls:jle)
-      call getvara ('hSWS', iou, ln, ib, ic, tmpij, c1, c0)
-      hSWS(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
-# endif
 
       call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
       nyear = year0 + accel_yr0 + (relyr - accel_yr0)*accel
@@ -602,6 +645,10 @@
      &, 'carbemit', ' ',' ')
       call defvar ('co2ccn', iou, 1, it, c0, c0, ' ', 'D'
      &, 'co2ccn', ' ',' ')
+# if defined O_carbon_13
+      call defvar ('c13ccn', iou, 1, it, c0, c0, ' ', 'D'
+     &, 'c13ccn', ' ',' ')
+# endif
 # if defined O_carbon_14
       call defvar ('c14ccn', iou, 1, it, c0, c0, ' ', 'D'
      &, 'c14ccn', ' ',' ')
@@ -654,16 +701,16 @@
      &, 'latitude', 'latitude', 'degrees_north')
       it(1) = id_xt_e
       call defvar ('longitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
       it(1) = id_xu_e
       call defvar ('longitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yu_e
       call defvar ('latitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
 
 !-----------------------------------------------------------------------
 !     define 3d data (x,y,t)
@@ -715,6 +762,10 @@
 # if defined O_carbon
       call defvar ('sbc_ssdic', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssdic', ' ', ' ')
+#  if defined O_carbon_13
+      call defvar ('sbc_ssdic13', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdic13', ' ', ' ')
+#  endif
 #  if defined O_carbon_14
       call defvar ('sbc_ssc14', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssc14', ' ', ' ')
@@ -723,6 +774,8 @@
 # if defined O_npzd
       call defvar ('sbc_sspo4', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sspo4', ' ', ' ')
+      call defvar ('sbc_ssdop', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdop', ' ', ' ')
 # endif
 # if defined O_npzd_o2
       call defvar ('sbc_sso2', iou, 3, it, -c1e20, c1e20, ' ', 'D'
@@ -735,6 +788,22 @@
 # if defined O_npzd_nitrogen
       call defvar ('sbc_ssno3', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssno3', ' ', ' ')
+      call defvar ('sbc_ssdon', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdon', ' ', ' ')
+#  if defined O_npzd_nitrogen_15
+      call defvar ('sbc_ssdin15', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdin15', ' ', ' ')
+      call defvar ('sbc_ssdon15', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdon15', ' ', ' ')
+#  endif
+# endif
+# if defined O_npzd_iron
+      call defvar ('sbc_ssdfe', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdfe', ' ', ' ')
+# endif
+# if defined O_carbon_13
+      call defvar ('sbc_ssdoc13', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdoc13', ' ', ' ')
 # endif
 # if defined O_ism || defined O_landice_data
       call defvar ('tmsk', iou, 3, it, -c1e20, c1e20, ' ', 'D'
@@ -858,10 +927,6 @@
       call defvar ('sulph', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sulph', ' ', ' ')
 # endif
-# if defined O_carbon_carbonate_approx
-      call defvar ('hSWS', iou, 3, it, -c1e20, c1e20, ' ', 'D'
-     &, 'hSWS', ' ', ' ')
-# endif
       call enddef (iou)
 
       return
@@ -920,7 +985,9 @@
       include "tmngr.h"
       include "iounit.h"
       include "switch.h"
-
+# if defined O_carbon_13
+      include "npzd.h"
+# endif
       real xt_e(imt+1), xu_e(imt+1), yt_e(jmt+1), yu_e(jmt+1)
 
       nstamp = stamp
@@ -1001,6 +1068,15 @@
       call putvars ('carbemit', iou, ntrec, tmp, c1, c0)
       tmp = co2ccn
       call putvars ('co2ccn', iou, ntrec, tmp, c1, c0)
+# if defined O_carbon_13
+#  if !defined O_carbon_13_coupled
+      c13ccn = (1 + dc13ccn*0.001)*rc13std*co2ccn
+     &      /(1+(1 + dc13ccn*0.001)*rc13std)
+#  endif
+      tmp = c13ccn
+      print*,'write c13ccn=',c13ccn
+      call putvars ('c13ccn', iou, ntrec, tmp, c1, c0)
+# endif
 # if defined O_carbon_14
       tmp = c14ccn
       call putvars ('c14ccn', iou, ntrec, tmp, c1, c0)
@@ -1127,6 +1203,10 @@
 # if defined O_carbon
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdic)
       call putvara ('sbc_ssdic', iou, ln, ib, ic, tmpij, c1, c0)
+#  if defined O_carbon_13
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdic13)
+      call putvara ('sbc_ssdic13', iou, ln, ib, ic, tmpij, c1, c0)
+#  endif
 #  if defined O_carbon_14
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issc14)
       call putvara ('sbc_ssc14', iou, ln, ib, ic, tmpij, c1, c0)
@@ -1135,6 +1215,8 @@
 # if defined O_npzd
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isspo4)
       call putvara ('sbc_sspo4', iou, ln, ib, ic, tmpij, c1, c0)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
+      call putvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
 # if defined O_npzd_o2
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isso2)
@@ -1147,6 +1229,22 @@
 # if defined O_npzd_nitrogen
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issno3)
       call putvara ('sbc_ssno3', iou, ln, ib, ic, tmpij, c1, c0)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon)
+      call putvara ('sbc_ssdon', iou, ln, ib, ic, tmpij, c1, c0)
+#  if defined O_npzd_nitrogen_15
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdin15)
+      call putvara ('sbc_ssdin15', iou, ln, ib, ic, tmpij, c1, c0)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon15)
+      call putvara ('sbc_ssdon15', iou, ln, ib, ic, tmpij, c1, c0)
+#  endif
+# endif
+# if defined O_npzd_iron
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdfe)
+      call putvara ('sbc_ssdfe', iou, ln, ib, ic, tmpij, c1, c0)
+# endif
+# if defined O_carbon_13
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdoc13)
+      call putvara ('sbc_ssdoc13', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
 # if defined O_ism || defined O_landice_data
       tmpij(ils:ile,jls:jle) =  tmsk(ils:ile,jls:jle)
@@ -1273,10 +1371,6 @@
 # if defined O_sulphate_data || defined O_sulphate_data_transient
       tmpij(ils:ile,jls:jle) = sulph(ils:ile,jls:jle,2)
       call putvara ('sulph', iou, ln, ib, ic, tmpij, c1, c0)
-# endif
-# if defined O_carbon_carbonate_approx
-      tmpij(ils:ile,jls:jle) = hSWS(ils:ile,jls:jle)
-      call putvara ('hSWS', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
 
       call rdstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)

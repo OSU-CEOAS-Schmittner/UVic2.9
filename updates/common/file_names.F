@@ -106,6 +106,7 @@
       call put_names ('O_dc14', 'data/O_dc14')
       call put_names ('O_diffac', 'data/O_diffac')
       call put_names ('O_no3', 'data/O_no3')
+      call put_names ('O_dfe', 'data/O_dfe')
       call put_names ('O_o2', 'data/O_o2')
       call put_names ('O_po4', 'data/O_po4')
       call put_names ('O_sal', 'data/O_sal')
@@ -113,8 +114,11 @@
       call put_names ('O_slhref', 'data/O_slhref')
       call put_names ('O_tau', 'data/O_tau')
       call put_names ('O_temp', 'data/O_temp')
-      call put_names ('O_tidenrg', 'data/O_tidener')
+      call put_names ('O_tidenrg_egbert', 'data/O_tidenrg_egbert')
       call put_names ('O_totcarb', 'data/O_totcarb')
+      call put_names ('O_fe_dissolved', 'data/O_fe_dissolved')
+      call put_names ('O_feflux', 'data/O_feflux')
+      call put_names ('O_fe_hydr', 'data/O_fe_hydr')
 
       call put_names ('rest_embm', 'rest')
       call put_names ('restart_embm', 'data/restart')
@@ -145,6 +149,10 @@
       call put_names ('restart_2_sed', 'restart_2')
       call put_names ('tsi_sed', 'tsi')
       call put_names ('tavg_sed', 'tavg')
+
+      call put_names ('G_subgrid_bathy', 'data/G_subgrid_bathy')
+      call put_names ('G_subgrid_ocean_mask'
+     &,               'data/G_subgrid_ocean_mask') 
 
       call put_names ('tsi_gsums', 'tsi')
 

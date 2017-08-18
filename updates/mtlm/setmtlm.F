@@ -27,6 +27,12 @@
 # endif
       include "tmngr.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "mtlm_data.h"
 
       character(120) :: fname, new_file_name
@@ -187,6 +193,40 @@
         if (exists) call mtlm_rest_in (fname, is, ie, js, je)
 # endif
       endif
+# if defined O_mtlm_carbon_13
+      do N=1,NPFT
+         if (C3(N).eq.1) then
+            ac13npp(N) = 0.979
+         else
+            ac13npp(N) = 0.993
+         endif
+c         ac13npp(N) = 1.
+      enddo
+      print*, "ac13npp:", ac13npp(:)
+
+      if (BF.ne.0.) then
+        print*, "Error in setmtlm:"
+        print*, "if O_mtlm_carbon_13 option is used BF must be zero"
+        stop
+      endif
+# endif
+# if defined O_mtlm_carbon_14
+      do N=1,NPFT
+         if (C3(N).eq.1) then
+            ac14npp(N) = 0.958
+         else
+            ac14npp(N) = 0.986
+         endif
+c         ac14npp(N) = 1.
+      enddo
+      print*, "ac14npp:", ac14npp(:)
+
+      if (BF.ne.0.) then
+        print*, "Error in setmtlm:"
+        print*, "if O_mtlm_carbon_14 option is used BF must be zero"
+        stop
+      endif
+# endif
 
 !----------------------------------------------------------------------
 !     Create the VEG_INDEX array of land points with each type

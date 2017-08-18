@@ -235,7 +235,8 @@
       integer ie, navgp, imav, jmav, levav, cvxz, cvx, cvy, cvz
 
       real spbuf, spbuf2, rnavgt, rnta_conv, rnta_sscar, rnta_botcar
-      real avg3d, avg2d, time, ztav, xuav, ytav, zwav, xtav, yuav, tmp
+      real avg3d, avg2d, avgper, time, ztav, xuav, ytav, zwav, xtav
+      real yuav, tmp
 
       include "size.h"
       include "param.h"
@@ -303,6 +304,9 @@
 #  if defined O_embm
       include "cembm.h"
       include "atm.h"
+#  endif
+#  if defined O_save_anisotropic_viscosity
+      include "hmixc.h"
 #  endif
 
       real varu(imtkm,jmw,2), w(imtkm)
@@ -458,16 +462,41 @@
         do k=1,kpzd
           do i=2,imtav
             ta_rnpp(i,k,jj+1) = rnavgt*ta_rnpp(i,k,jj+1)
+            ta_rnpp_dop(i,k,jj+1) = rnavgt*ta_rnpp_dop(i,k,jj+1)
             ta_rgraz(i,k,jj+1) = rnavgt*ta_rgraz(i,k,jj+1)
+            ta_rgraz_Z(i,k,jj+1) = rnavgt*ta_rgraz_Z(i,k,jj+1)
+            ta_rgraz_Det(i,k,jj+1) = rnavgt*ta_rgraz_Det(i,k,jj+1)
             ta_rmorp(i,k,jj+1) = rnavgt*ta_rmorp(i,k,jj+1)
             ta_rmorpt(i,k,jj+1) = rnavgt*ta_rmorpt(i,k,jj+1)
             ta_rmorz(i,k,jj+1) = rnavgt*ta_rmorz(i,k,jj+1)
             ta_rexcr(i,k,jj+1) = rnavgt*ta_rexcr(i,k,jj+1)
 #   if defined O_npzd_nitrogen
             ta_rnpp_D(i,k,jj+1) = rnavgt*ta_rnpp_D(i,k,jj+1)
+            ta_rnpp_D_dop(i,k,jj+1) = rnavgt*ta_rnpp_D_dop(i,k,jj+1)
             ta_rgraz_D(i,k,jj+1) = rnavgt*ta_rgraz_D(i,k,jj+1)
             ta_rmorp_D(i,k,jj+1) = rnavgt*ta_rmorp_D(i,k,jj+1)
+            ta_rmorpt_D(i,k,jj+1) = rnavgt*ta_rmorpt_D(i,k,jj+1)
             ta_rnfix(i,k,jj+1) = rnavgt*ta_rnfix(i,k,jj+1)
+#   endif
+#   if defined O_npzd_iron
+            ta_rexpofe(i,k,jj+1) = rnavgt*ta_rexpofe(i,k,jj+1)
+            ta_rremife(i,k,jj+1) = rnavgt*ta_rremife(i,k,jj+1)
+#   if defined O_npzd_iron_diagnostics
+            ta_rfeorgads(i,k,jj+1) = rnavgt*ta_rfeorgads(i,k,jj+1)
+            ta_rdeffe(i,k,jj+1) = rnavgt*ta_rdeffe(i,k,jj+1)
+            ta_rfeprime(i,k,jj+1) = rnavgt*ta_rfeprime(i,k,jj+1)
+            ta_rfesed(i,k,jj+1) = rnavgt*ta_rfesed(i,k,jj+1)
+            ta_rbfe(i,k,jj+1) = rnavgt*ta_rbfe(i,k,jj+1)
+            ta_rfecol(i,k,jj+1) = rnavgt*ta_rfecol(i,k,jj+1)
+#   endif
+#   endif
+#   if defined O_npzd_extra_diagnostics
+            ta_ravej(i,k,jj+1) = rnavgt*ta_ravej(i,k,jj+1)
+            ta_ravej_D(i,k,jj+1) = rnavgt*ta_ravej_D(i,k,jj+1)
+            ta_rgmax(i,k,jj+1) = rnavgt*ta_rgmax(i,k,jj+1)
+            ta_rno3P(i,k,jj+1) = rnavgt*ta_rno3P(i,k,jj+1)
+            ta_rpo4P(i,k,jj+1) = rnavgt*ta_rpo4P(i,k,jj+1)
+            ta_rpo4_D(i,k,jj+1) = rnavgt*ta_rpo4_D(i,k,jj+1)
 #   endif
           enddo
         enddo
@@ -478,12 +507,14 @@
             ta_rexpo(i,k,jj+1) = rnavgt*ta_rexpo(i,k,jj+1)
             ta_rexpocal(i,k,jj+1) = rnavgt*ta_rexpocal(i,k,jj+1)
 #   if defined O_npzd_nitrogen
-            ta_rdeni(i,k,jj+1) = rnavgt*ta_rdeni(i,k,jj+1)
+            ta_rwcdeni(i,k,jj+1) = rnavgt*ta_rwcdeni(i,k,jj+1)
+            ta_rbdeni(i,k,jj+1) = rnavgt*ta_rbdeni(i,k,jj+1)
 #   endif
           enddo
         enddo
         do i=2,imtav
           ta_rprocal(i,jj+1) = rnavgt*ta_rprocal(i,jj+1)
+          ta_rsedrr(i,jj+1) = rnavgt*ta_rsedrr(i,jj+1)
         enddo
 #  endif
 #  if defined O_save_convection
@@ -494,12 +525,15 @@
           ta_pe(i,jj+1) = rnta_conv*ta_pe(i,jj+1)
         enddo
 #  endif
+# if defined O_pipe_co2
+        do i=2,imtav
+          ta_kpipe(i,jj+1) = rnavgt*ta_kpipe(i,jj+1)
+        enddo
+# endif
 #  if defined O_save_carbon_carbonate_chem
 
         do i=2,imtav
-!         pH is really H+ until the final averaging
-          if (ta_sspH(i,jj+1) .gt. 0.)
-     &      ta_sspH(i,jj+1) = -alog10(rnta_sscar*ta_sspH(i,jj+1))
+          ta_sspH(i,jj+1) = rnta_sscar*ta_sspH(i,jj+1)
           ta_ssCO3(i,jj+1) = rnta_sscar*ta_ssCO3(i,jj+1)
           ta_ssOc(i,jj+1) = rnta_sscar*ta_ssOc(i,jj+1)
           ta_ssOa(i,jj+1) = rnta_sscar*ta_ssOa(i,jj+1)
@@ -521,13 +555,15 @@
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = time
         call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-        avgtimtavg = time
+        if (jj .eq. 1) call def_tavg
+        call def_tavg_mom (fname)
+
 #  if !defined O_save_time_relyear0
 !       make output time relative to year 1
-        avgtimtavg = avgtimtavg - 1.
+        time = time - 1.
 #  endif
-        avgpertavg = dtts*navgts*secday
-        if (avgpertavg .le. 1e-6) avgpertavg = 0.
+        avgper = timavgper*accel
+        if (avgper .le. 1e-6) avgper = 0.
 #  if defined O_save_time_endper
         tmp = 0.
 #  elif defined O_save_time_startper
@@ -537,30 +573,26 @@
 #  endif
 #  if defined O_units_time_years
 #   if defined O_calendar_360_day
-        avgtimtavg = avgtimtavg - tmp*avgpertavg/360.
+        time = time - tmp*avgper/360.
 #   elif defined O_calendar_gregorian
-        avgtimtavg = avgtimtavg - tmp*avgpertavg/365.25
+        time = time - tmp*avgper/365.25
 #   else
-        avgtimtavg = avgtimtavg - tmp*avgpertavg/365.
+        time = time - tmp*avgper/365.
 #   endif
 #  else
 #   if defined O_calendar_360_day
-        avgtimtavg = avgtimtavg*360. - tmp*avgpertavg
+        time = time*360. - tmp*avgper
 #   elif defined O_calendar_gregorian
-        avgtimtavg = avgtimtavg*365.25 - tmp*avgpertavg
+        time = time*365.25 - tmp*avgper
 #   else
-        avgtimtavg = avgtimtavg*365. - tmp*avgpertavg
+        time = time*365. - tmp*avgper
 #   endif
 #  endif
 
-        if (jj .eq. 1) call def_tavg
-        call def_tavg_mom (fname)
-
         call mom_tavg_out (fname, is, ie, jj+1, jj+1, imt, jmt, km, nt
-     &,   xt, yt, zt, xu, yu, zw, dxt, dyt, dzt, dxu, dyu, dzw
-     &,   avgpertavg, avgtimtavg, nstamp, mapta, avg3d(1,1)
-     &,   avg3d(1,nt+1), avg3d(1,nt+2), avg3d(1,nt+3), avg2d(is,1)
-     &,   avg2d(is,nt+1), avg2d(is,nt+2), redctn
+     &,   xt, yt, zt, xu, yu, zw, dxt, dyt, dzt, dxu, dyu, dzw, avgper
+     &,   time, nstamp, mapta, avg3d(1,1), avg3d(1,nt+1), avg3d(1,nt+2)
+     &,   avg3d(1,nt+3), avg2d(is,1), avg2d(is,nt+1), avg2d(is,nt+2)
 #  if defined O_gent_mcwilliams
      &,   ta_vetiso(is,1,jj+1), ta_vntiso(is,1,jj+1)
      &,   ta_vbtiso(is,1,jj+1)
@@ -572,16 +604,38 @@
      &,   ta_diff_cbt(is,1,jj+1)
 #  endif
 #  if defined O_save_npzd
-     &,   kpzd, ta_rnpp(is,1,jj+1), ta_rgraz(is,1,jj+1)
+#   if defined O_save_carbon_totals
+     &,   redctn
+#   endif
+     &,   kpzd, ta_rnpp(is,1,jj+1), ta_rnpp_dop(is,1,jj+1)
+     &,   ta_rgraz(is,1,jj+1)
      &,   ta_rmorp(is,1,jj+1), ta_rmorpt(is,1,jj+1)
      &,   ta_rmorz(is,1,jj+1), ta_rremi(is,1,jj+1)
      &,   ta_rexcr(is,1,jj+1), ta_rexpo(is,1,jj+1)
      &,   ta_rexpocal(is,1,jj+1), ta_rprocal(is,jj+1)
+     &,   ta_rsedrr(is,jj+1)
+     &,   ta_rgraz_Z(is,1,jj+1), ta_rgraz_Det(is,1,jj+1)
 #   if defined O_npzd_nitrogen
-     &,   ta_rnpp_D(is,1,jj+1), ta_rgraz_D(is,1,jj+1)
-     &,   ta_rmorp_D(is,1,jj+1), ta_rnfix(is,1,jj+1)
-     &,   ta_rdeni(is,1,jj+1)
+     &,   ta_rnpp_D(is,1,jj+1), ta_rnpp_D_dop(is,1,jj+1)
+     &,   ta_rgraz_D(is,1,jj+1)
+     &,   ta_rmorp_D(is,1,jj+1), ta_rmorpt_D(is,1,jj+1)
+     &,   ta_rnfix(is,1,jj+1), ta_rwcdeni(is,1,jj+1)
+     &,   ta_rbdeni(is,1,jj+1) 
 #   endif
+#   if defined O_npzd_iron
+     &,   ta_rexpofe(is,1,jj+1), ta_rremife(is,1,jj+1)
+#   if defined O_npzd_iron_diagnostics
+     &,   ta_rfeorgads(is,1,jj+1)
+     &,   ta_rdeffe(is,1,jj+1), ta_rfeprime(is,1,jj+1)
+     &,   ta_rfesed(is,1,jj+1), ta_rbfe(is,1,jj+1)
+     &,   ta_rfecol(is,1,jj+1)
+#   endif
+#   endif
+#  if defined O_npzd_extra_diagnostics
+     &,    ta_ravej(is,1,jj+1), ta_ravej_D(is,1,jj+1)
+     &,    ta_rgmax(is,1,jj+1), ta_rno3P(is,1,jj+1)
+     &,    ta_rpo4P(is,1,jj+1), ta_rpo4_D(is,1,jj+1)
+#  endif 
 #  endif
 #  if defined O_save_convection
      &,   ta_totalk(is,jj+1), ta_vdepth(is,jj+1), ta_pe(is,jj+1)
@@ -596,8 +650,14 @@
 #  if defined O_stream_function
      &,   avg2d(is,nt+3)
 #  endif
+# if defined O_pipe_co2
+     &,   ta_kpipe(is,jj+1)
+# endif
      &,   kmt(is,jj+1), mskhr(is,jj+1), tmask(is,1), umask(is,1)
      &,   tlat(is,jj+1), tlon(is,jj+1), ulat(is,jj+1), ulon(is,jj+1)
+#  if defined O_save_anisotropic_viscosity
+     &,   visc_cnu(is,1,jj+1), visc_ceu(is,1,jj+1)
+#  endif
      &,   tgarea(is,jj+1), ugarea(is,jj+1), ntrec)
 
         if (jj .eq. 1)
@@ -636,7 +696,10 @@
 #  endif
 #  if defined O_save_npzd
       ta_rnpp(:,:,:) = c0
+      ta_rnpp_dop(:,:,:) = c0
       ta_rgraz(:,:,:) = c0
+      ta_rgraz_Z(:,:,:) = c0
+      ta_rgraz_Det(:,:,:) = c0
       ta_rmorp(:,:,:) = c0
       ta_rmorpt(:,:,:) = c0
       ta_rmorz(:,:,:) = c0
@@ -645,12 +708,36 @@
       ta_rexpo(:,:,:) = c0
       ta_rexpocal(:,:,:) = c0
       ta_rprocal(:,:) = c0
+      ta_rsedrr(:,:) = c0
 #   if defined O_npzd_nitrogen
       ta_rnpp_D(:,:,:) = c0
+      ta_rnpp_D_dop(:,:,:) = c0
       ta_rgraz_D(:,:,:) = c0
       ta_rmorp_D(:,:,:) = c0
-      ta_rdeni(:,:,:) = c0
+      ta_rmorpt_D(:,:,:) = c0
+      ta_rwcdeni(:,:,:) = c0
+      ta_rbdeni(:,:,:) = c0
       ta_rnfix(:,:,:) = c0
+#   endif
+#   if defined O_npzd_iron
+      ta_rexpofe(:,:,:) = c0
+      ta_rremife(:,:,:) = c0
+#   if defined O_npzd_iron_diagnostics
+      ta_rfeorgads(:,:,:) = c0
+      ta_rdeffe(:,:,:) = c0
+      ta_rfeprime(:,:,:) = c0
+      ta_rfesed(:,:,:) = c0
+      ta_rbfe(:,:,:) = c0 
+      ta_rfecol(:,:,:) = c0 
+#   endif
+#   endif
+#   if defined O_npzd_extra_diagnostics
+      ta_ravej(:,:,:) = c0
+      ta_ravej_D(:,:,:) = c0
+      ta_rgmax(:,:,:) = c0
+      ta_rno3P(:,:,:) = c0
+      ta_rpo4P(:,:,:) = c0
+      ta_rpo4_D(:,:,:) = c0
 #   endif
 #  endif
 #  if defined O_save_convection
@@ -658,6 +745,9 @@
       ta_vdepth(:,:) = c0
       ta_pe(:,:) = c0
 #  endif
+# if defined O_pipe_co2
+      ta_kpipe(:,:) = c0
+# endif
 #  if defined O_save_carbon_carbonate_chem
       ta_sspH(:,:) = c0
       ta_ssCO3(:,:) = c0
@@ -742,7 +832,10 @@
 #  endif
 #  if defined O_save_npzd
       ta_rnpp(:,:,:) = c0
+      ta_rnpp_dop(:,:,:) = c0
       ta_rgraz(:,:,:) = c0
+      ta_rgraz_Z(:,:,:) = c0
+      ta_rgraz_Det(:,:,:) = c0
       ta_rmorp(:,:,:) = c0
       ta_rmorpt(:,:,:) = c0
       ta_rmorz(:,:,:) = c0
@@ -751,12 +844,36 @@
       ta_rexpo(:,:,:) = c0
       ta_rexpocal(:,:,:) = c0
       ta_rprocal(:,:) = c0
+      ta_rsedrr(:,:) = c0
 #   if defined O_npzd_nitrogen
       ta_rnpp_D(:,:,:) = c0
+      ta_rnpp_D_dop(:,:,:) = c0
       ta_rgraz_D(:,:,:) = c0
       ta_rmorp_D(:,:,:) = c0
+      ta_rmorpt_D(:,:,:) = c0
       ta_rnfix(:,:,:) = c0
-      ta_rdeni(:,:,:) = c0
+      ta_rwcdeni(:,:,:) = c0
+      ta_rbdeni(:,:,:) = c0
+#   endif
+#   if defined O_npzd_iron
+      ta_rexpofe(:,:,:) = c0
+      ta_rremife(:,:,:) = c0
+#   if defined O_npzd_iron_diagnostics
+      ta_rfeorgads(:,:,:) = c0
+      ta_rdeffe(:,:,:) = c0
+      ta_rfeprime(:,:,:) = c0
+      ta_rfesed(:,:,:) = c0
+      ta_rbfe(:,:,:) = c0
+      ta_rfecol(:,:,:) = c0
+#   endif
+#   endif
+#   if defined O_npzd_extra_diagnostics
+      ta_ravej(:,:,:) = c0
+      ta_ravej_D(:,:,:) = c0
+      ta_rgmax(:,:,:) = c0
+      ta_rno3P(:,:,:) = c0
+      ta_rpo4P(:,:,:) = c0
+      ta_rpo4_D(:,:,:) = c0
 #   endif
 #  endif
 #  if defined O_save_convection
@@ -764,6 +881,9 @@
       ta_vdepth(:,:) = c0
       ta_pe(:,:) = c0
 #  endif
+# if defined O_pipe_co2
+      ta_kpipe(:,:) = c0
+# endif
 #  if defined O_save_carbon_carbonate_chem
       ta_sspH(:,:) = c0
       ta_ssCO3(:,:) = c0

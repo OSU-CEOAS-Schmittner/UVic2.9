@@ -625,10 +625,10 @@
      &, 'latitude', 'latitude', 'degrees_north')
       it(1) = id_xt_e
       call defvar ('longitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
       it(1) = id_slev
       call defvar ('slev', iou, 1, it, c0, c0, ' ', 'D'
      &, 'sediment level', ' ','1')

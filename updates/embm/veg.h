@@ -32,7 +32,7 @@
 
       common /veg_r/ veg_rl(nveg), veg_alb(nveg), veg_rs(nveg)
       common /veg_r/ veg_smd(nveg)
-#if defined O_crop_data || defined O_crop_data_transient || defined O_pasture_data || defined O_pasture_data_transient || defined O_agric_data || defined O_agric_data_transient
+#if defined O_crop_data || defined O_crop_data_transient || defined O_pasture_data || defined O_agric_data || defined O_agric_data_transient
       common /veg_r/ veg_dalt(imt,jmt)
       common /veg_r/ agric(imt,jmt,1:3)
 #else

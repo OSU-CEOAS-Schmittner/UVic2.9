@@ -109,7 +109,7 @@
 #if defined O_co2emit_track_co2 || defined O_co2emit_track_co2_transient
       common /embm_r/ track_co2(mtrack)
 #endif
-#if defined O_co2emit_track_sat || defined O_co2emit_track_sat_transient | defined O_embm_vcs
+#if defined O_co2emit_track_sat || defined O_co2emit_track_sat_transient || defined O_embm_vcs
       common /embm_r/ track_sat(mtrack)
 #endif
 

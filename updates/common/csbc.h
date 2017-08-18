@@ -28,22 +28,52 @@
 !       igv       = y component of ocean second layer velocity (cm s-1)
 !       issdic    = sea surface concentration of dic (umol cm-3)
 !       idicflx   = sea surface flux of carbon (umol cm-2 s-1)
+!       issdic13  = sea surface concentration of dic13 (umol cm-3)
+!       idic13flx = sea surface flux of c13 (umol cm-2 s-1)
 !       issalk    = sea surface concentration of alkalinity (umol cm-3)
 !       ialkflx   = sea surface flux of alkalinity (umol cm-2 s-1)
 !       isso2     = sea surface concentration of oxygen (umol cm-3)
 !       io2flx    = sea surface flux of oxygen (umol cm-2 s-1)
 !       isspo4    = sea surface concentration of phosphate (nmol cm-3)
 !       ipo4flx   = sea surface flux of phosphate (nmol cm-2 s-1)
+!       issdop    = sea surface concentration of dop (nmol cm-3)
+!       idopflx   = sea surface flux of dop (nmol cm-2 s-1)
 !       issphyt   = sea surface concentration of phytoplankton (nmol P cm-3)
 !       iphytflx  = sea surface flux of phytoplankton (nmol P cm-2 s-1)
 !       isszoop   = sea surface concentration of zooplankton (nmol P cm-3)
 !       izoopflx  = sea surface flux of zooplankton (nmol P cm-2 s-1)
 !       issdetr   = sea surface concentration of detritus (nmol P cm-3)
 !       idetrflx  = sea surface flux of detritus (nmol P cm-2 s-1)
+!       issdetrfe = sea surface concentration of particualte Fe (nmol Fe cm-3)  
+!       idetrfeflx= sea surface flux of particulate Fe (nmol Fe cm-2 s-1)
 !       issno3    = sea surface concentration of nitrate (nmol P cm-3)
 !       ino3flx   = sea surface flux of nitrate (nmol P cm-2 s-1)
+!       issdfe    = sea surface concentration of iron (nmol Fe cm-3)
+!       idfeflx   = sea surface flux of iron (nmol Fe cm-2 s-1)
+!       idfeadep   = sea surface flux of iron (nmol Fe cm-2 s-1)
+!       issdon    = sea surface concentration of don (nmol cm-3)
+!       idonflx   = sea surface flux of don (nmol cm-2 s-1)
 !       issdiaz   = sea surface concentration of diazotraphs (nmol P cm-3)
 !       idiazflx  = sea surface flux of diazotraphs (nmol P cm-2 s-1)
+!       issdin15    = sea surface concentration of nitrate 15 (nmol P cm-3)
+!       idin15flx   = sea surface flux of nitrate 15 (nmol P cm-2 s-1)
+!       issdon15    = sea surface concentration of don 15 (nmol cm-3)
+!       idon15flx   = sea surface flux of don 15 (nmol cm-2 s-1)
+!       issphytn15  = sea surface concentration of phytoplankton n15 
+!                     (nmol P cm-3)
+!       iphytn15flx = sea surface flux of phytoplankton n15 (nmol P cm-2 s-1)
+!       isszoopn15  = sea surface concentration of zooplankton n15 (nmol P cm-3)
+!       izoopn15flx = sea surface flux of zooplankton n15 (nmol P cm-2 s-1)
+!       issdetrn15  = sea surface concentration of detritus n15 (nmol P cm-3)
+!       idetrn15flx = sea surface flux of detritus (nmol P cm-2 s-1)
+!       issdiazn15  = sea surface concentration of diazotraphs (nmol P cm-3)
+!       idiazn15flx = sea surface flux of diazotraphs (nmol P cm-2 s-1)
+!       issphytc13= sea surface concentration of phytc13 (nmol P cm-3)
+!       iphytc13flx= sea surface flux of phytc13 (nmol P cm-2 s-1)
+!       isszoopc13= sea surface concentration of zoopc13 (nmol P cm-3)
+!       izoopc13flx= sea surface flux of zoopc13 (nmol P cm-2 s-1)
+!       issdetrc13= sea surface concentration of detrc13 (nmol P cm-3)
+!       idetrc13flx= sea surface flux of detrc13 (nmol P cm-2 s-1)
 !       issc14    = sea surface concentration of carbon 14 (umol cm-3)
 !       ic14flx   = sea surface flux of carbon 14 (umol cm-2 s-1)
 !       isscfc11  = sea surface concentration of cfc11 (umol cm-3)
@@ -63,6 +93,12 @@
 !       inpp      = carbon flux from net primary production (kg C m-2 s-1)
 !       isr       = carbon flux from soil respiration (kg m-2 s-1)
 !       iburn     = carbon flux from burning vegetation (kg m-2 s-1)
+!       inpp13    = carbon 13 flux from net primary production (kg C m-2 s-1)
+!       isr13     = carbon 13 flux from soil respiration (kg m-2 s-1)
+!       iburn13   = carbon 13 flux from burning vegetation (kg m-2 s-1)
+!       inpp14    = carbon 14 flux from net primary production (kg C m-2 s-1)
+!       isr14     = carbon 14 flux from soil respiration (kg m-2 s-1)
+!       iburn14   = carbon 14 flux from burning vegetation (kg m-2 s-1)
 !       ibtemp    = ocean bottom temperature (C)
 !       ibsalt    = ocean bottom temperature (PSU*0.001-0.035)
 !       ibdic     = ocean bottom dissolved organic carbon (umol cm-3)
@@ -72,6 +108,7 @@
 !       ibo2      = ocean bottom oxygen (umol cm-3)
 !       ircal     = rain rate of calcite (umol cm-2 s-1)
 !       irorg     = rain rate of organic carbon (umol cm-2 s-1)
+!     bhf        = spatially varying (bottom) heat flux
 !     mapsbc      = surface boundary conditions names
 !     sbc         = surface boundary condition data.
 !     gaost       = global average ocean surface tracer
@@ -103,10 +140,6 @@
 !     land_map    = map with indices for coupling to land arrays
 !     dtoih       = total system heat lost minus heat gained
 !     dtoic       = total system carbon lost minus carbon gained
-!     avgpertavg  = averaging period for time averages
-!     avgtimtavg  = averaging time for time averages
-!     avgpertsi  = averaging period for time integrals
-!     avgtimtsi  = averaging time for time integrals
 
       integer numsbc
       parameter (numsbc = 14
@@ -124,6 +157,9 @@
 #endif
 #if defined O_carbon
      &                  + 2
+# if defined O_carbon_13
+     &                  + 2
+# endif
 # if defined O_carbon_14
      &                  + 2
 # endif
@@ -135,15 +171,36 @@
      &                  + 2
 #endif
 #if defined O_npzd
-     &                  + 2
+     &                  + 4
 # if !defined O_npzd_no_vflux
      &                  + 6
 # endif
 #endif
 #if defined O_npzd_nitrogen
-     &                  + 2
+     &                  + 4
 # if !defined O_npzd_no_vflux
      &                  + 2
+# endif
+#if defined O_npzd_iron
+     &                  + 3
+# if !defined O_npzd_no_vflux
+     &                  + 2
+# endif
+#endif
+#  if defined O_npzd_nitrogen_15
+     &                  + 4
+#   if !defined O_npzd_no_vflux
+     &                  + 8
+#   endif
+#  endif
+# if defined O_carbon_13
+     &                  + 2
+#  if !defined O_npzd_no_vflux
+     &                  + 6
+#   if defined O_npzd_nitrogen
+     &                  + 2
+#   endif
+#  endif
 # endif
 #endif
 #if defined O_cfcs_data || defined O_cfcs_data_transient
@@ -153,6 +210,12 @@
      &                  + 10
 #endif
 #if defined O_mtlm && defined O_carbon
+     &                  + 3
+#endif
+#if defined O_mtlm_carbon_13
+     &                  + 3
+#endif
+#if defined O_mtlm_carbon_14
      &                  + 3
 #endif
 #if defined O_sed
@@ -175,7 +238,17 @@
       integer idiazflx, issc14, ic14flx, isscfc11, icfc11flx, isscfc12
       integer icfc12flx, iat, irh, ipr, ips, iaws, iswr, ilwr, isens
       integer ievap, idtr, inpp, isr, iburn, ibtemp, ibsalt, ibdic
-      integer ibdicfx, ibalk, ibalkfx, ibo2, ircal, irorg
+      integer inpp13, isr13, iburn13
+      integer inpp14, isr14, iburn14
+      integer ibdicfx, ibalk, ibalkfx, ibo2, ircal, irorg, issdfe 
+      integer idfeflx, issdetrfe, idetrfeflx, idfeadep
+      integer issdop, idopflx, issdon, idonflx
+      integer issdin15, idin15flx, issdon15, idon15flx, issphytn15
+      integer iphytn15flx, isszoopn15, izoopn15flx, issdetrn15
+      integer idetrn15flx, issdiazn15, idiazn15flx
+      integer issdic13, idic13flx, issdoc13, issphytc13, idoc13flx
+      integer iphytc13flx, isszoopc13, izoopc13flx, issdetrc13
+      integer idetrc13flx, issdiazc13, idiazc13flx
 
       common /csbc_i/ itaux, itauy, iws, iaca, isca, ihflx, isflx, isst
       common /csbc_i/ isss, iwa, iro, iwxq, iwyq, iwxt, iwyt, iwxc, iwyc
@@ -186,13 +259,30 @@
       common /csbc_i/ ic14flx, isscfc11, icfc11flx, isscfc12, icfc12flx
       common /csbc_i/ iat, irh, ipr, ips, iaws, iswr, ilwr, isens, ievap
       common /csbc_i/ idtr, inpp, isr, iburn, ibtemp, ibsalt, ibdic
+      common /csbc_i/ inpp13, isr13, iburn13
+      common /csbc_i/ inpp14, isr14, iburn14
       common /csbc_i/ ibdicfx, ibalk, ibalkfx, ibo2, ircal, irorg
+      common /csbc_i/ issdop, idopflx, issdon, idonflx
+      common /csbc_i/ issdin15, idin15flx, issdon15, idon15flx
+      common /csbc_i/ issphytn15, iphytn15flx, isszoopn15, izoopn15flx 
+      common /csbc_i/ idetrn15flx, issdiazn15, idiazn15flx
+      common /csbc_i/ issdetrn15
+      common /csbc_i/ issdic13, idic13flx, issdoc13, idoc13flx 
+      common /csbc_i/ issphytc13, iphytc13flx, isszoopc13, izoopc13flx 
+      common /csbc_i/ issdetrc13, idetrc13flx, issdiazc13, idiazc13flx
+      common /csbc_i/ issdfe, idfeflx, issdetrfe, idetrfeflx
+      common /csbc_i/ idfeadep
 
       character(20) :: mapsbc
       common /csbc_c/ mapsbc(numsbc)
 
       real sbc
       common /csbc_r/ sbc(imt,jmt,numsbc)
+
+#if defined O_gthflx
+      real bhf
+      common /csbc_r/ bhf(imt,jmt)
+#endif
 
       real gaost, socn
 
@@ -215,22 +305,15 @@
 #if defined O_plume
       common /csbc_r/ subflux(imt,jmt,nt), subz(imt,jmt)
 #endif
-#if defined O_carbon_carbonate_approx
-
-      real hSWS
-      common /csbc_r/ hSWS(imt,jmt)
-#endif
 #if defined O_mtlm
-
       integer land_map
+
       common /csbc_i/ land_map(imt,jmt)
 #endif
-
       integer ntlbc
+
       common /csbc_i/ ntlbc
 
       real dtoih, dtoic
-      common /csbc_r/ dtoih, dtoic
 
-      real avgpertavg, avgtimtavg, avgpertsi, avgtimtsi
-      common /csbc_r/ avgpertavg, avgtimtavg, avgpertsi, avgtimtsi
+      common /csbc_r/ dtoih, dtoic

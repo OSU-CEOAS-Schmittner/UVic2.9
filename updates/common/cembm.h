@@ -22,6 +22,8 @@
 !     dc14ccne     = equatorial atmospheric dC14 concentration
 !     dc14ccns     = southern hemisphere atmospheric dC14 concentration
 !     c14prod      = atmospheric C14 production (umol cm-2 s-1)
+!     c13ccn       = atmospheric C13 concentration (ppmv)
+!     dc13ccn      = atmospheric dC13 concentration (permil)
 !     cfc11ccnn    = northern hemisphere atmospheric CFC11 concentration
 !     cfc11ccns    = southern hemisphere atmospheric CFC11 concentration
 !     cfc12ccnn    = northern hemisphere atmospheric CFC12 concentration
@@ -93,8 +95,6 @@
 !     carbemit     = accumulated co2 emissions (Pg)
 !     adiff        = anomolous diffusion factor (percent/100/C)
 !     dtbar        = global average sat anomoly (C)
-!     cropf        = scaler for crop area
-!     pastf        = scaler for pasture area
 
       integer namix, lf, niats, nivts, nivc, ns, itrack_co2
       integer ntrack_co2, itrack_sat, ntrack_sat
@@ -104,7 +104,8 @@
 
       real pyear, dts, co2ccn, co2emit, co2emit_fuel, co2emit_land
       real anthro, co2for, c14ccn, dc14ccn, dc14ccnn, dc14ccne, dc14ccns
-      real c14prod, cfc11ccnn, cfc11ccns, cfc12ccnn, cfc12ccns, scatter
+      real c14prod, c13ccn, dc13ccn
+      real cfc11ccnn, cfc11ccns, cfc12ccnn, cfc12ccns, scatter
       real solarconst, cssh, cdatm, cpatm, sht, shq, shc, rhoatm, esatm
       real rhoocn, esocn, vlocn, cdice, dampice, rhoice, rhosno, esice
       real slice, flice, condice, tsno, hsno_max, totaltime, rlapse
@@ -113,11 +114,12 @@
       real sulph_yr, aggfor_yr, cfcs_yr, c14_yr, ice_yr, dalt_v, dalt_o
       real dalt_i, rhmax, volcfor, aggfor, aggfor_os, atmsa, ocnsa
       real sealev, dsealev, sealev_yr, vcsref, vcsfac, vcsyri, gtoppm
-      real carbemit, adiff, dtbar, cropf, pastf
+      real carbemit, adiff, dtbar
 
       common /cembm_r/ pyear, dts, co2ccn, co2emit, co2emit_fuel
       common /cembm_r/ co2emit_land, anthro, co2for, c14ccn, dc14ccn
-      common /cembm_r/ dc14ccnn, dc14ccne, dc14ccns, c14prod, cfc11ccnn
+      common /cembm_r/ dc14ccnn, dc14ccne, dc14ccns, c14prod, c13ccn
+      common /cembm_r/ dc13ccn, cfc11ccnn
       common /cembm_r/ cfc11ccns, cfc12ccnn, cfc12ccns, cssh, cdatm
       common /cembm_r/ cpatm, sht, shq, shc, rhoatm, esatm, rhoocn
       common /cembm_r/ scatter, solarconst, esocn, dampice, rhoice
@@ -129,8 +131,7 @@
       common /cembm_r/ cfcs_yr, c14_yr, ice_yr, dalt_v, dalt_o, dalt_i
       common /cembm_r/ rhmax, volcfor, aggfor, aggfor_os, atmsa, ocnsa
       common /cembm_r/ sealev, dsealev, sealev_yr, vcsref, vcsfac
-      common /cembm_r/ vcsyri, gtoppm, carbemit, adiff, dtbar, cropf
-      common /cembm_r/ pastf
+      common /cembm_r/ vcsyri, gtoppm, carbemit, adiff, dtbar
 
 !     ntatsa        = time step counter for time averaging
 !     ntatia        = number of time averaged time step integrals
@@ -146,6 +147,7 @@
 !     tai_co2ccn    = average integrated CO2 concentration
 !     tai_co2emit   = average integrated CO2 emissions
 !     tai_dc14ccn   = average integrated dC14 concentration
+!     tai_dc13ccn   = average integrated dC13 concentration
 !     tai_cfc11ccn  = average integrated CFC11 concentration
 !     tai_cfc12ccn  = average integrated CFC12 concentration
 !     tai_maxit     = average maximum iterations for atmospheric solver
@@ -192,7 +194,10 @@
 !     tai_ssalk     = average sea surface alkalinity
 !     tai_sso2      = average sea surface o2
 !     tai_sspo4     = average sea surface po4
+!     tai_ssdfe     = average sea surface dfe
+!     tai_ssdop     = average sea surface dop
 !     tai_ssno3     = average sea surface no3
+!     tai_ssdon     = average sea surface don
 !     tai_sscfc11   = average sea surface cfc11
 !     tai_sscfc12   = average sea surface cfc12
 !     tai_sulph     = average tropospheric sulphate forcing
@@ -208,6 +213,7 @@
       real tai_sat, tai_shum, tai_precip, tai_evap, tai_ohice, tai_oaice
       real tai_hsno, tai_lhice, tai_laice, tai_co2ccn, tai_co2emit
       real tai_dc14ccn, tai_cfc11ccn, tai_cfc12ccn, tai_maxit, tai_nsat
+      real tai_dc13ccn
       real tai_ssat, tai_nshum, tai_sshum, tai_nprecip, tai_sprecip
       real tai_nevap, tai_sevap, tai_nohice, tai_sohice, tai_noaice
       real tai_soaice, tai_nhsno, tai_shsno, tai_nlhice, tai_slhice
@@ -217,11 +223,13 @@
       real tai_palb, tai_aalb, tai_salb, tai_lsalb, tai_osalb, tai_sst
       real tai_sss, tai_ssdic, tai_ssc14, tai_ssalk, tai_sso2, tai_sspo4
       real tai_ssno3, tai_sscfc11, tai_sscfc12, tai_sulph, tai_volc
-      real tai_agg, tai_catm, tai_carbemit
+      real tai_agg, tai_catm, tai_carbemit, tai_ssdop, tai_ssdon
+      real tai_ssdin15, tai_ssdon15, tai_ssdic13, tai_ssdoc13, tai_ssdfe
 
       common /cembm_r/ tai_sat, tai_shum, tai_precip, tai_evap
       common /cembm_r/ tai_ohice, tai_oaice, tai_hsno, tai_lhice
       common /cembm_r/ tai_laice, tai_co2ccn, tai_co2emit, tai_dc14ccn
+      common /cembm_r/ tai_dc13ccn
       common /cembm_r/ tai_cfc11ccn, tai_cfc12ccn, tai_maxit, tai_nsat
       common /cembm_r/ tai_ssat, tai_nshum, tai_sshum, tai_nprecip
       common /cembm_r/ tai_sprecip, tai_nevap, tai_sevap, tai_nohice
@@ -235,4 +243,6 @@
       common /cembm_r/ tai_sss, tai_ssdic, tai_ssc14, tai_ssalk
       common /cembm_r/ tai_sso2, tai_sspo4, tai_ssno3, tai_sscfc11
       common /cembm_r/ tai_sscfc12, tai_sulph, tai_volc, tai_agg
-      common /cembm_r/ tai_catm, tai_carbemit
+      common /cembm_r/ tai_catm, tai_carbemit, tai_ssdop, tai_ssdon
+      common /cembm_r/ tai_ssdin15, tai_ssdon15, tai_ssdic13
+      common /cembm_r/ tai_ssdoc13, tai_ssdfe

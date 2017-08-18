@@ -1,7 +1,7 @@
       subroutine isopi (error, am, ah)
 
 #if defined O_mom
-# if defined O_isopycmix
+# if defined O_isopycmix || defined O_gent_mcwilliams
 !=======================================================================
 
 !               Initialization for isopycnal mixing scheme
@@ -51,9 +51,6 @@
       include "vmixc.h"
 
       real tmpijk(imtm2,jmtm2,km)
-#  if !defined O_gent_mcwilliams
-      real athkdf
-#  endif
 
       namelist /isopyc/ slmx, ahisop, athkdf, del_dm, s_dm
 
@@ -554,7 +551,7 @@
 
       integer i, k, j, ip, kr, jq, js, je, jrow, joff, ie, is
 
-      real sc, dzt4r, ai0, sumz, sxe, sumy, facty
+      real sc, dzt4r, ai0, sumz, sxe, sumy, facty 
 
       include "size.h"
       include "param.h"
@@ -574,13 +571,107 @@
 !     the full tensor, it is re-scaled if outside the stable range.
 !-----------------------------------------------------------------------
 
+      addisop(1:imtm1,js:je,1:km) = 0;
+#   if defined O_anisotropic_zonal_mixing
+!-----------------------------------------------------------------------
+!     include anisotropic zonal equatorial isopycnal mixing scheme
+!     see Getzlaff and Dietze, 2013, GRL for more information
+!     smooth values linearly between 5-10 deg N/S to default values
+!----------------------------------------------------------------------
+!     Pacific
+      do i=30,83
+         do j=44,47
+            do k=4,km
+               addisop(i,k,j) = 0.5e8*j - 2.2e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+         do j=48,53
+            do k=4,km
+               addisop(i,k,j) = 2.0e8
+            enddo
+         enddo
+         do j=54,57
+            do k=4,km
+               addisop(i,k,j) = -0.5e8*j + 2.85e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+      enddo     
+
+! Indic
+      
+      do i=5,29
+         do j=44,47
+            do k=4,km
+               addisop(i,k,j) = 1.25e8*j - 5.5e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+         do j=48,53
+            do k=4,km
+               addisop(i,k,j) = 5.0e8
+            enddo
+         enddo
+         do j=54,57
+            do k=4,km
+               addisop(i,k,j) = -1.25e8*j + 7.125e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+      enddo   
+
+! Atlantic
+
+      do i=1,5
+         do j=44,47
+            do k=4,km
+               addisop(i,k,j) = 5.e7*j - 2.2e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+         do j=48,53
+            do k=4,km
+               addisop(i,k,j) = 2.0e8
+            enddo
+         enddo
+         do j=54,57
+            do k=4,km
+               addisop(i,k,j) = -5.e7*j + 2.85e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+      enddo     
+
+      do i=84,imtm1
+         do j=44,47
+            do k=4,km
+               addisop(i,k,j) = 5.e7*j - 2.2e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+         do j=48,53
+            do k=4,km
+               addisop(i,k,j) = 2.0e8
+            enddo
+         enddo
+         do j=54,57
+            do k=4,km
+               addisop(i,k,j) = -5.e7*j + 2.85e9
+c               print*,"j=",j,", addisop=",addisop(i,k,j)
+            enddo
+         enddo
+      enddo     
+#  endif
+
       do j=js,je
         jrow = j + joff
         do k=1,km
           sc = c1/(slmxr*dtxsqr(k))
           dzt4r = p5*dzt2r(k)
           do i=2,imtm1
-            Ai0 = ahisop*p5*(fisop(i,jrow,k) + fisop(i+1,jrow,k))
+            Ai0 =(ahisop+addisop(i,k,jrow))*p5*(fisop(i,jrow,k)
+     &           +fisop(i+1,jrow,k))
 #  if defined O_full_tensor
             sumz = c0
             do kr=0,1
@@ -654,7 +745,7 @@
 
       integer i, k, j, ip, kr, jq, js, je, jrow, joff, ie, is
 
-      real sc, dzt4r, ai0, sumz, syn, sumx
+      real sc, dzt4r, ai0, sumz, syn, sumx, ck
 
       include "size.h"
       include "param.h"
@@ -680,7 +771,10 @@
           sc = c1/(slmxr*dtxsqr(k))
           dzt4r = p5*dzt2r(k)
           do i=2,imtm1
+
+!            print*, "ADDISO", ck
             Ai0 = ahisop*p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k))
+
 #  if defined O_full_tensor
             sumz = c0
             do kr=0,1
@@ -754,7 +848,7 @@
 
       integer i, k, j, ip, kr, jq, js, je, jrow, joff, ie, is
 
-      real sc, kp1, ai0, sumx, sxb, sumy, facty, syb
+      real sc, kp1, ai0, sumx, sxb, sumy, facty, syb, ck
 
       include "size.h"
       include "param.h"
@@ -901,7 +995,7 @@
       integer n, ie, is
 
       real dzt4r, sumz, flux_x, ai0, sumy, facty, csu_dzt4r, flux_y
-      real sumx
+      real sumx, ck
 
       include "size.h"
       include "param.h"
@@ -943,7 +1037,12 @@
             enddo
             flux_x = dzt4r*sumz
 #  if defined O_full_tensor
-            Ai0 = ahisop*p5*(fisop(i,jrow,k) + fisop(i+1,jrow,k))
+#   if defined O_anisotropic_zonal_mixing 
+            ck = addisop(i,jrow,k)
+            print*, "ADDISO", ck
+#   endif
+            Ai0 = (ahisop+addisop(i,jrow,k))*p5*(fisop(i,jrow,k)
+     &           + fisop(i+1,jrow,k))
             sumy = c0
             do jq=0,1
               facty = csu(jrow-1+jq)
@@ -993,7 +1092,9 @@
             enddo
             flux_y = csu_dzt4r*sumz
 #  if defined O_full_tensor
-            Ai0 = ahisop*p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k))
+            ck = addisop(i,jrow,k)
+            Ai0 = (ahisop+addisop(i,jrow,k))*p5*(fisop(i,jrow,k)
+     &           + fisop(i,jrow+1,k))
             sumx = c0
             do ip=0,1
               do jq=0,1
@@ -1099,6 +1200,7 @@
       return
       end
 
+#  if defined O_gent_mcwilliams
       subroutine isopyc_adv (joff, js, je, is, ie)
 
 !=======================================================================
@@ -1110,7 +1212,6 @@
       integer i, k, j, ip, kr, jq, js, je, jrow, joff, km1, kp1
       integer jstrt, ie, is
 
-#  if defined O_gent_mcwilliams
       real sc, ath0, at, bt, stn, ab, bb, sbn, absstn, abssbn
       real ath_t, ath_b, ste, sbe, absste, abssbe
 
@@ -1320,9 +1421,8 @@
             do i=2,imt
               ta_vetiso(i,k,jrow) = ta_vetiso(i,k,jrow) +
      &                              adv_vetiso(i,k,j)
-!             remove "extra" csu in time averages of vntiso
               ta_vntiso(i,k,jrow) = ta_vntiso(i,k,jrow) +
-     &                              adv_vntiso(i,k,j)/csu(jrow)
+     &                              adv_vntiso(i,k,j)
               ta_vbtiso(i,k,jrow) = ta_vbtiso(i,k,jrow) +
      &                              adv_vbtiso(i,k,j)
             enddo

@@ -114,7 +114,8 @@
 !     read topography
 !-----------------------------------------------------------------------
 
-      call topog (kmt, kmu, map, xt, yt, zt, xu, yu, zw, imt, jmt, km)
+      call topog (kmt, kmu, map, xt, yt, zt, xu, yu, zw, imt, jmt, km
+     &,           sg_bathy)
 
       call isleperim (kmt, map, iperm, jperm, iofs, nippts, nisle, imt
      &,               jmt, km, mnisle, maxipp, xu, yu, zw)
@@ -209,6 +210,10 @@
 # endif
 # if defined O_carbon
             if (issdic .ne. 0) sbc(i,j,issdic) = t(i,1,j,idic,taup1)
+#  if defined O_carbon_13
+            if (issdic13 .ne. 0) sbc(i,j,issdic13) = 
+     &           t(i,1,j,idic13,taup1)
+#  endif
 #  if defined O_carbon_14
             if (issc14 .ne. 0) sbc(i,j,issc14) = t(i,1,j,ic14,taup1)
 #  endif
@@ -221,12 +226,46 @@
 # endif
 # if defined O_npzd
             if (isspo4 .ne. 0) sbc(i,j,isspo4) = t(i,1,j,ipo4,taup1)
+            if (issdop .ne. 0) sbc(i,j,issdon) = t(i,1,j,idop,taup1)
             if (issphyt .ne. 0) sbc(i,j,issphyt) = t(i,1,j,iphyt,taup1)
             if (isszoop .ne. 0) sbc(i,j,isszoop) = t(i,1,j,izoop,taup1)
             if (issdetr .ne. 0) sbc(i,j,issdetr) = t(i,1,j,idetr,taup1)
 #  if defined O_npzd_nitrogen
             if (issno3 .ne. 0) sbc(i,j,issno3) = t(i,1,j,ino3,taup1)
+            if (issdon .ne. 0) sbc(i,j,issdon) = t(i,1,j,idon,taup1)
             if (issdiaz .ne. 0) sbc(i,j,issdiaz) = t(i,1,j,idiaz,taup1)
+#   if defined O_npzd_nitrogen_15
+            if (issdin15 .ne. 0) sbc(i,j,issdin15) 
+     &           = t(i,1,j,idin15,taup1)
+            if (issdon15 .ne. 0) sbc(i,j,issdon15) 
+     &           = t(i,1,j,idon15,taup1)
+            if (issphytn15 .ne. 0) sbc(i,j,issphytn15) 
+     &           = t(i,1,j,iphytn15,taup1)
+            if (isszoopn15 .ne. 0) sbc(i,j,isszoopn15) 
+     &           = t(i,1,j,izoopn15,taup1)
+            if (issdetrn15 .ne. 0) sbc(i,j,issdetrn15) 
+     &           = t(i,1,j,idetrn15,taup1)
+            if (issdiazn15 .ne. 0) sbc(i,j,issdiazn15) 
+     &           = t(i,1,j,idiazn15,taup1)
+#   endif
+#  endif
+#  if defined O_npzd_iron
+       if (issdfe .ne. 0) sbc(i,j,issdfe) = t(i,1,j,idfe,taup1)
+       if (issdetrfe .ne. 0) sbc(i,j,issdetrfe) = t(i,1,j,idetrfe,taup1)
+#  endif
+#  if defined O_carbon_13
+            if (issdoc13 .ne. 0) sbc(i,j,issdoc13) = 
+     &           t(i,1,j,idoc13,taup1)
+            if (issphytc13 .ne. 0) sbc(i,j,issphytc13) = 
+     &           t(i,1,j,iphytc13,taup1)
+            if (isszoopc13 .ne. 0) sbc(i,j,isszoopc13) = 
+     &           t(i,1,j,izoopc13,taup1)
+            if (issdetrc13 .ne. 0) sbc(i,j,issdetrc13) = 
+     &           t(i,1,j,idetrc13,taup1)
+#   if defined O_npzd_nitrogen
+            if (issdiazc13 .ne. 0) sbc(i,j,issdiazc13) = 
+     &           t(i,1,j,idiazc13,taup1)
+#   endif
 #  endif
 # endif
 # if defined O_cfcs_data || defined O_cfcs_data_transient
@@ -245,6 +284,9 @@
 # endif
 # if defined O_carbon
           if (issdic .ne. 0) call getst (j, sbc(1,1,issdic), idic)
+#  if defined O_carbon_13
+          if (issdic13 .ne. 0) call getst (j, sbc(1,1,issdic13), idic13)
+#  endif
 #  if defined O_carbon_14
           if (issc14 .ne. 0) call getst (j, sbc(1,1,issc14), ic14)
 #  endif
@@ -257,12 +299,46 @@
 # endif
 # if defined O_npzd
             if (isspo4 .ne. 0) call getst (j, sbc(1,1,isspo4), ipo4)
+            if (issdop .ne. 0) call getst (j, sbc(1,1,issdop), idop)
             if (issphyt .ne. 0) call getst (j, sbc(1,1,issphyt), iphyt)
             if (isszoop .ne. 0) call getst (j, sbc(1,1,isszoop), izoop)
             if (issdetr .ne. 0) call getst (j, sbc(1,1,issdetr), idetr)
 #  if defined O_npzd_nitrogen
             if (issno3 .ne. 0) call getst (j, sbc(1,1,issno3), ino3)
+            if (issdon .ne. 0) call getst (j, sbc(1,1,issdon), idon)
             if (issdiaz .ne. 0) call getst (j, sbc(1,1,issdiaz), idiaz)
+#   if defined O_npzd_nitrogen_15
+            if (issdin15 .ne. 0) 
+     &           call getst (j, sbc(1,1,issdin15), idin15)
+            if (issdon15 .ne. 0) 
+     &           call getst (j, sbc(1,1,issdon15), idon15)
+            if (issphytn15 .ne. 0) 
+     &           call getst (j, sbc(1,1,issphytn15), iphytn15)
+            if (isszoopn15 .ne. 0) 
+     &           call getst (j, sbc(1,1,isszoopn15), izoopn15)
+            if (issdetrn15 .ne. 0) 
+     &           call getst (j, sbc(1,1,issdetrn15), idetrn15)
+            if (issdiazn15 .ne. 0) 
+     &           call getst (j, sbc(1,1,issdiazn15), idiazn15)
+#   endif
+#  endif
+#  if defined O_npzd_iron
+       if (issdfe .ne. 0) call getst (j, sbc(1,1,issdfe), idfe)
+       if (issdetrfe .ne. 0) call getst (j, sbc(1,1,issdetrfe), idetrfe)
+#  endif
+#  if defined O_carbon_13
+            if (issdoc13 .ne. 0) call getst (j, sbc(1,1,issdoc13)
+     &,       idoc13)
+            if (issphytc13 .ne. 0) call getst (j, sbc(1,1,issphytc13)
+     &,       iphytc13)
+            if (isszoopc13 .ne. 0) call getst (j, sbc(1,1,isszoopc13)
+     &,       izoopc13)
+            if (issdetrc13 .ne. 0) call getst (j, sbc(1,1,issdetrc13)
+     &,       idetrc13)
+#   if defined O_npzd_nitrogen
+            if (issdiazc13 .ne. 0) call getst (j, sbc(1,1,issdiazc13)
+     &,       idiazc13)
+#   endif
 #  endif
 # endif
 # if defined O_cfcs_data || defined O_cfcs_data_transient
@@ -293,10 +369,7 @@
 !     S T A R T    S E G M E N T    L O O P
 !-----------------------------------------------------------------------
 
-      tsicpl = .false.
-      tavgcpl = .false.
       do n=1,numseg
-        cplts = .false.
 
 !-----------------------------------------------------------------------
 !       get the atmospheric S.B.C.
@@ -312,9 +385,6 @@
 
         do loop=1,ntspas
 #if defined O_embm
-# if !defined O_mom
-          if (loop .eq. ntspas) cplts = .true.
-# endif
           call embm (1, imt, 1, jmt)
 
 # if !defined O_mom
@@ -361,7 +431,6 @@
 !-----------------------------------------------------------------------
 
         do loop=1,ntspos
-          if (loop .eq. ntspos) cplts = .true.
           call mom
 # if defined O_embm
           call embmout (1, imt, 1, jmt)
@@ -534,7 +603,27 @@
         if (tbtint .ge. yrlen*accel) tbtint = tbtint/accel
       endif
 
-#if defined O_time_averages
+      if (mod(timavgint, segtim) .gt. 1.e-6 .and. timavgint .gt. 0.)
+     &  then
+        t1 = nint(timavgint/segtim)*segtim
+        if (t1 .lt. segtim) t1 = segtim
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: "timavgint" does not contain an integral number'
+     &,   '              of coupling time steps "segtim".              '
+        write (stdout,*) '              (changed "timavgint" from '
+     &, timavgint,' days to ', t1,' days to insure this condition)'
+        timavgint = t1
+      endif
+      if (timavgint .eq. 0.) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: averaging interval "timavgint" = 0. implies no '
+     &,   '             averaging when "time_averages" is enabled      '
+      endif
+      if (timavgint .gt. timavgper) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: the interval "timavgint" exceeds the averaging '
+     &,   '             period "timavgper" for option "time_averages"  '
+      endif
       if (timavgint .lt. timavgper) then
         write (stdout,'(/,(1x,a))')
      &    '==> Warning: averaging period "timavgper" exceeds interval  '
@@ -545,8 +634,27 @@
      &  '==> Time averages written every ', timavgint, ' days, '
      &, '    with an averaging period of ', timavgper, ' days. '
 
-#endif
-#if defined O_time_step_monitor
+      if (mod(tsiint, segtim) .gt. 1.e-6 .and. tsiint .gt. 0.)
+     &  then
+        t1 = nint(tsiint/segtim)*segtim
+        if (t1 .lt. segtim) t1 = segtim
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: "tsiint" does not contain an integral number'
+     &,   '              of coupling time steps "segtim".              '
+        write (stdout,*) '              (changed "tsiint" from '
+     &, tsiint,' days to ', t1,' days to insure this condition)'
+        tsiint = t1
+      endif
+      if (tsiint .eq. 0.) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: averaging interval "tsiint" = 0. implies no '
+     &,   '             averaging when "time_averages" is enabled      '
+      endif
+      if (tsiint .gt. tsiper) then
+        write (stdout,'(/,(1x,a))')
+     &    '==> Warning: the interval "tsiint" exceeds the averaging '
+     &,   '             period "tsiper"'
+      endif
       if (tsiint .lt. tsiper) then
         write (stdout,'(/,(1x,a))')
      &    '==> Warning: averaging period "tsiper" exceeds interval  '
@@ -557,8 +665,7 @@
      &  '==> Time step integrals written every ', tsiint, ' days, '
      &, '    with an averaging period of       ', tsiper, ' days. '
 
-#endif
-#if defined O_even_fluxes
+# if defined O_even_fluxes
       if (mod(namix,2) .ne. mod(nint(segtim*daylen/dtatm),2)) then
         write(*,*) '==> Error: time steps between mixing and coupling'
         write(*,*) '           in the atmosphere must both be even to'
@@ -693,7 +800,72 @@
      & '==> Warning: both restoring and replacing surface tracers '
      &,'(restorst, replacst ). Replacing takes precidence'
 #endif
-#if defined O_co2ccn_data || defined O_co2emit_data
+#if defined O_co2ccn_data_transient && !defined O_co2ccn_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_co2ccn_data'
+      errorc = .true.
+#endif
+#if defined O_co2emit_data_transient && !defined O_co2emit_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_co2emit_data'
+      errorc = .true.
+#endif
+#if defined O_co2emit_track_sat_transient && !defined O_co2emit_track_sat
+      write (stdout,9000)
+     & '==> Error: transient option needs O_co2emit_track_sat'
+      errorc = .true.
+#endif
+#if defined O_co2emit_track_co2_transient && !defined O_co2emit_track_co2
+      write (stdout,9000)
+     & '==> Error: transient option needs O_co2emit_track_co2'
+      errorc = .true.
+#endif
+#if defined O_agric_data_transient && !defined O_agric_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_agric_data'
+      errorc = .true.
+#endif
+#if defined O_crop_data_transient && !defined O_crop_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_crop_data'
+      errorc = .true.
+#endif
+#if defined O_landice_data_transient && !defined O_landice_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_landice_data'
+      errorc = .true.
+#endif
+#if defined O_solar_data_transient && !defined O_solar_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_solar_data'
+      errorc = .true.
+#endif
+#if defined O_volcano_data_transient && !defined O_volcano_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_volcano_data'
+      errorc = .true.
+#endif
+#if defined O_sulphate_data_transient && !defined O_sulphate_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_sulphate_data'
+      errorc = .true.
+#endif
+#if defined O_aggfor_data_transient && !defined O_aggfor_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_aggfor_data'
+      errorc = .true.
+#endif
+#if defined O_cfcs_data_transient && !defined O_cfcs_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_cfcs_data'
+      errorc = .true.
+#endif
+#if defined O_c14ccn_data_transient && !defined O_c14ccn_data
+      write (stdout,9000)
+     & '==> Error: transient option needs O_c14ccn_data'
+      errorc = .true.
+#endif
+#if defined O_co2ccn_data|| defined O_co2emit_data || defined O_co2emit_track_co2 || defined O_co2emit_track_sat
 
           tmp = 0
 # if defined O_co2ccn_data
@@ -702,13 +874,19 @@
 # if defined O_co2emit_data
      &        + 1
 # endif
+# if defined O_co2emit_track_co2
+     &        + 1
+# endif
+# if defined O_co2emit_track_sat
+     &        + 1
+# endif
 # if defined O_co2ccn_user
      &        + 1
 # endif
       if (tmp .gt. 1) then
         write (stdout,9000)
      & '==> Error: use only one of O_co2ccn_data, O_co2emit_data, '
-     &,'or O_co2ccn_user'
+     &,'O_co2emit_track_co2, O_co2emit_track_sat or O_co2ccn_user'
         errorc = .true.
       endif
 #endif
@@ -810,12 +988,16 @@
       igv = 0
       issdic = 0
       idicflx = 0
+      issdic13 = 0
+      idic13flx = 0
       issalk = 0
       ialkflx = 0
       isso2 = 0
       io2flx = 0
       isspo4 = 0
       ipo4flx = 0
+      issdop = 0
+      idopflx = 0
       issphyt = 0
       iphytflx = 0
       isszoop = 0
@@ -824,8 +1006,37 @@
       idetrflx = 0
       issno3 = 0
       ino3flx = 0
+      issdon = 0
+      idonflx = 0
       issdiaz = 0
       idiazflx = 0
+      issdfe = 0
+      idfeflx = 0
+      idfeadep = 0
+      issdetrfe = 0
+      idetrfeflx = 0
+      issdin15 = 0
+      idin15flx = 0
+      issdon15 = 0
+      idon15flx = 0
+      issphytn15 = 0
+      iphytn15flx = 0
+      isszoopn15 = 0
+      izoopn15flx = 0
+      issdetrn15 = 0
+      idetrn15flx = 0
+      issdiazn15 = 0
+      idiazn15flx = 0
+      issdoc13 = 0
+      idoc13flx = 0
+      issphytc13 = 0
+      iphytc13flx = 0
+      isszoopc13 = 0
+      izoopc13flx = 0
+      issdetrc13 = 0
+      idetrc13flx = 0
+      issdiazc13 = 0
+      idiazc13flx = 0
       issc14 = 0
       ic14flx = 0
       isscfc11 = 0
@@ -845,6 +1056,12 @@
       isr = 0
       inpp = 0
       iburn = 0
+      isr13 = 0
+      inpp13 = 0
+      iburn13 = 0
+      isr14 = 0
+      inpp14 = 0
+      iburn14 = 0
       ibtemp = 0
       ibsalt = 0
       ibdic = 0
@@ -898,6 +1115,10 @@
 #if defined O_carbon
       call set (issdic, m, mapsbc(m), 'ssdic', m)
       call set (idicflx, m, mapsbc(m), 'dicflx', m)
+# if defined O_carbon_13
+      call set (issdic13, m, mapsbc(m), 'ssdic13', m)
+      call set (idic13flx, m, mapsbc(m), 'dic13flx', m)
+# endif
 # if defined O_carbon_14
       call set (issc14, m, mapsbc(m), 'ssc14', m)
       call set (ic14flx, m, mapsbc(m), 'c14flx', m)
@@ -914,6 +1135,8 @@
 #if defined O_npzd
       call set (isspo4, m, mapsbc(m), 'sspo4', m)
       call set (ipo4flx, m, mapsbc(m), 'po4flx', m)
+      call set (issdop, m, mapsbc(m), 'ssdop', m)
+      call set (idopflx, m, mapsbc(m), 'dopflx', m)
 # if !defined O_npzd_no_vflux
       call set (issphyt, m, mapsbc(m), 'ssphyt', m)
       call set (iphytflx, m, mapsbc(m), 'phytflx', m)
@@ -922,12 +1145,55 @@
       call set (issdetr, m, mapsbc(m), 'ssdetr', m)
       call set (idetrflx, m, mapsbc(m), 'detrflx', m)
 # endif
+# if defined O_npzd_iron
+      call set (issdfe, m, mapsbc(m), 'ssdfe', m)
+      call set (idfeflx, m, mapsbc(m), 'dfeflx', m)
+      call set (idfeadep, m, mapsbc(m), 'dfeadep', m)
+#  if !defined O_npzd_no_vflux
+      call set (issdetrfe, m, mapsbc(m), 'ssdetrfe', m)
+      call set (idetrfeflx, m, mapsbc(m), 'detrfeflx', m)
+#  endif
+# endif
 # if defined O_npzd_nitrogen
       call set (issno3, m, mapsbc(m), 'ssno3', m)
       call set (ino3flx, m, mapsbc(m), 'no3flx', m)
+      call set (issdon, m, mapsbc(m), 'ssdon', m)
+      call set (idonflx, m, mapsbc(m), 'donflx', m)
 #  if !defined O_npzd_no_vflux
       call set (issdiaz, m, mapsbc(m), 'ssdiaz', m)
       call set (idiazflx, m, mapsbc(m), 'diazflx', m)
+#  endif
+#  if defined O_npzd_nitrogen_15
+      call set (issdin15, m, mapsbc(m), 'ssdin15', m)
+      call set (idin15flx, m, mapsbc(m), 'din15flx', m)
+      call set (issdon15, m, mapsbc(m), 'ssdon15', m)
+      call set (idon15flx, m, mapsbc(m), 'don15flx', m)
+#   if !defined O_npzd_no_vflux
+      call set (issphytn15, m, mapsbc(m), 'ssphytn15', m)
+      call set (iphytn15flx, m, mapsbc(m), 'phytn15flx', m)
+      call set (isszoopn15, m, mapsbc(m), 'sszoopn15', m)
+      call set (izoopn15flx, m, mapsbc(m), 'zoopn15flx', m)
+      call set (issdetrn15, m, mapsbc(m), 'ssdetrn15', m)
+      call set (idetrn15flx, m, mapsbc(m), 'detrn15flx', m)
+      call set (issdiazn15, m, mapsbc(m), 'ssdiazn15', m)
+      call set (idiazn15flx, m, mapsbc(m), 'diazn15flx', m)
+#   endif
+#  endif
+#  if defined O_carbon_13
+      call set (issdoc13, m, mapsbc(m), 'ssdoc13', m)
+      call set (idoc13flx, m, mapsbc(m), 'doc13flx', m)
+#   if !defined O_npzd_no_vflux
+      call set (issphytc13, m, mapsbc(m), 'ssphytc13', m)
+      call set (iphytc13flx, m, mapsbc(m), 'phytc13flx', m)
+      call set (isszoopc13, m, mapsbc(m), 'sszoopc13', m)
+      call set (izoopc13flx, m, mapsbc(m), 'zoopc13flx', m)
+      call set (issdetrc13, m, mapsbc(m), 'ssdetrc13', m)
+      call set (idetrc13flx, m, mapsbc(m), 'detrc13flx', m)
+#    if defined O_npzd_nitrogen
+      call set (issdiaz, m, mapsbc(m), 'ssdiazc13', m)
+      call set (idiazflx, m, mapsbc(m), 'diazc13flx', m)
+#    endif
+#   endif
 #  endif
 # endif
 #endif
@@ -953,6 +1219,16 @@
       call set (isr, m, mapsbc(m), 'sr', m)
       call set (inpp, m, mapsbc(m), 'npp', m)
       call set (iburn, m, mapsbc(m), 'burn', m)
+#endif
+#if defined O_mtlm_carbon_13
+      call set (isr13, m, mapsbc(m), 'sr13', m)
+      call set (inpp13, m, mapsbc(m), 'npp13', m)
+      call set (iburn13, m, mapsbc(m), 'burn13', m)
+#endif
+#if defined O_mtlm_carbon_14
+      call set (isr14, m, mapsbc(m), 'sr14', m)
+      call set (inpp14, m, mapsbc(m), 'npp14', m)
+      call set (iburn14, m, mapsbc(m), 'burn14', m)
 #endif
 #if defined O_sed
       call set (ircal, m, mapsbc(m), 'rcal', m)
@@ -1004,23 +1280,42 @@
       itemp = 0
       isalt = 0
       idic = 0
+      idic13 = 0
       ic14 = 0
       icfc11 = 0
       icfc12 = 0
       io2 = 0
       ialk = 0
       ipo4 = 0
-      ino3 = 0
+      idop = 0
       iphyt = 0
       izoop = 0
       idetr = 0
+      ino3 = 0
+      idon = 0
       idiaz = 0
+      idin15 = 0
+      idon15 = 0
+      iphytn15 = 0
+      izoopn15 = 0
+      idetrn15 = 0
+      idiazn15 = 0
+      idoc13 = 0
+      iphytc13 = 0
+      izoopc13 = 0
+      idetrc13 = 0
+      idiazc13 = 0
+      idfe = 0
+      idetrfe = 0
 
       m = 1
       call set (itemp, m, mapt(m), 'temp', m)
       call set (isalt, m, mapt(m), 'salt', m)
 # if defined O_carbon
       call set (idic, m, mapt(m), 'dic', m)
+#  if defined O_carbon_13
+      call set (idic13, m, mapt(m), 'dic13', m)
+#  endif
 #  if defined O_carbon_14
       call set (ic14, m, mapt(m), 'c14', m)
 #  endif
@@ -1037,12 +1332,35 @@
 # endif
 # if defined O_npzd
       call set (ipo4, m, mapt(m), 'po4', m)
+      call set (idop, m, mapt(m), 'dop', m)
       call set (iphyt, m, mapt(m), 'phyt', m)
       call set (izoop, m, mapt(m), 'zoop', m)
       call set (idetr, m, mapt(m), 'detr', m)
 #  if defined O_npzd_nitrogen
       call set (ino3, m, mapt(m), 'no3', m)
+      call set (idon, m, mapt(m), 'don', m)
       call set (idiaz, m, mapt(m), 'diaz', m)
+#   if defined O_npzd_nitrogen_15
+      call set (idin15, m, mapt(m), 'din15', m)
+      call set (idon15, m, mapt(m), 'don15', m)
+      call set (iphytn15, m, mapt(m), 'phytn15', m)
+      call set (izoopn15, m, mapt(m), 'zoopn15', m)
+      call set (idetrn15, m, mapt(m), 'detrn15', m)
+      call set (idiazn15, m, mapt(m), 'diazn15', m)
+#   endif
+#  endif
+#  if defined O_carbon_13
+      call set (idoc13, m, mapt(m), 'doc13', m)
+      call set (iphytc13, m, mapt(m), 'phytc13', m)
+      call set (izoopc13, m, mapt(m), 'zoopc13', m)
+      call set (idetrc13, m, mapt(m), 'detrc13', m)
+#   if defined O_npzd_nitrogen
+      call set (idiazc13, m, mapt(m), 'diazc13', m)
+#   endif
+#  if defined O_npzd_iron
+      call set (idfe, m, mapt(m), 'dfe', m)
+      call set (idetrfe, m, mapt(m), 'detrfe', m)
+#  endif
 #  endif
 # endif
       if ( m-1 .gt. nt) then
@@ -1066,6 +1384,10 @@
 #  if defined O_carbon
       call set (isdic, m, mapst(m), 'sdic', m)
       itrc(idic) = m-1
+#   if defined O_carbon_13
+      call set (isdic13, m, mapst(m), 'sdic13', m)
+      itrc(idic13) = m-1
+#   endif
 #  endif
 #  if defined O_npzd_o2
       call set (iso2, m, mapst(m), 'so2', m)
@@ -1077,6 +1399,8 @@
 #  endif
       call set (ispo4, m, mapst(m), 'spo4', m)
       itrc(ipo4) = m-1
+      call set (isdop, m, mapst(m), 'sdop', m)
+      itrc(idop) = m-1
       call set (isphyt, m, mapst(m), 'sphyt', m)
       itrc(iphyt) = m-1
       call set (iszoop, m, mapst(m), 'szoop', m)
@@ -1086,8 +1410,44 @@
 #  if defined O_npzd_nitrogen
       call set (isno3, m, mapst(m), 'sno3', m)
       itrc(ino3) = m-1
+      call set (isdon, m, mapst(m), 'sdon', m)
+      itrc(idon) = m-1
       call set (isdiaz, m, mapst(m), 'sdiaz', m)
       itrc(idiaz) = m-1
+#   if defined O_npzd_nitrogen_15
+      call set (isdin15, m, mapst(m), 'sdin15', m)
+      itrc(idin15) = m-1
+      call set (isdon15, m, mapst(m), 'sdon15', m)
+      itrc(idon15) = m-1
+      call set (isphytn15, m, mapst(m), 'sphytn15', m)
+      itrc(iphytn15) = m-1
+      call set (iszoopn15, m, mapst(m), 'szoopn15', m)
+      itrc(izoopn15) = m-1
+      call set (isdetrn15, m, mapst(m), 'sdetrn15', m)
+      itrc(idetrn15) = m-1
+      call set (isdiazn15, m, mapst(m), 'sdiazn15', m)
+      itrc(idiazn15) = m-1
+#   endif
+#  endif
+#  if defined O_npzd_iron
+      call set (isdfe, m, mapst(m), 'sdfe', m)
+      itrc(idfe) = m-1
+      call set (isdetrfe, m, mapst(m), 'sdetrfe', m)
+      itrc(idetrfe) = m-1
+#  endif
+#  if defined O_carbon_13
+      call set (isdoc13, m, mapst(m), 'sdoc13', m) 
+      itrc(idoc13) = m-1
+      call set (isphytc13, m, mapst(m), 'sphytc13', m) 
+      itrc(iphytc13) = m-1
+      call set (iszoopc13, m, mapst(m), 'szoopc13', m) 
+      itrc(izoopc13) = m-1
+      call set (isdetrc13, m, mapst(m), 'sdetrc13', m) 
+      itrc(idetrc13) = m-1
+#   if defined O_npzd_nitrogen
+      call set (isdiazc13, m, mapst(m), 'sdiazc13', m) 
+      itrc(idiazc13) = m-1
+#   endif
 #  endif
 # endif
       if ( m-1 .gt. nt) then
@@ -1211,13 +1571,15 @@
      &,                 rmonth, rday, rhour, rmin, rsec, refrun, refinit
      &,                 refuser, eqyear, eqmon, monlen, init_time
      &,                 init_time_in, init_time_out, omega
-      namelist /npzd/   alpha, kw, kc, abio, bbio, cbio, k1n, nup
-     &,                 gamma1, gbio, epsbio, nuz, gamma2, nud0, LFe
-     &,                 wd0, par, dtnpzd, redctn, ki, redptn, capr
-     &,                 dcaco3, nupt0, redotn, jdiar
       namelist /fwa/    isfwa1, iefwa1, isfwa2, iefwa2, jsfwa, jefwa
      &,                 mrfwa, fwaflxi, fwayri, fwayrf, fwarate
      &,                 compensate
+# if defined O_npzd_iron
+     &,                 kfeleq, kfecol, alphamax, alphamin
+     &,                 thetamaxhi, rfeton, fetopsed, o2min
+     &,                 lig, thetamaxlo, mc, kfeorg
+     &,                 kfemax, kfemin, pmax
+# endif
       namelist /blmix/  Ahv, Ahh
       namelist /hlmix/  hl_depth, hl_back, hl_max
       namelist /isopyc/ slmx, ahisop, athkdf, del_dm, s_dm
@@ -1226,9 +1588,9 @@
       namelist /smagnl/ diff_c_back
       namelist /sed/    dtsedyr, nsedacc, weath, kmin
       namelist /embm/   rlapse, rf1, rf2, scatter, rhmax, vcsref, vcsfac
-     &,                 vcsyri, aggfor_os, adiff, cropf, pastf
+     &,                 vcsyri, aggfor_os, adiff
       namelist /carbon/ co2ccn, co2emit, co2for, co2_yr, c14_yr, dc14ccn
-     &,                 c14prod
+     &,                 c14prod, dc13ccn
       namelist /paleo/  orbit_yr, pyear, eccen, obliq, mvelp, sealev
      &,                 sealev_yr, volcano_yr, sulph_yr, aggfor_yr
      &,                 cfcs_yr
@@ -1420,34 +1782,6 @@
       init_time_out = .false.
       omega = pi/43082.0
 
-!     set defaults for namelist npzd
-      alpha = 0.1  ! Initial slope P-I curve [(W/m^2)^(-1)/day]
-      kw = 0.04  ! Light attenuation due to water [1/m]
-      kc = 0.047  ! Light atten. by phytoplankton [1/(m*mmol/m^3)]
-      ki = 5.0  ! Light attenuation through sea ice & snow
-      abio = 0.18  ! a; Maximum growth rate parameter [1/day]
-      bbio = 1.066  ! b
-      cbio = 1.0  ! c [1/deg_C]
-      k1n = 0.7  ! Half saturation constant for N uptake [mmol/m^3]
-      nup = 0.025  ! Specific mortality rate (Phytoplankton) [1/day]
-      nupt0 = 0.02  ! Specific mortality rate (Phytoplankton) [1/day]
-      gamma1 = 0.925  ! gama1; Assimilation efficiency (zpk)
-      gbio = 1.575  ! Maximum grazing rate [1/day]
-      epsbio = 1.6  ! Prey capture rate [(mmol/m^3)^(-2)day^(-1)]
-      nuz = 0.34  ! Quadratic mortality (zpk) [(mmol/m^3)^(-2)day^(-1)]
-      gamma2 = 0.01  ! Excretion (zpk)
-      nud0 = 0.048  ! remineralization rate [1/day]
-      LFe = 1.0  ! Iron limitation
-      wd0 = 6.0  ! Sinking speed of detritus at surface [m/day]
-      par = 0.43  ! fraction of photosythetically active radiation
-      dtnpzd = dtts  ! time step of biology [s]
-      redctn = 7.  ! C/N Redfield ratio
-      redptn = 1./16.  ! P/N Redfield ratio
-      capr = 0.018  ! carbonate to carbon production ratio
-      dcaco3 = 650000.0  ! remineralisation depth of calcite [cm]
-      redotn = 10.6  ! O2/N Redfield ratio
-      jdiar = 0.5  ! factor reducing the growth rate of diazotrophs
-
 !     set defaults for namelist fwa
       isfwa1 = 1
       iefwa1 = imt
@@ -1539,9 +1873,7 @@
       vcsfac     = 0.
       vcsyri     = 0.
       aggfor_os  = 0.
-      adiff      = 0.03
-      cropf      = 1.
-      pastf      = 0.5
+      adiff      = 0.
 
 !     set defaults namelist carbon
       co2ccn     = 280.
@@ -1551,6 +1883,7 @@
       c14_yr     = 2.e20
       dc14ccn    = 0.
       c14prod    = 0.
+      dc13ccn    = -6.5
 
 !     set defaults namelist paleo
       pyear      = 2.e20
@@ -1604,6 +1937,7 @@
       DAY_TRIF = 30
       DAY_PHEN = 1
       BF = 1.
+    
 
 !-----------------------------------------------------------------------
 !     provide for change in above presets using "namelist"
@@ -1650,12 +1984,6 @@
       read  (ioun, ictime, end=107)
 107   continue
       write (stdout, ictime)
-      call relunit (ioun)
-
-      call getunit (ioun, 'control.in', 'f s r')
-      read  (ioun, npzd, end=108)
-108   continue
-      write (stdout, npzd)
       call relunit (ioun)
 
       call getunit (ioun, 'control.in', 'f s r')
@@ -1779,51 +2107,37 @@
       dtocn = dtatm
       nots = namix
 # endif
-# if defined O_carbon_14_coupled
+# if defined O_carbon_14
 
 !     calculate c14ccn from dc14ccn and co2ccn
-      c14ccn = (1 + dc14ccn*0.001)*rstd*co2ccn
+      c14ccn = (1 + dc14ccn*0.001)*rc14std*co2ccn
+     &      /(1+(1 + dc14ccn*0.001)*rc14std)
+# endif
+# if defined O_carbon_13
+
+!     calculate c13ccn from dc13ccn and co2ccn
+      c13ccn = (1 + dc13ccn*0.001)*rc13std*co2ccn
+     &      /(1+(1 + dc13ccn*0.001)*rc13std)
 # endif
 
 !     sort out forcing years
       if (pyear  .gt. 1.e20) pyear = 1800.
-# if !defined O_co2emit_data_transient && !defined O_co2ccn_data_transient && !defined O_co2emit_track_co2_transient && !defined O_co2emit_track_sat_transient
       if (co2_yr .gt. 1.e20) co2_yr = pyear
-# endif
-# if !defined O_c14ccn_data_transient
       if (c14_yr .gt. 1.e20) c14_yr = pyear
-# endif
-# if !defined O_orbit_transient
       if (orbit_yr .gt. 1.e20) orbit_yr = pyear
-# endif
-# if !defined O_volcano_data_transient
       if (volcano_yr .gt. 1.e20) volcano_yr = pyear
-# endif
-# if !defined O_sulphate_data_transient
       if (sulph_yr .gt. 1.e20) sulph_yr = pyear
-# endif
-# if !defined O_aggfor_data_transient
       if (aggfor_yr .gt. 1.e20) aggfor_yr = pyear
-# endif
-# if !defined O_cfcs_data_transient
       if (cfcs_yr .gt. 1.e20) cfcs_yr = pyear
-# endif
-# if !defined O_sealev_data_transient
       if (sealev_yr .gt. 1.e20) sealev_yr = pyear
-# endif
-# if !defined O_solar_data_transient
       if (solar_yr .gt. 1.e20) solar_yr = pyear
-# endif
       if (agric_yr .gt. 1.e20 .and. crops_yr .lt. 1.e20)
      &  agric_yr = crops_yr
-# if !defined O_agric_data_transient && !defined O_crop_data_transient && !defined O_pasture_data_transient
       if (agric_yr .gt. 1.e20) agric_yr = pyear
-# endif
+      crops_yr = agric_yr
       if (landice_yr .gt. 1.e20 .and. ice_yr .lt. 1.e20)
      &  landice_yr = ice_yr
-# if !defined O_landice_data_transient
       if (landice_yr .gt. 1.e20) landice_yr = pyear
-# endif
       ice_yr = landice_yr
 
       tsiper = min(tsiper, tsiint)

@@ -19,6 +19,12 @@
       include "switch.h"
       include "levind.h"
       include "mtlm.h"
+# if defined O_mtlm_carbon_13
+      include "mtlmc13.h"
+# endif
+# if defined O_mtlm_carbon_14
+      include "mtlmc14.h"
+# endif
       include "insolation.h"
       include "atm.h"
 # if defined O_crop_data_transient || defined O_pasture_data_transient || defined O_agric_data_transient
@@ -117,13 +123,29 @@
 # if defined O_carbon
             sbc(i,j,inpp) = 0.
             sbc(i,j,isr) = 0.
-#  if defined O_reproduce_updates_01
-            sbc(i,j,iburn) = 0.
-#  endif
+# endif
+# if defined O_mtlm_carbon_13
+            sbc(i,j,inpp13) = 0.
+            sbc(i,j,isr13) = 0.
+            sbc(i,j,iburn13) = 0.
+# endif
+# if defined O_mtlm_carbon_14
+            sbc(i,j,inpp14) = 0.
+            sbc(i,j,isr14) = 0.
+            sbc(i,j,iburn14) = 0.
 # endif
           endif
         enddo
       enddo
+# if defined O_mtlm_carbon_13
+      rc13a = (dc13ccn/1000. + 1.)*rc13std
+c      print*,'dc13ccn,rc13a',dc13ccn,rc13a
+# endif
+# if defined O_mtlm_carbon_14
+c      rc14a = c14ccn/(co2ccn-c14ccn)
+      rc14a = (dc14ccn/1000. + 1.)*rc14std
+c      print*,'dc14ccn,rc14a',dc14ccn,rc14a
+# endif
 # if defined O_time_averages
 
 !-----------------------------------------------------------------------

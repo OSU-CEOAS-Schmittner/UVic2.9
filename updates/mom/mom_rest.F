@@ -251,22 +251,54 @@
             if (inqvardef('salt1', iou)) var1 = 'salt1'
           elseif (trim(mapt(n)) .eq. 'dic') then
             if (inqvardef('dic1', iou)) var1 = 'dic1'
+          elseif (trim(mapt(n)) .eq. 'dic13') then
+            if (inqvardef('dic131', iou)) var1 = 'dic131'
           elseif (trim(mapt(n)) .eq. 'alk') then
             if (inqvardef('alk1', iou)) var1 = 'alk1'
           elseif (trim(mapt(n)) .eq. 'o2') then
             if (inqvardef('o21', iou)) var1 = 'o21'
           elseif (trim(mapt(n)) .eq. 'po4') then
             if (inqvardef('po41', iou)) var1 = 'po41'
+          elseif (trim(mapt(n)) .eq. 'dfe') then
+            if (inqvardef('dfe1', iou)) var1 = 'dfe1'
+          elseif (trim(mapt(n)) .eq. 'dop') then
+            if (inqvardef('dop1', iou)) var1 = 'dop1'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             if (inqvardef('phyt1', iou)) var1 = 'phyt1'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             if (inqvardef('zoop1', iou)) var1 = 'zoop1'
           elseif (trim(mapt(n)) .eq. 'detr') then
             if (inqvardef('detr1', iou)) var1 = 'detr1'
+          elseif (trim(mapt(n)) .eq. 'detrfe') then
+            if (inqvardef('detrfe1', iou)) var1 = 'detrfe1'
           elseif (trim(mapt(n)) .eq. 'no3') then
             if (inqvardef('no31', iou)) var1 = 'no31'
+          elseif (trim(mapt(n)) .eq. 'don') then
+            if (inqvardef('don1', iou)) var1 = 'don1'
           elseif (trim(mapt(n)) .eq. 'diaz') then
             if (inqvardef('diaz1', iou)) var1 = 'diaz1'
+          elseif (trim(mapt(n)) .eq. 'din15') then
+            if (inqvardef('din151', iou)) var1 = 'din151'
+          elseif (trim(mapt(n)) .eq. 'don15') then
+            if (inqvardef('don151', iou)) var1 = 'don151'
+          elseif (trim(mapt(n)) .eq. 'phytn15') then
+            if (inqvardef('phytn151', iou)) var1 = 'phytn151'
+          elseif (trim(mapt(n)) .eq. 'zoopn15') then
+            if (inqvardef('zoopn151', iou)) var1 = 'zoopn151'
+          elseif (trim(mapt(n)) .eq. 'detrn15') then
+            if (inqvardef('detrn151', iou)) var1 = 'detrn151' 
+          elseif (trim(mapt(n)) .eq. 'diazn15') then
+            if (inqvardef('diazn151', iou)) var1 = 'diazn151'
+          elseif (trim(mapt(n)) .eq. 'doc13') then
+            if (inqvardef('doc131', iou)) var1 = 'doc131'
+          elseif (trim(mapt(n)) .eq. 'phytc13') then
+            if (inqvardef('phytc131', iou)) var1 = 'phytc131'
+          elseif (trim(mapt(n)) .eq. 'zoopc13') then
+            if (inqvardef('zoopc131', iou)) var1 = 'zoopc131'
+          elseif (trim(mapt(n)) .eq. 'detrc13') then
+            if (inqvardef('detrc131', iou)) var1 = 'detrc131'
+          elseif (trim(mapt(n)) .eq. 'diazc13') then
+            if (inqvardef('diazc131', iou)) var1 = 'diazc131'
           elseif (trim(mapt(n)) .eq. 'c14') then
             if (inqvardef('c141', iou)) var1 = 'c141'
           elseif (trim(mapt(n)) .eq. 'cfc11') then
@@ -345,22 +377,54 @@
             if (inqvardef('salt2', iou)) var2 = 'salt2'
           elseif (trim(mapt(n)) .eq. 'dic') then
             if (inqvardef('dic2', iou)) var2 = 'dic2'
+          elseif (trim(mapt(n)) .eq. 'dic13') then
+            if (inqvardef('dic132', iou)) var2 = 'dic132'
           elseif (trim(mapt(n)) .eq. 'alk') then
             if (inqvardef('alk2', iou)) var2 = 'alk2'
           elseif (trim(mapt(n)) .eq. 'o2') then
             if (inqvardef('o22', iou)) var2 = 'o22'
           elseif (trim(mapt(n)) .eq. 'po4') then
             if (inqvardef('po42', iou)) var2 = 'po42'
+          elseif (trim(mapt(n)) .eq. 'dfe') then
+            if (inqvardef('dfe2', iou)) var2 = 'dfe2'
+          elseif (trim(mapt(n)) .eq. 'dop') then
+            if (inqvardef('dop2', iou)) var2 = 'dop2'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             if (inqvardef('phyt2', iou)) var2 = 'phyt2'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             if (inqvardef('zoop2', iou)) var2 = 'zoop2'
           elseif (trim(mapt(n)) .eq. 'detr') then
             if (inqvardef('detr2', iou)) var2 = 'detr2'
+          elseif (trim(mapt(n)) .eq. 'detrfe') then
+            if (inqvardef('detrfe2', iou)) var2 = 'detrfe2'
           elseif (trim(mapt(n)) .eq. 'no3') then
             if (inqvardef('no32', iou)) var2 = 'no32'
+          elseif (trim(mapt(n)) .eq. 'don') then
+            if (inqvardef('don2', iou)) var2 = 'don2'
           elseif (trim(mapt(n)) .eq. 'diaz') then
             if (inqvardef('diaz2', iou)) var2 = 'diaz2'
+          elseif (trim(mapt(n)) .eq. 'din15') then
+            if (inqvardef('din152', iou)) var2 = 'din152'
+          elseif (trim(mapt(n)) .eq. 'don15') then
+            if (inqvardef('don152', iou)) var2 = 'don152'
+          elseif (trim(mapt(n)) .eq. 'phytn15') then
+            if (inqvardef('phytn152', iou)) var2 = 'phytn152'
+          elseif (trim(mapt(n)) .eq. 'zoopn15') then
+            if (inqvardef('zoopn152', iou)) var2 = 'zoopn152'
+          elseif (trim(mapt(n)) .eq. 'detrn15') then
+            if (inqvardef('detrn152', iou)) var2 = 'detrn152'
+          elseif (trim(mapt(n)) .eq. 'diazn15') then
+            if (inqvardef('diazn152', iou)) var2 = 'diazn152'
+          elseif (trim(mapt(n)) .eq. 'doc13') then
+            if (inqvardef('doc132', iou)) var2 = 'doc132'
+          elseif (trim(mapt(n)) .eq. 'phytc13') then
+            if (inqvardef('phytc132', iou)) var2 = 'phytc132'
+          elseif (trim(mapt(n)) .eq. 'zoopc13') then
+            if (inqvardef('zoopc132', iou)) var2 = 'zoopc132'
+          elseif (trim(mapt(n)) .eq. 'detrc13') then
+            if (inqvardef('detrc132', iou)) var2 = 'detrc132'
+          elseif (trim(mapt(n)) .eq. 'diazc13') then
+            if (inqvardef('diazc132', iou)) var2 = 'diazc132'
           elseif (trim(mapt(n)) .eq. 'c14') then
             if (inqvardef('c142', iou)) var2 = 'c142'
           elseif (trim(mapt(n)) .eq. 'cfc11') then
@@ -549,22 +613,22 @@
      &, 'depth', 'depth', 'm')
       it(1) = id_xt_e
       call defvar ('longitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
       it(1) = id_zt_e
       call defvar ('depth_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'depth edges', 'depth', 'm')
+     &, 'depth edges', ' ', 'm')
       it(1) = id_xu_e
       call defvar ('longitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', 'longitude', 'degrees_east')
+     &, 'longitude edges', ' ', 'degrees_east')
       it(1) = id_yu_e
       call defvar ('latitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', 'latitude', 'degrees_north')
+     &, 'latitude edges', ' ', 'degrees_north')
       it(1) = id_zw_e
       call defvar ('depth_W_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'depth edges', 'depth', 'm')
+     &, 'depth edges', ' ', 'm')
 
 !-----------------------------------------------------------------------
 !     define 2d data (x,y)
@@ -637,6 +701,11 @@
      &,     'ocean carbon at tau', ' ', ' ')
           call defvar ('dic2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'ocean carbon at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'dic13') then
+          call defvar ('dic131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'ocean carbon 13 at tau', ' ', ' ')
+          call defvar ('dic132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'ocean carbon 13 at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'alk') then
           call defvar ('alk1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'alkalinity at tau',' ', ' ')
@@ -652,6 +721,16 @@
      &,     'phosphate at tau', ' ', ' ')
           call defvar ('po42', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'phosphate at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'dfe') then
+          call defvar ('dfe1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'iron at tau', ' ', ' ')
+          call defvar ('dfe2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'iron at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'dop') then
+          call defvar ('dop1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'DOP at tau', ' ', ' ')
+          call defvar ('dop2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'DOP at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'phyt') then
           call defvar ('phyt1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'phytoplankton at tau', ' ', ' ')
@@ -667,16 +746,81 @@
      &,     'detritus at tau', ' ', ' ')
           call defvar ('detr2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'detritus at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'detrfe') then
+          call defvar ('detrfe1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'particulate iron at tau', ' ', ' ')
+          call defvar ('detrfe2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'particulate iron at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'no3') then
           call defvar ('no31', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'nitrate at tau', ' ', ' ')
           call defvar ('no32', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'nitrate at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'don') then
+          call defvar ('don1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'DON at tau', ' ', ' ')
+          call defvar ('don2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'DON at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'diaz') then
           call defvar ('diaz1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'diazotrophs at tau', ' ', ' ')
           call defvar ('diaz2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'diazotrophs at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'din15') then
+          call defvar ('din151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'nitrate 15 at tau', ' ', ' ')
+          call defvar ('din152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'nitrate 15 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'don15') then
+          call defvar ('don151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'nitrate 15 at tau', ' ', ' ')
+          call defvar ('don152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'DON15 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'phytn15') then
+          call defvar ('phytn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'phytoplankton n15 at tau', ' ', ' ')
+          call defvar ('phytn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'phytoplankton n15 at tau+1', ' ', ' ')  
+        elseif (trim(mapt(n)) .eq. 'zoopn15') then
+          call defvar ('zoopn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'zooplankton n15 at tau', ' ', ' ')
+          call defvar ('zoopn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'zooplankton n15 at tau+1', ' ', ' ')  
+        elseif (trim(mapt(n)) .eq. 'detrn15') then
+          call defvar ('detrn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'detritus n15 at tau', ' ', ' ')
+          call defvar ('detrn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'detritus n15 at tau+1', ' ', ' ')  
+       elseif (trim(mapt(n)) .eq. 'diazn15') then
+          call defvar ('diazn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diazotrophs n15 at tau', ' ', ' ')
+          call defvar ('diazn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diazotrophs n15 at tau+1', ' ', ' ')
+       elseif (trim(mapt(n)) .eq. 'doc13') then
+          call defvar ('doc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'nitrate 15 at tau', ' ', ' ')
+          call defvar ('doc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'DOC13 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'phytc13') then
+          call defvar ('phytc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'phytoplankton c13 at tau', ' ', ' ')
+          call defvar ('phytc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'phytoplankton c13 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'zoopc13') then
+          call defvar ('zoopc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'zooplankton c13 at tau', ' ', ' ')
+          call defvar ('zoopc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'zooplankton c13 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'detrc13') then
+          call defvar ('detrc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'detritus c13 at tau', ' ', ' ')
+          call defvar ('detrc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'detritus c13 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'diazc13') then
+          call defvar ('diazc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diazotrophs c13 at tau', ' ', ' ')
+          call defvar ('diazc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diazotrophs c13 at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'c14') then
           call defvar ('c141', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'carbon 14 at tau', ' ', ' ')
@@ -1041,22 +1185,54 @@
             var1 = 'salt1'
           elseif (trim(mapt(n)) .eq. 'dic') then
             var1 = 'dic1'
+          elseif (trim(mapt(n)) .eq. 'dic13') then
+            var1 = 'dic131'
           elseif (trim(mapt(n)) .eq. 'alk') then
             var1 = 'alk1'
           elseif (trim(mapt(n)) .eq. 'o2') then
             var1 = 'o21'
           elseif (trim(mapt(n)) .eq. 'po4') then
             var1 = 'po41'
+          elseif (trim(mapt(n)) .eq. 'dfe') then
+            var1 = 'dfe1'
+          elseif (trim(mapt(n)) .eq. 'dop') then
+            var1 = 'dop1'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             var1 = 'phyt1'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             var1 = 'zoop1'
           elseif (trim(mapt(n)) .eq. 'detr') then
             var1 = 'detr1'
+          elseif (trim(mapt(n)) .eq. 'detrfe') then
+            var1 = 'detrfe1'
           elseif (trim(mapt(n)) .eq. 'no3') then
             var1 = 'no31'
+          elseif (trim(mapt(n)) .eq. 'don') then
+            var1 = 'don1'
           elseif (trim(mapt(n)) .eq. 'diaz') then
             var1 = 'diaz1'
+          elseif (trim(mapt(n)) .eq. 'din15') then
+            var1 = 'din151'
+          elseif (trim(mapt(n)) .eq. 'don15') then
+            var1 = 'don151' 
+          elseif (trim(mapt(n)) .eq. 'phytn15') then
+            var1 = 'phytn151'  
+          elseif (trim(mapt(n)) .eq. 'zoopn15') then
+            var1 = 'zoopn151'
+          elseif (trim(mapt(n)) .eq. 'detrn15') then
+            var1 = 'detrn151'   
+          elseif (trim(mapt(n)) .eq. 'diazn15') then
+            var1 = 'diazn151'
+          elseif (trim(mapt(n)) .eq. 'doc13') then
+            var1 = 'doc131' 
+          elseif (trim(mapt(n)) .eq. 'phytc13') then
+            var1 = 'phytc131'
+          elseif (trim(mapt(n)) .eq. 'zoopc13') then
+            var1 = 'zoopc131'
+          elseif (trim(mapt(n)) .eq. 'detrc13') then
+            var1 = 'detrc131'
+          elseif (trim(mapt(n)) .eq. 'diazc13') then
+            var1 = 'diazc131'
           elseif (trim(mapt(n)) .eq. 'c14') then
             var1 = 'c141'
           elseif (trim(mapt(n)) .eq. 'cfc11') then
@@ -1095,22 +1271,54 @@
             var2 = 'salt2'
           elseif (trim(mapt(n)) .eq. 'dic') then
             var2 = 'dic2'
+          elseif (trim(mapt(n)) .eq. 'dic13') then
+            var2 = 'dic132'
           elseif (trim(mapt(n)) .eq. 'alk') then
             var2 = 'alk2'
           elseif (trim(mapt(n)) .eq. 'o2') then
             var2 = 'o22'
           elseif (trim(mapt(n)) .eq. 'po4') then
             var2 = 'po42'
+          elseif (trim(mapt(n)) .eq. 'dfe') then
+            var2 = 'dfe2'
+          elseif (trim(mapt(n)) .eq. 'dop') then
+            var2 = 'dop2'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             var2 = 'phyt2'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             var2 = 'zoop2'
           elseif (trim(mapt(n)) .eq. 'detr') then
             var2 = 'detr2'
+          elseif (trim(mapt(n)) .eq. 'detrfe') then
+            var2 = 'detrfe2'
           elseif (trim(mapt(n)) .eq. 'no3') then
             var2 = 'no32'
+          elseif (trim(mapt(n)) .eq. 'don') then
+            var2 = 'don2'
           elseif (trim(mapt(n)) .eq. 'diaz') then
             var2 = 'diaz2'
+          elseif (trim(mapt(n)) .eq. 'din15') then
+            var2 = 'din152'
+          elseif (trim(mapt(n)) .eq. 'don15') then
+            var2 = 'don152' 
+          elseif (trim(mapt(n)) .eq. 'phytn15') then
+            var2 = 'phytn152'  
+          elseif (trim(mapt(n)) .eq. 'zoopn15') then
+            var2 = 'zoopn152'
+          elseif (trim(mapt(n)) .eq. 'detrn15') then
+            var2 = 'detrn152'   
+          elseif (trim(mapt(n)) .eq. 'diazn15') then
+            var2 = 'diazn152'
+          elseif (trim(mapt(n)) .eq. 'doc13') then
+            var2 = 'doc132' 
+          elseif (trim(mapt(n)) .eq. 'phytc13') then
+            var2 = 'phytc132'
+          elseif (trim(mapt(n)) .eq. 'zoopc13') then
+            var2 = 'zoopc132'
+          elseif (trim(mapt(n)) .eq. 'detrc13') then
+            var2 = 'detrc132'
+          elseif (trim(mapt(n)) .eq. 'diazc13') then
+            var2 = 'diazc132'
           elseif (trim(mapt(n)) .eq. 'c14') then
             var2 = 'c142'
           elseif (trim(mapt(n)) .eq. 'cfc11') then

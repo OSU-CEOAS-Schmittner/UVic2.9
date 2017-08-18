@@ -7,14 +7,14 @@
 
       implicit none
 
-      character (120) :: fname, new_file_name, logfile
+      character (120) :: fname, new_file_name
 
       integer ie, is, je, js, i, ioun, j, jrow, n, m, indp, ip, k, kr
       integer jq, mask, kz, nv, ke, ks, iou, isle
 
       integer ib(10), ic(10)
 
-      logical error, vmixset, hmixset, exists, inqvardef
+      logical error, vmixset, hmixset, exists
 
       real snapint, snapls, snaple, snapde, trajint, cksum, checksum
       real ocnp, boxat, boxau, dvolt, dvolu, sum, pctocn, diffa, amix
@@ -71,9 +71,6 @@
 # endif
 # if defined O_fwa
       include "fwa.h"
-# endif
-# if defined O_npzd
-      include "npzd.h"
 # endif
       real tmpij(imtm2,jmtm2)
 
@@ -143,19 +140,38 @@
 !     multiplied by 1e3 to convert W/m^2 in g/s^3
 !-----------------------------------------------------------------------
 
-      edr(:,:) = 0.
+      edrm2(:,:,:)=0.
+      edrs2(:,:,:)=0.
+      edrk1(:,:,:)=0.
+      edro1(:,:,:)=0.
+c      edr(:,:) = 0.
       ib(:) = 1
       ic(:) = 1
-      ic(1) = imtm2
-      ic(2) = jmtm2
-      fname = new_file_name ("O_tidenrg.nc")
+      ic(1) = imt
+      ic(2) = jmt
+      ic(3) = 1
+      fname = new_file_name ("O_tidenrg_egbert.nc")
       inquire (file=trim(fname), exist=exists)
       if (exists) then
         c1e3 = 1.e3
         call openfile (trim(fname), iou)
-        call getvara ('O_tidenrg', iou, imtm2*jmtm2, ib, ic, tmpij
-     &,   c1e3, c0)
-        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
+        do k=1,km
+           ib(3) = k
+c           print*, "read tidal_egbert, k=",k
+           call getvara ('M2', iou, imt*jmt, ib, ic 
+     &          ,edrm2(1:imt,k,1:jmt), c1e3, c0)
+           call getvara ('S2', iou, imt*jmt, ib, ic 
+     &          ,edrs2(1:imt,k,1:jmt), c1e3, c0)
+           call getvara ('K1', iou, imt*jmt, ib, ic 
+     &          ,edrk1(1:imt,k,1:jmt), c1e3, c0)
+           call getvara ('O1', iou, imt*jmt, ib, ic 
+     &          ,edro1(1:imt,k,1:jmt), c1e3, c0)
+c           print*, edrm2(1:imt,k,1:jmt)
+        enddo
+        call closefile (iou)
+c        call getvara ('tidenrg', iou, imtm2*jmtm2, ib, ic, tmpij
+c     &,   c1e3, c0)
+c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
       else
         print*, "Warning => Can not find ",trim(fname)
       endif
@@ -935,47 +951,23 @@
       call isopi (error, am, ah)
 # endif
 # if defined O_npzd
-!     convert units of NPZD parameters to MOM units
-      redctn = redctn*1.e-3
-      redotn = redotn*1.e-3
-      redotp = redotn/redptn
-      redctp = redctn/redptn
-      redntp = 1./redptn
-      k1p   = k1n*redptn
-      kw = kw*1.e-2
-      kc = kc*1.e-2
-      ki = ki*1.e-2
-      wd0 = wd0*1.e2
-      alpha = alpha/daylen
-      abio = abio/daylen
-      nup = nup/daylen
-      nupt0 = nupt0/daylen
-      gbio = gbio/daylen
-      epsbio = epsbio/daylen
-      nuz = nuz/daylen
-      gamma2 = gamma2/daylen
-      nud0 = nud0/daylen
-!     calculate sinking speed of detritus divided by grid width
+!-----------------------------------------------------------------------
+!    initialize the model of ocean biogeochemistry and isotopes (MOBI)
+!-----------------------------------------------------------------------
+
+      if (kpzd .ne. km) then
+         print*, 'stop: kpzd is not equal to km'
+         print*, '      currently inconsistent with use of mobi'
+      endif
       do k=1,km
-!       linear increase wd0-200m with depth
-        wd(k) = (wd0+4.0e-2*zt(k))/daylen/dzt(k)  ! [s-1]
-        ztt(k) = -zt(k)+ dzt(k)/2.
-        rkwz(k) = 1./(kw*dzt(k))
+         if (dtxcel(k) .ne. 1.0) then
+            print*, 'stop: dtxcel is not equal to one'
+            print*, '      inconsistent with use of mobi'
+         endif
       enddo
-#  if defined O_carbon || defined O_npzd_alk
 
-!---------------------------------------------------------------------
-!     calculate variables used in calcite remineralization
-!---------------------------------------------------------------------
+      call mobii 
 
-      rcak(1) = -(exp(-zw(1)/dcaco3)-1.0)/dzt(1)
-      rcab(1) = -1./dzt(1)
-      do k=2,km
-        rcak(k) = -(exp(-zw(k)/dcaco3))/dzt(k)
-     &          + (exp(-zw(k-1)/dcaco3))/dzt(k)
-        rcab(k) = (exp(-zw(k-1)/dcaco3))/dzt(k)
-      enddo
-#  endif
 # endif
 # if defined O_fwa
 
@@ -1136,9 +1128,13 @@
       real dens, drodt, drods, p1, c100, c1e3, p001, p035, ucksum
       real vcksum, tcksum, scksum, theta0, tq, sq, s, d, tins, tinsit
       real checksum, C2K, jdi
+# if defined O_gthflx
+      real geoheatflux
+# endif
 
       include "size.h"
       include "param.h"
+      include "npzd.h" ! rstd*
       include "pconst.h"
       include "stdunits.h"
       include "coord.h"
@@ -1246,17 +1242,41 @@
                 else
                   t(i,k,j,n,taup1) = 2.165
                 endif
+              elseif (trim(mapt(n)) .eq. 'dop') then
+                if (k .le. 2) then
+                  t(i,k,j,n,taup1) = 0.156
+                elseif (k .gt. 2 .and. k .le. 12) then
+                   t(i,k,j,n,taup1) = 0.039
+                else
+                  t(i,k,j,n,taup1) = 0.0078
+                endif
               elseif (trim(mapt(n)) .eq. 'phyt') then
                 t(i,k,j,n,taup1) = 0.14*exp((zt(1)-zt(k))/100.e2)
               elseif (trim(mapt(n)) .eq. 'zoop') then
                 t(i,k,j,n,taup1) = 0.014*exp((zt(1)-zt(k))/100.e2)
               elseif (trim(mapt(n)) .eq. 'detr') then
                 t(i,k,j,n,taup1) = 1.e-4
+              elseif (trim(mapt(n)) .eq. 'detrfe') then
+                t(i,k,j,n,taup1) = 1.e-4*14.e-6*6.625
               elseif (trim(mapt(n)) .eq. 'no3') then
                 if (k .eq. 1) then
                   t(i,k,j,n,taup1) = 5.30
                 else
                   t(i,k,j,n,taup1) = 30.84
+                endif
+              elseif (trim(mapt(n)) .eq. 'dfe') then
+                if (k .eq. 1) then
+                  t(i,k,j,n,taup1) = 0.6e-3
+                else
+                  t(i,k,j,n,taup1) = 0.6e-3
+                endif
+              elseif (trim(mapt(n)) .eq. 'don') then
+                if (k .le. 2) then
+                  t(i,k,j,n,taup1) = 3.5
+                elseif (k .gt. 2 .and. k .le. 12) then
+                   t(i,k,j,n,taup1) = 1.5
+                else
+                  t(i,k,j,n,taup1) = 0.5
                 endif
               elseif (trim(mapt(n)) .eq. 'diaz') then
                 t(i,k,j,n,taup1) = 0.014*exp((zt(1)-zt(k))/100.e2)
@@ -1374,11 +1394,23 @@
               tmpik(1:imtm2,1:km) = t(2:imtm1,1:km,j,n,taup1)
 !             convert to model units (nmol cm-3)
               call getvara ('O_po4', iou, imtm2*km, ib, ic, tmpik
-#  if defined O_reproduce_updates_01
-     &,         c1, c0)
-#  else
      &,         c1e3, c0)
-#  endif
+              t(2:imtm1,1:km,j,n,taup1) = tmpik(1:imtm2,1:km)
+              call setbcx (t(1:imt,1:km,j,n,taup1),imt,km)
+            else
+              if (jrow .eq. 1)
+     &          print*, "Warning => Can not find ",trim(fname)
+            endif
+          elseif (trim(mapt(n)) .eq. 'dfe') then
+!           expecting units of mol m-3
+            fname = new_file_name ("O_dfe.nc")
+            inquire (file=trim(fname), exist=exists)
+            if (exists) then
+              call openfile (trim(fname), iou)
+              tmpik(1:imtm2,1:km) = t(2:imtm1,1:km,j,n,taup1)
+!             convert to model units (nmol cm-3)
+              call getvara ('O_dfe', iou, imtm2*km, ib, ic, tmpik
+     &,         c1e3, c0)
               t(2:imtm1,1:km,j,n,taup1) = tmpik(1:imtm2,1:km)
               call setbcx (t(1:imt,1:km,j,n,taup1),imt,km)
             else
@@ -1394,11 +1426,7 @@
               tmpik(1:imtm2,1:km) = t(2:imtm1,1:km,j,n,taup1)
 !             convert to model units (nmol cm-3)
               call getvara ('O_no3', iou, imtm2*km, ib, ic, tmpik
-#  if defined O_reproduce_updates_01
-     &,         c1, c0)
-#  else
      &,         c1e3, c0)
-#  endif
               t(2:imtm1,1:km,j,n,taup1) = tmpik(1:imtm2,1:km)
               call setbcx (t(1:imt,1:km,j,n,taup1),imt,km)
             else
@@ -1431,13 +1459,54 @@
 # endif
 
         enddo
+# if defined O_npzd_nitrogen_15
+        do k=1,km
+          do i=1,imt
+             t(i,k,j,idin15,taup1) = 1.005*rn15std*t(i,k,j,ino3,taup1)
+     &           / (1 + 1.005*rn15std)
+             t(i,k,j,idon15,taup1) = 1.0045*rn15std*t(i,k,j,idon,taup1)
+     &           / (1 + 1.0045*rn15std)
+              t(i,k,j,idon15,taup1) = rn15std*t(i,k,j,idon,taup1)
+     &           / (1 + rn15std)
+             t(i,k,j,iphytn15,taup1) = rn15std*t(i,k,j,iphyt,taup1)
+     &           / (1 + rn15std)
+             t(i,k,j,izoopn15,taup1) = rn15std*t(i,k,j,izoop,taup1)
+     &           / (1 + rn15std)
+             t(i,k,j,idetrn15,taup1) = rn15std*t(i,k,j,idetr,taup1)
+     &           / (1 + rn15std)
+             t(i,k,j,idiazn15,taup1) = rn15std*t(i,k,j,idiaz,taup1)
+     &           / (1 + rn15std)
+          enddo
+       enddo
+# endif
+# if defined O_carbon_13
+        do k=1,km
+           do i=1,imt
+!     initialize at delta del13C = 0 permil
+             t(i,k,j,idic13,taup1) = t(i,k,j,idic,taup1)*1.0004*rc13std
+     &             / (1. + 1.0004*rc13std)
+             t(i,k,j,idoc13,taup1) = t(i,k,j,idon,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
+             t(i,k,j,iphytc13,taup1) = t(i,k,j,iphyt,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
+             t(i,k,j,izoopc13,taup1) = t(i,k,j,izoop,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
+             t(i,k,j,idetrc13,taup1) = t(i,k,j,idetr,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
+#  if defined O_npzd_nitrogen
+             t(i,k,j,idiazc13,taup1) = t(i,k,j,idiaz,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
+#  endif
+           enddo
+        enddo
+# endif
 # if defined O_carbon && defined O_carbon_14
 
 !       convert c14 from permil to model units (umol cm-3)
         do k=1,km
           do i=1,imt
-            t(i,k,j,ic14,taup1) = (t(i,k,j,ic14,taup1)*0.001 + 1)*rstd
-     &                            *t(i,k,j,idic,taup1)
+            t(i,k,j,ic14,taup1) = (t(i,k,j,ic14,taup1)*0.001 + 1)
+     &                            *t(i,k,j,idic,taup1)*rc14std
           enddo
         enddo
 # endif
@@ -1589,11 +1658,15 @@
         if (isss .ne. 0) sbc(1:imt,jrow,isss) = t(1:imt,1,j,isalt,taup1)
         if (issdic .ne. 0)
      &    sbc(1:imt,jrow,issdic) = t(1:imt,1,j,idic,taup1)
+        if (issdic13 .ne. 0)
+     &    sbc(1:imt,jrow,issdic13) = t(1:imt,1,j,idic13,taup1)
         if (isso2 .ne. 0) sbc(1:imt,jrow,isso2) = t(1:imt,1,j,io2,taup1)
         if (issalk .ne. 0)
      &    sbc(1:imt,jrow,issalk) = t(1:imt,1,j,ialk,taup1)
         if (isspo4 .ne. 0)
      &    sbc(1:imt,jrow,isspo4) = t(1:imt,1,j,ipo4,taup1)
+        if (issdop .ne. 0)
+     &    sbc(1:imt,jrow,issdop) = t(1:imt,1,j,idop,taup1)
         if (issphyt .ne. 0)
      &    sbc(1:imt,jrow,issphyt) = t(1:imt,1,j,iphyt,taup1)
         if (isszoop .ne. 0)
@@ -1602,15 +1675,49 @@
      &    sbc(1:imt,jrow,issdetr) = t(1:imt,1,j,idetr,taup1)
         if (issno3 .ne. 0)
      &    sbc(1:imt,jrow,issno3) = t(1:imt,1,j,ino3,taup1)
+        if (issdon .ne. 0)
+     &    sbc(1:imt,jrow,issdon) = t(1:imt,1,j,idon,taup1)
         if (issdiaz .ne. 0)
      &    sbc(1:imt,jrow,issdiaz) = t(1:imt,1,j,idiaz,taup1)
+        if (issdin15 .ne. 0)
+     &    sbc(1:imt,jrow,issdin15) = t(1:imt,1,j,idin15,taup1)
+        if (issdon15 .ne. 0)
+     &    sbc(1:imt,jrow,issdon15) = t(1:imt,1,j,idon15,taup1)
+        if (issphytn15 .ne. 0)
+     &    sbc(1:imt,jrow,issphytn15) = t(1:imt,1,j,iphytn15,taup1)
+        if (isszoopn15 .ne. 0)
+     &    sbc(1:imt,jrow,isszoopn15) = t(1:imt,1,j,izoopn15,taup1)
+        if (issdetrn15 .ne. 0)
+     &    sbc(1:imt,jrow,issdetrn15) = t(1:imt,1,j,idetrn15,taup1)
+        if (issdiazn15 .ne. 0)
+     &    sbc(1:imt,jrow,issdiazn15) = t(1:imt,1,j,idiazn15,taup1)
+        if (issdoc13 .ne. 0)
+     &    sbc(1:imt,jrow,issdoc13) = t(1:imt,1,j,idoc13,taup1)
+        if (issphytc13 .ne. 0)
+     &    sbc(1:imt,jrow,issphytc13) = t(1:imt,1,j,iphytc13,taup1)
+        if (isszoopc13 .ne. 0)
+     &    sbc(1:imt,jrow,isszoopc13) = t(1:imt,1,j,izoopc13,taup1)
+        if (issdetrc13 .ne. 0)
+     &    sbc(1:imt,jrow,issdetrc13) = t(1:imt,1,j,idetrc13,taup1)
+        if (issdiazc13 .ne. 0)
+     &    sbc(1:imt,jrow,issdiazc13) = t(1:imt,1,j,idiazc13,taup1)
         if (issc14 .ne. 0)
      &    sbc(1:imt,jrow,issc14) = t(1:imt,1,j,ic14,taup1)
         if (isscfc11 .ne. 0)
      &    sbc(1:imt,jrow,isscfc11) = t(1:imt,1,j,icfc11,taup1)
         if (isscfc12 .ne. 0)
      &    sbc(1:imt,jrow,isscfc12) = t(1:imt,1,j,icfc12,taup1)
+        if (issdfe .ne. 0)
+     &    sbc(1:imt,jrow,issdfe) = t(1:imt,1,j,idfe,taup1)
+        if (issdetrfe .ne. 0)
+     &    sbc(1:imt,jrow,issdetrfe) = t(1:imt,1,j,idetrfe,taup1)
 
+# if defined O_gthflx
+!       bottom heat flux
+        do i=1,imt
+           bhf(i,jrow) = geoheatflux(xt(i),yt(jrow))
+        enddo
+# endif
 !-----------------------------------------------------------------------
 !       zero out tracers in land points
 !-----------------------------------------------------------------------
@@ -1674,6 +1781,11 @@
         print*, "global average sea surface dic (mol m-3) = "
      &,   gaost(idic)
       endif
+      if (idic13 .ne. 0 .and. issdic13 .ne. 0) then
+        call areaavg (sbc(1,1,issdic13), dmsk, gaost(idic13))
+        print*, "global average sea surface dic 13 (mol m-3) = "
+     &,   gaost(idic13)
+      endif
       if (io2 .ne. 0 .and. isso2 .ne. 0) then
         call areaavg (sbc(1,1,isso2), dmsk, gaost(io2))
         print*, "global average sea surface oxygen (mol m-3) = "
@@ -1688,6 +1800,11 @@
         call areaavg (sbc(1,1,isspo4), dmsk, gaost(ipo4))
         print*, "global average sea surface phosphate (mol m-3) = "
      &,   gaost(ipo4)*0.001
+      endif
+      if (idop .ne. 0 .and. issdop .ne. 0) then
+        call areaavg (sbc(1,1,issdop), dmsk, gaost(idop))
+        print*, "global average sea surface DOP (mol m-3) = "
+     &,   gaost(idop)*0.001
       endif
 # if !defined O_npzd_no_vflux
       if (iphyt .ne. 0 .and. issphyt .ne. 0) then
@@ -1711,11 +1828,87 @@
         print*, "global average sea surface nitrate (mol m-3) = "
      &,   gaost(ino3)*0.001
       endif
+      if (idon .ne. 0 .and. issdon .ne. 0) then
+        call areaavg (sbc(1,1,issdon), dmsk, gaost(idon))
+        print*, "global average sea surface DON (mol m-3) = "
+     &,   gaost(idon)*0.001
+      endif
 # if !defined O_npzd_no_vflux
       if (idiaz .ne. 0 .and. issdiaz .ne. 0) then
         call areaavg (sbc(1,1,issdiaz), dmsk, gaost(idiaz))
         print*, "global average sea surface diazotrophs (mol m-3) = "
      &,   gaost(idiaz)*0.001
+      endif
+# endif
+      if (idin15 .ne. 0 .and. issdin15 .ne. 0) then
+        call areaavg (sbc(1,1,issdin15), dmsk, gaost(idin15))
+        print*, "global average sea surface nitrate 15 (mol m-3) = "
+     &,   gaost(idin15)*0.001
+      endif
+      if (idon15 .ne. 0 .and. issdon15 .ne. 0) then
+        call areaavg (sbc(1,1,issdon15), dmsk, gaost(idon15))
+        print*, "global average sea surface DON15 (mol m-3) = "
+     &,   gaost(idon15)*0.001
+      endif
+# if !defined O_npzd_no_vflux
+      if (iphytn15 .ne. 0 .and. issphytn15 .ne. 0) then
+        call areaavg (sbc(1,1,issphytn15), dmsk, gaost(iphytn15))
+        print*, "global average sea surface phytoplankton n15 " 
+     &,         "(mol m-3) = ", gaost(iphytn15)*0.001
+      endif
+      if (izoopn15 .ne. 0 .and. isszoopn15 .ne. 0) then
+        call areaavg (sbc(1,1,isszoopn15), dmsk, gaost(izoopn15))
+        print*, "global average sea surface zooplankton n15 (mol m-3) 
+     &           = ", gaost(izoopn15)*0.001
+      endif
+      if (idetrn15 .ne. 0 .and. issdetrn15 .ne. 0) then
+        call areaavg (sbc(1,1,issdetrn15), dmsk, gaost(idetrn15))
+        print*, "global average sea surface detritus n15 (mol m-3) 
+     &           = ", gaost(idetrn15)*0.001
+      endif
+      if (idiazn15 .ne. 0 .and. issdiazn15 .ne. 0) then
+        call areaavg (sbc(1,1,issdiazn15), dmsk, gaost(idiazn15))
+        print*, "global average sea surface diazotrophs n15 (mol m-3) 
+     &           = ", gaost(idiazn15)*0.001
+      endif
+# endif
+      if (idoc13 .ne. 0 .and. issdoc13 .ne. 0) then
+        call areaavg (sbc(1,1,issdoc13), dmsk, gaost(idoc13))
+        print*, "global average sea surface DOC13"
+     &,         " (mol m-3) = ", gaost(idoc13)*0.001
+      endif
+# if !defined o_npzd_no_vflux
+      if (iphytc13 .ne. 0 .and. issphytc13 .ne. 0) then
+        call areaavg (sbc(1,1,issphytc13), dmsk, gaost(iphytc13))
+        print*, "global average sea surface phytoplankton C13"
+     &,         " (mol m-3) = ", gaost(iphytc13)*0.001
+      endif
+      if (izoopc13 .ne. 0 .and. isszoopc13 .ne. 0) then
+        call areaavg (sbc(1,1,isszoopc13), dmsk, gaost(izoopc13))
+        print*, "global average sea surface zooplankton C13"
+     &,         " (mol m-3) = ", gaost(izoopc13)*0.001
+      endif
+      if (idetrc13 .ne. 0 .and. issdetrc13 .ne. 0) then
+        call areaavg (sbc(1,1,issdetrc13), dmsk, gaost(idetrc13))
+        print*, "global average sea surface detritus c13"
+     &,         " (mol m-3) = ", gaost(idetrc13)*0.001
+      endif
+      if (idiazc13 .ne. 0 .and. issdiazc13 .ne. 0) then
+        call areaavg (sbc(1,1,issdiazc13), dmsk, gaost(idiazc13))
+        print*, "global average sea surface diazotrophs c13"
+     &,         " (mol m-3) = ", gaost(idiazc13)*0.001
+      endif
+# endif
+      if (idfe .ne. 0 .and. issdfe .ne. 0) then
+        call areaavg (sbc(1,1,issdfe), dmsk, gaost(idfe))
+        print*, "global average sea surface iron (mol m-3) = "
+     &,   gaost(idfe)*0.001
+      endif
+# if !defined O_npzd_no_vflux
+      if (idetrfe .ne. 0 .and. issdetrfe .ne. 0) then
+        call areaavg (sbc(1,1,issdetrfe), dmsk, gaost(idetrfe))
+        print*, "global average sea surface particulate iron (mol m-3)="
+     &,   gaost(idetrfe)*0.001
       endif
 # endif
       if (ic14 .ne. 0 .and. issc14 .ne. 0) then

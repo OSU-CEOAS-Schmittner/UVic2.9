@@ -377,7 +377,7 @@
 #  else
      &,     dtc2, tsiint*daylen, c0)
 #  endif
-          carbemit = dtc2*1e-12
+          carbemit = carbemit + dtc2*1e-12
           dtoic1 = dtoic1 - dtc1
           dtoic2 = dtoic2 - dtc2
           dtc1 = 0.

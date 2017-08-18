@@ -65,8 +65,14 @@
         do i=istrt,iend
           stf(i,j,itemp) = sbc(i,jrow,ihflx)*tmask(i,1,j)
           stf(i,j,isalt) = sbc(i,jrow,isflx)*tmask(i,1,j)
+# if defined O_gthflx
+          btf(i,j,itemp) = -bhf(i,jrow)*tmask(i,1,j)
+# endif
 # if defined O_carbon
           stf(i,j,idic) = sbc(i,jrow,idicflx)*tmask(i,1,j)
+#  if defined O_carbon_13
+          stf(i,j,idic13) = sbc(i,jrow,idic13flx)*tmask(i,1,j)
+#  endif
 #  if defined O_carbon_14
           stf(i,j,ic14) = sbc(i,jrow,ic14flx)*tmask(i,1,j)
 #  endif
@@ -79,6 +85,7 @@
 # endif
 # if defined O_npzd
           stf(i,j,ipo4) = sbc(i,jrow,ipo4flx)*tmask(i,1,j)
+          stf(i,j,idop) = sbc(i,jrow,idopflx)*tmask(i,1,j)
 #  if !defined O_npzd_no_vflux
           stf(i,j,iphyt) = sbc(i,jrow,iphytflx)*tmask(i,1,j)
           stf(i,j,izoop) = sbc(i,jrow,izoopflx)*tmask(i,1,j)
@@ -86,8 +93,36 @@
 #  endif
 #  if defined O_npzd_nitrogen
           stf(i,j,ino3) = sbc(i,jrow,ino3flx)*tmask(i,1,j)
+          stf(i,j,idon) = sbc(i,jrow,idonflx)*tmask(i,1,j)
 #   if !defined O_npzd_no_vflux
           stf(i,j,idiaz) = sbc(i,jrow,idiazflx)*tmask(i,1,j)
+#   endif
+#   if defined O_npzd_nitrogen_15
+          stf(i,j,idin15) = sbc(i,jrow,idin15flx)*tmask(i,1,j)
+          stf(i,j,idon15) = sbc(i,jrow,idon15flx)*tmask(i,1,j)
+#    if !defined O_npzd_no_vflux
+          stf(i,j,iphytn15) = sbc(i,jrow,iphytn15flx)*tmask(i,1,j)
+          stf(i,j,izoopn15) = sbc(i,jrow,izoopn15flx)*tmask(i,1,j)
+          stf(i,j,idetrn15) = sbc(i,jrow,idetrn15flx)*tmask(i,1,j)
+          stf(i,j,idiazn15) = sbc(i,jrow,idiazn15flx)*tmask(i,1,j)
+#    endif
+#   endif          
+#  endif
+#  if defined O_npzd_iron
+          stf(i,j,idfe) = sbc(i,jrow,idfeflx)*tmask(i,1,j)
+#   if !defined O_npzd_no_vflux
+          stf(i,j,idetrfe) = sbc(i,jrow,idetrfeflx)*tmask(i,1,j)
+#   endif
+#  endif
+#  if defined O_carbon_13
+          stf(i,j,idoc13) = sbc(i,jrow,idoc13flx)*tmask(i,1,j)
+#   if !defined O_npzd_no_vflux
+          stf(i,j,iphytc13) = sbc(i,jrow,iphytc13flx)*tmask(i,1,j)
+          stf(i,j,izoopc13) = sbc(i,jrow,izoopc13flx)*tmask(i,1,j)
+          stf(i,j,idetrc13) = sbc(i,jrow,idetrc13flx)*tmask(i,1,j)
+#    if defined O_npzd_nitrogen
+          stf(i,j,idiazc13) = sbc(i,jrow,idiazc13flx)*tmask(i,1,j)
+#    endif
 #   endif
 #  endif
 # endif
