@@ -115,7 +115,7 @@
         msrsdy = 0
         relyr = 0.
         call mkstmp (stamp, year0, month0, day0, hour0, min0, sec0)
-	carblith = 0.
+        carblith = 0.
       endif
       tmp = atsed
       call getvars ('atsed', iou, 1, tmp, c1, c0)
@@ -625,10 +625,10 @@
      &, 'latitude', 'latitude', 'degrees_north')
       it(1) = id_xt_e
       call defvar ('longitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', ' ', 'degrees_east')
+     &, 'longitude edges', 'longitude', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', ' ', 'degrees_north')
+     &, 'latitude edges', 'latitude', 'degrees_north')
       it(1) = id_slev
       call defvar ('slev', iou, 1, it, c0, c0, ' ', 'D'
      &, 'sediment level', ' ','1')
@@ -884,7 +884,7 @@
         tmp = 0.
         call putvars ('msrsdy', iou, ntrec, tmp, c1, c0)
         call mkstmp (nstamp, year0, month0, day0, hour0, min0, sec0)
-	carblith = 0.
+        carblith = 0.
       else
         tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call putvars ('time', iou, ntrec, tmp, c1, c0)

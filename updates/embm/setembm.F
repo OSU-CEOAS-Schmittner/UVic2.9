@@ -57,6 +57,9 @@
       real Hmean(ncat)     ! a dummy variable at setup (m)
 # endif
       real dmsk(imt,jmt), tmpij(imtm2,jmtm2)
+# if defined O_embm_adiff
+      real tmp_dt(imt,jmt)
+# endif
 
       c100      = 100.
       c1e4      = 1.e4
@@ -122,56 +125,8 @@
         enddo
       enddo
 
-!     sort out forcing years
-      if (pyear  .gt. 1.e20) pyear = 1850.
-      if (co2_yr .gt. 1.e20) co2_yr = pyear
-      if (c14_yr .gt. 1.e20) c14_yr = pyear
-      if (orbit_yr .gt. 1.e20) orbit_yr = pyear
-      if (crops_yr .gt. 1.e20) crops_yr = pyear
-      if (ice_yr .gt. 1.e20) ice_yr = pyear
-      if (solar_yr .gt. 1.e20) solar_yr = pyear
-      if (sealev_yr .gt. 1.e20) sealev_yr = pyear
-
 # if defined O_embm_explicit
       if (dtatms .ne. 0.) ns = nint(dtatm/dtatms)
-
-# endif
-# if defined O_time_averages
-      if (mod(timavgint, segtim) .gt. 1.e-6 .and. timavgint .gt. 0.)
-     &  then
-        t1 = nint(timavgint/segtim)*segtim
-        if (t1 .lt. segtim) t1 = segtim
-        write (stdout,'(/,(1x,a))')
-     &    '==> Warning: "timavgint" does not contain an integral number'
-     &,   '              of coupling time steps "segtim".              '
-        write (stdout,*) '              (changed "timavgint" from '
-     &, timavgint,' days to ', t1,' days to insure this condition)'
-        timavgint = t1
-      endif
-      if (timavgint .eq. 0.) then
-        write (stdout,'(/,(1x,a))')
-     &    '==> Warning: averaging interval "timavgint" = 0. implies no '
-     &,   '             averaging when "time_averages" is enabled      '
-      endif
-      if (timavgint .gt. timavgper) then
-        write (stdout,'(/,(1x,a))')
-     &    '==> Warning: the interval "timavgint" exceeds the averaging '
-     &,   '             period "timavgper" for option "time_averages"  '
-      endif
-      if (timavgint .lt. timavgper) then
-        write (stdout,'(/,(1x,a))')
-     &    '==> Warning: averaging period "timavgper" exceeds interval  '
-     &,   '             "timavgint". Setting timavgper = timavgint     '
-        timavgper = timavgint
-      endif
-      if (timavgper .eq. 0.) then
-        write (stdout,'(/,(1x,a))')
-     &    '==> Warning: the averaging period "timavgper" is zero. The  '
-     &,   '             average will be over only one time step!       '
-      endif
-      write (stdout,'(/,1x,a,f10.2,a,/,1x,a,f10.2,a)')
-     &  '==> Time averages will be written every ', timavgint, ' days, '
-     &, '    with an averaging period of         ', timavgper, ' days. '
 
 # endif
 # if  defined O_co2emit_data || defined O_co2emit_data_transient
@@ -217,21 +172,28 @@
 !     the year of the initial conditions
 !-----------------------------------------------------------------------
 
-# if defined O_orbit_transient
-      orbit_yr = year0 + accel_yr0 + (relyr - accel_yr0)*accel
-# endif
-      call orbit (orbit_yr, eccen, obliq, mvelp, lambm0)
       write (stdout,*)
       write (stdout,*) 'Initial Orbital Parameters:'
 # if !defined O_orbit_user
-      write (stdout,*) '  Orbital Year:', orbit_yr
+      tmp = orbit_yr
+#  if defined O_orbit_transient
+      tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
+#   if defined O_orbit_transient_repyr
+      if (tmp .gt. orbit_yr) then
+        tmp = orbit_yr
+        print*, "Warning => setembm: repeating orbit year", orbit_yr
+      endif
+#   endif
+#  endif
+      call orbit (tmp, eccen, obliq, mvelp, lambm0)
+      write (stdout,*) '  Orbital Year:', tmp
 # endif
       write (stdout,*) '  Eccentricity:', eccen
       write (stdout,*) '  Obliquity:   ', obliq
       write (stdout,*) '  Longitude of Perihelion:', mvelp+180.
 
 !-----------------------------------------------------------------------
-!     calculate annual average insolation and Coriolis factor
+!     calculate Coriolis factor
 !-----------------------------------------------------------------------
 
       radian = 360./(2.*pi)
@@ -246,6 +208,10 @@
       enddo
 
 # if defined O_embm_annual
+!-----------------------------------------------------------------------
+!     calculate annual average insolation
+!-----------------------------------------------------------------------
+
       solins(:,:) = 0.
       i = imt*jmt
       do n=1,365
@@ -637,7 +603,7 @@
       itt = 0
       irstdy = 0
       msrsdy = 0
-# if defined O_embm_running_average || defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
       totaltime = 0.
       atbar(:,:) = 0.
       rtbar(:,:) = 0.
@@ -713,8 +679,11 @@
       sig12s(:,:) = 0.
       sig12w(:,:) = 0.
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       sulph(:,:,:) = 0.
+# endif
+# if defined O_carbon_carbonate_approx
+      hSWS(:,:) = 7.94e-9
 # endif
 # if !defined O_embm_explicit
       bv(:) = 0.
@@ -820,7 +789,7 @@
         enddo
       enddo
 # endif
-# if defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
 
 !-----------------------------------------------------------------------
 !     read average air temperature
@@ -877,7 +846,7 @@
 !     check for negative elevations
       where (elev(:,:) .lt. 0.) elev(:,:) = 0.
 
-# if defined O_embm_running_average || defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
 !-----------------------------------------------------------------------
 !     initialize running annual averages
 !-----------------------------------------------------------------------
@@ -891,12 +860,18 @@
       if (.not. exists .or. init) then
         totaltime = 0.
         atbar(:,:) = 0.
-#  if defined O_embm_awind
+#  if defined O_embm_awind || defined O_embm_adiff
         rtbar(:,:) = tbar(:,:)
 #  else
         rtbar(:,:) = 0.
 #  endif
       endif
+#  if defined O_embm_adiff
+
+      dmsk(:,:) = 1.
+      tmp_dt(:,:) = rtbar(:,:) - tbar(:,:)
+      call areaavg (tmp_dt, dmsk, dtbar)
+#  endif
 
 # endif
 !-----------------------------------------------------------------------

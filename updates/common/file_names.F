@@ -95,6 +95,7 @@
       call put_names ('G_mskhreg', 'data/G_mskhreg')
 
       call put_names ('L_cropfra', 'data/L_cropfra')
+      call put_names ('L_agricfra', 'data/L_agricfra')
       call put_names ('L_diurtemp', 'data/L_diurtemp')
       call put_names ('L_elev', 'data/L_elev')
       call put_names ('L_ice', 'data/L_ice')

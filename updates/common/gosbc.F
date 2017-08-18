@@ -11,7 +11,7 @@
       integer iem1, isp1, jem1, jsp1, k
 
       real f1, f1a, f1l, fh, fs, fwcflx, fwaflx, time
-      real area, tarea, tsflx, rsocn, tmp, fgs
+      real area, tarea, tsflx, rsocn, tmp, fg, fgs, sulphfac
 
       include "size.h"
       include "param.h"
@@ -48,8 +48,9 @@
 # if defined O_sed && !defined O_sed_uncoupled
       include "sed.h"
 # endif
-# if defined O_sulphate_data_transient
-      real cosz(is:ie,js:je), tot, twt, cz(1), sindec, zero(1)
+# if defined O_sulphate_data || defined O_sulphate_data_transient
+      include "insolation.h"
+      real tot, twt, cz(1), zero(1)
 # endif
 
 # if defined O_embm_read_sflx || defined O_embm_write_sflx
@@ -175,10 +176,12 @@
 #  if defined O_carbon
             sbc(i,j,inpp) =  sbc(i,j,inpp)*f1l
             sbc(i,j,isr) =  sbc(i,j,isr)*f1l
-#   if defined O_mtlm_segday
+#   if defined O_reproduce_updates_01
+#    if defined O_mtlm_segday
             sbc(i,j,iburn) =  sbc(i,j,iburn)*f1l/segtim
-#   else
+#    else
             sbc(i,j,iburn) =  sbc(i,j,iburn)*f1l
+#    endif
 #   endif
 #  endif
           else
@@ -189,7 +192,9 @@
 #  if defined O_mtlm && defined O_carbon
             sbc(i,j,inpp) = 0.
             sbc(i,j,isr) = 0.
+#   if defined O_reproduce_updates_01
             sbc(i,j,iburn) = 0.
+#   endif
 #  endif
           endif
         enddo
@@ -221,6 +226,9 @@
 #   if defined O_sed_constrain_weath
       if (weathflx .lt. 0.) weathflx = 0.
 #   endif
+#   if defined O_save_carbon_totals
+      dicwflx =  weathflx
+#   endif
       tmp = 0.
       do j=2,jmtm1
         do i=2,imtm1
@@ -243,7 +251,7 @@
 #   endif
 #    if defined O_save_carbon_totals
             carblith = carblith - disch(i,j)*dxt(i)*tmp*fgs
-     &              - sbc(i,j,ibdicfx)*dxt(i)*fgs*dzt(kmt(i,j))      
+     &              - sbc(i,j,ibdicfx)*dxt(i)*fgs*dzt(kmt(i,j))
 #    endif
 #    if defined O_global_sums
             dtoic = dtoic - disch(i,j)*dxt(i)*tmp*fgs
@@ -317,7 +325,7 @@
       endif
 
 #  endif
-#  if defined O_carbon || defined O_npzd_alk || defined O_npzd_o2 || defined O_npzd || defined O_cfcs_data_transient
+#  if defined O_carbon || defined O_npzd_alk || defined O_npzd_o2 || defined O_npzd || defined O_cfcs_data || defined O_cfcs_data_transient
 !-----------------------------------------------------------------------
 !     add normalized virtual fluxes to other tracers
 !-----------------------------------------------------------------------
@@ -365,7 +373,7 @@
 #     endif
 #    endif
 #   endif
-#   if defined O_cfcs_data_transient
+#   if defined O_cfcs_data || defined O_cfcs_data_transient
             sbc(i,j,icfc11flx) = sbc(i,j,icfc11flx) + gaost(icfc11)*tmp
             sbc(i,j,icfc12flx) = sbc(i,j,icfc12flx) + gaost(icfc12)*tmp
 #   endif
@@ -398,7 +406,7 @@
 #     endif
 #    endif
 #   endif
-#   if defined O_cfcs_data_transient
+#   if defined O_cfcs_data || defined O_cfcs_data_transient
       call setbcx (sbc(1,1,icfc11flx), imt, jmt)
       call setbcx (sbc(1,1,icfc12flx), imt, jmt)
 #   endif
@@ -410,7 +418,7 @@
       call write_var ("F_salt.nc", "F_salt", sbc(1,1,isflx), ntrec)
 # endif
 #endif
-# if defined O_sulphate_data_transient
+# if defined O_embm && defined O_sulphate_data || defined O_sulphate_data_transient
 
 !-----------------------------------------------------------------------
 !     set anthropogenic sulphate forcing (increase in surface albedo)
@@ -420,7 +428,16 @@
 
       zero(1) = 0.
       cz(1) = 0.
-      sindec = 0.
+!     full direct and indirect sulphate forcing
+      sulphfac = 0.29
+#  if defined O_sulphate_data_direct && !defined O_sulphate_data_indirect
+!     reduce sulphate forcing to just the direct effect (0.4/1.1)
+      sulphfac = sulphfac*.4/1.1
+#  endif
+#  if defined O_sulphate_data_indirect && !defined O_sulphate_data_direct
+!     reduce sulphate forcing to just the indirect effect (0.7/1.1)
+      sulphfac = sulphfac*.7/1.1
+#  endif
       do j=jsp1,jem1
         do i=isp1,iem1
           if (sulph(i,j,2) .gt. 0. .and. solins(i,j) .gt. 0.) then
@@ -442,7 +459,7 @@
      &            - solins(i,j)*sbc(i,j,iaca)*scatter
               if (tmp .gt. 0.) then
                 tmp = dnswr(i,j)/tmp
-                sulph(i,j,2) = 0.29*sulph(i,j,2)*tmp**2/cz(1)
+                sulph(i,j,2) = sulphfac*sulph(i,j,2)*tmp**2/cz(1)
               else
                 sulph(i,j,2) = 0.
               endif

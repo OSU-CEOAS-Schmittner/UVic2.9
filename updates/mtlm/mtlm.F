@@ -37,16 +37,11 @@
 ! PAR      = WORK Photosynthetically active
 ! SWN_P    = WORK Net shortwave for each PFT
 ! SWN_S    = WORK Net shortwave for bare soil
-! TB       = WORK Total burnt
-! TAB      = WORK Total available to burn
-! TE       = WORK Total emitted
-! TA       = WORK Total area
-! ARF      = WORK Area reduction fraction
-! AB       = WORK Area burnt
+! RTSB     = WORK Inverse of the timestep for burning
 
       real LW_OUT_P(POINTS,NPFT), LW_OUT_S(POINTS), PAR(POINTS)
       real SWN_P(POINTS,NPFT), SWN_S(POINTS)
-      real TB, TAB, TE, TA, ARF, AB
+      real RTSB
 
 !-----------------------------------------------------------------------
 ! Other variables which need to be saved between calls
@@ -489,8 +484,12 @@
           do i=2,imt-1
             L = land_map(i,j)
             if (L .ne. 0) then
+# if defined O_reproduce_updates_01
               sbc(i,j,iburn) = sbc(i,j,iburn) + CS(L) 
      &                       - RESP_S_DR(L)/GAMMA
+# else
+              sbc(i,j,iburn) = CS(L) - RESP_S_DR(L)/GAMMA
+# endif
               do N=1,NPFT
                 sbc(i,j,iburn) = sbc(i,j,iburn) + FRAC(L,N)*C_VEG(L,N)
      &                         + FRAC(L,N)*NPP_DR(L,N)/GAMMA
@@ -510,6 +509,11 @@
 !----------------------------------------------------------------------
 ! Diagnose the amount of vegetation burnt (land use change emissions)
 !----------------------------------------------------------------------
+# if defined O_mtlm_segday
+        RTSB = 1./(DAY_TRIF*segtim*SEC_DAY)
+# else
+        RTSB = 1./(DAY_TRIF*SEC_DAY)
+# endif
         do j=2,jmt-1
           do i=2,imt-1
             L = land_map(i,j)
@@ -518,9 +522,17 @@
               do N=1,NPFT
                 sbc(i,j,iburn) = sbc(i,j,iburn) - FRAC(L,N)*C_VEG(L,N)
               enddo
+# if !defined O_reproduce_updates_01
+              sbc(i,j,iburn) =  sbc(i,j,iburn)*RTSB
+            else
+              sbc(i,j,iburn) = 0.
+# endif
             endif
           enddo
         enddo
+# if defined O_global_sums
+        ntlbc = 0
+# endif
 
 !----------------------------------------------------------------------
 ! Zero the accumulated driving variables

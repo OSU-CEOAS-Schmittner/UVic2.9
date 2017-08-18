@@ -85,6 +85,9 @@
       tmp = msrsdy
       call getvars ('msrsdy', iou, ntrec, tmp, c1, c0)
       msrsdy = tmp
+      tmp = relyr
+      call getvars ('relyr', iou, 1, tmp, c1, c0)
+      relyr = tmp
       tmp = totaltime
       call getvars ('totaltime', iou, ntrec, tmp, c1, c0)
       totaltime = tmp
@@ -116,9 +119,9 @@
         msrsdy = 0
         relyr = 0.0
         call mkstmp (stamp, year0, month0, day0, hour0, min0, sec0)
-	carbemit = 0.
+        carbemit = 0.
       endif
-# if defined O_carbon && !defined O_carbon_uncoupled && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
+# if defined O_carbon && !defined O_co2ccn_user && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
       tmp = co2ccn
       call getvars ('co2ccn', iou, ntrec, tmp, c1, c0)
       co2ccn = tmp
@@ -306,7 +309,7 @@
         aicel(ils:ile,jls:jle,2) = tmpij(ils:ile,jls:jle)
       endif
 # endif
-# if defined O_embm_running_average || defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
       tmpij(ils:ile,jls:jle) = rtbar(ils:ile,jls:jle)
       call getvara ('rtbar', iou, ln, ib, ic, tmpij, c1, c0)
       rtbar(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
@@ -464,10 +467,15 @@
       call getvara ('sig12w', iou, ln, ib, ic, tmpij, c1, c0)
       sig12w(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       tmpij(ils:ile,jls:jle) = sulph(ils:ile,jls:jle,2)
       call getvara ('sulph', iou, ln, ib, ic, tmpij, c1, c0)
       sulph(ils:ile,jls:jle,2) = tmpij(ils:ile,jls:jle)
+# endif
+# if defined O_carbon_carbonate_approx
+      tmpij(ils:ile,jls:jle) = hSWS(ils:ile,jls:jle)
+      call getvara ('hSWS', iou, ln, ib, ic, tmpij, c1, c0)
+      hSWS(ils:ile,jls:jle) = tmpij(ils:ile,jls:jle)
 # endif
 
       call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
@@ -574,6 +582,8 @@
      &, 'irstdy', ' ',' ')
       call defvar ('msrsdy', iou, 1, it, c0, c0, ' ', 'D'
      &, 'msrsdy', ' ',' ')
+      call defvar ('relyr', iou, 1, it, c0, c0, ' ', 'D'
+     &, 'relyr', ' ',' ')
       call defvar ('totaltime', iou, 1, it, c0, c0, ' ', 'D'
      &, 'totaltime', ' ',' ')
       call defvar ('year', iou, 1, it, c0, c0, ' ', 'D'
@@ -644,16 +654,16 @@
      &, 'latitude', 'latitude', 'degrees_north')
       it(1) = id_xt_e
       call defvar ('longitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', ' ', 'degrees_east')
+     &, 'longitude edges', 'longitude', 'degrees_east')
       it(1) = id_yt_e
       call defvar ('latitude_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', ' ', 'degrees_north')
+     &, 'latitude edges', 'latitude', 'degrees_north')
       it(1) = id_xu_e
       call defvar ('longitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'longitude edges', ' ', 'degrees_east')
+     &, 'longitude edges', 'longitude', 'degrees_east')
       it(1) = id_yu_e
       call defvar ('latitude_V_edges', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'latitude edges', ' ', 'degrees_north')
+     &, 'latitude edges', 'latitude', 'degrees_north')
 
 !-----------------------------------------------------------------------
 !     define 3d data (x,y,t)
@@ -734,7 +744,7 @@
       call defvar ('aicel', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'aicel', ' ', ' ')
 # endif
-# if defined O_embm_running_average || defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
       call defvar ('rtbar', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'rtbar', ' ', ' ')
       call defvar ('atbar', iou, 3, it, -c1e20, c1e20, ' ', 'D'
@@ -844,9 +854,13 @@
       call defvar ('sig12w', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sig12w', ' ', ' ')
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       call defvar ('sulph', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sulph', ' ', ' ')
+# endif
+# if defined O_carbon_carbonate_approx
+      call defvar ('hSWS', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'hSWS', ' ', ' ')
 # endif
       call enddef (iou)
 
@@ -949,8 +963,10 @@
         call putvars ('irstdy', iou, ntrec, tmp, c1, c0)
         tmp = 0.
         call putvars ('msrsdy', iou, ntrec, tmp, c1, c0)
+        tmp = 0.
+        call putvars ('relyr', iou, ntrec, tmp, c1, c0)
         call mkstmp (nstamp, year0, month0, day0, hour0, min0, sec0)
-	carbemit = 0.
+        carbemit = 0.
       else
         tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call putvars ('time', iou, ntrec, tmp, c1, c0)
@@ -960,6 +976,8 @@
         call putvars ('irstdy', iou, ntrec, tmp, c1, c0)
         tmp = msday(imodeltime)
         call putvars ('msrsdy', iou, ntrec, tmp, c1, c0)
+        tmp = relyr
+        call putvars ('relyr', iou, ntrec, tmp, c1, c0)
       endif
       tmp = nats
       call putvars ('nats', iou, ntrec, tmp, c1, c0)
@@ -1138,7 +1156,7 @@
       tmpij(ils:ile,jls:jle) = aicel(ils:ile,jls:jle,2)
       call putvara ('aicel', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
-# if defined O_embm_running_average || defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
       tmpij(ils:ile,jls:jle) = rtbar(ils:ile,jls:jle)
       call putvara ('rtbar', iou, ln, ib, ic, tmpij, c1, c0)
       tmpij(ils:ile,jls:jle) = atbar(ils:ile,jls:jle)
@@ -1252,9 +1270,13 @@
       tmpij(ils:ile,jls:jle) = sig12w(ils:ile,jls:jle)
       call putvara ('sig12w', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       tmpij(ils:ile,jls:jle) = sulph(ils:ile,jls:jle,2)
       call putvara ('sulph', iou, ln, ib, ic, tmpij, c1, c0)
+# endif
+# if defined O_carbon_carbonate_approx
+      tmpij(ils:ile,jls:jle) = hSWS(ils:ile,jls:jle)
+      call putvara ('hSWS', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
 
       call rdstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)

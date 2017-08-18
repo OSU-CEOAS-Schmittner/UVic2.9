@@ -15,7 +15,7 @@
       real calday, f, sco2, o2sat, o2sato, o2surf, piston_o2, cfc11ccn
       real cfc12ccn, wt, sccfc, piston_cfc, sol_cfc, cfcsat, ao, tarea
       real tdc14ccn, h_r, d, f1, f2, f3, f4, f5, area, C2K, tmp, zero
-      real depth
+      real depth, hplus
 
       include "size.h"
       include "param.h"
@@ -71,7 +71,7 @@
       zero = 0.
 # endif
 # if defined O_mom
-#  if !defined O_constant_flux_reference || defined O_cfcs_data_transient
+#  if !defined O_constant_flux_reference || defined O_cfcs_data || defined O_cfcs_data_transient
 
       dmsk(:,:) = 1.
       where (kmt(:,:) .eq. 0) dmsk(:,:) = 0.
@@ -106,7 +106,7 @@
       if (issc14 .ne. 0)
      &  call areaavg (sbc(1,1,issc14), dmsk, gaost(ic14))
 #  endif
-#  if defined O_cfcs_data_transient
+#  if defined O_cfcs_data || defined O_cfcs_data_transient
 
 !     always update cfc flux references since initial is usually zero
       if (isscfc11 .ne. 0)
@@ -165,7 +165,7 @@
 #   endif
 #  endif
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
       sbc(:,:,icfc11flx) = 0.
       sbc(:,:,icfc12flx) = 0.
 # endif
@@ -189,7 +189,7 @@
       call zenith (i, c0, daylen, daylen, tlat, tlon, sindec, cosz)
       solins(is:ie,js:je) = solarconst*eccf*cosz(is:ie,js:je)
 # endif
-# if defined O_volcano_data_transient
+# if defined O_volcano_data || defined O_volcano_data_transient
 
 !-----------------------------------------------------------------------
 !     set anomalous volcanic forcing (modify solins)
@@ -240,14 +240,14 @@
 #   endif
 #  endif
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
 
 !-----------------------------------------------------------------------
 !     set CFC concentration
 !-----------------------------------------------------------------------
       call cfcdata
 # endif
-# if defined O_aggfor_data_transient
+# if defined O_aggfor_data || defined O_aggfor_data_transient
 
 !-----------------------------------------------------------------------
 !     set additional greenhouse gas forcing
@@ -307,7 +307,7 @@
             sss = 1000.0*sbc(i,j,isss) + 35.0
             frzpt(i,j) = -.0575*sss + 1.71e-3*sss**1.5 - 2.155e-4*sss**2
 # if defined O_mom
-#  if defined O_carbon || defined O_npzd_o2 || defined O_cfcs_data_transient
+#  if defined O_carbon || defined O_npzd_o2 || defined O_cfcs_data || defined O_cfcs_data_transient
             sst = sbc(i,j,isst)
 !           put reasonable limits on sst and sss for chemistry flux calculations
             sst = min(35.,max(sst,-2.))
@@ -343,12 +343,21 @@
 #   else
             co2_in = co2ccn
 #   endif
+#   if defined O_carbon_carbonate_approx
+!           use previous value of hplus for next guess
+            hplus = hSWS(i,j)
+#   endif
             call co2calc_SWS (t_in, s_in, dic_in, ta_in, co2_in, pt_in
      &,                       sit_in, atmpres, zero, pHlo, pHhi, pH
-     &,                       co2star, dco2star, pCO2, dpco2, CO3
+     &,                       co2star, dco2star, pCO2, hplus, CO3
      &,                       Omega_c, Omega_a)
+#   if defined O_carbon_carbonate_approx
+!           save hplus for next guess
+            hSWS(i,j) = hplus
+#   endif
 #   if defined O_save_carbon_carbonate_chem
-            sspH(i,j) = pH
+!           sspH is really H+ until the final averaging
+            sspH(i,j) = hplus
             ssCO3(i,j) = CO3
             ssOc(i,j) = Omega_c
             ssOa(i,j) = Omega_a
@@ -411,7 +420,7 @@
             o2sat = o2sat/22391.6*1000.0
             sbc(i,j,io2flx) = piston_o2*(o2sat - sbc(i,j,isso2))
 #  endif
-#  if defined O_cfcs_data_transient
+#  if defined O_cfcs_data || defined O_cfcs_data_transient
 
 !-----------------------------------------------------------------------
 !           calculate ocean CFC11 fluxes
@@ -491,20 +500,23 @@
       enddo
 
 # if defined O_carbon
+#  if defined O_mtlm && defined O_global_sums
+      ntlbc = ntlbc + 1
 
+#  endif
 !-----------------------------------------------------------------------
 !     set boundary conditions for carbon
 !-----------------------------------------------------------------------
       call setbcx (sbc(1,1,idicflx), imt, jmt)
 #  if defined O_carbon_co2_2d
-#   if !defined O_carbon_uncoupled && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
+#   if !defined O_co2ccn_user && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
       flux(:,:,ico2) = flux(:,:,ico2) - co2emit*co2dist(:,:,2)
 #   endif
       call setbcx (flux(1,1,ico2), imt, jmt)
 #  else
       dmsk(:,:) = 1.
       call areaavg (sbc(1,1,idicflx), dmsk, avgflxc)
-#   if !defined O_carbon_uncoupled && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
+#   if !defined O_co2ccn_user && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
       co2ccn = co2ccn + (co2emit - avgflxc*12.e-6)*segtim*daylen*gtoppm
 #   endif
 #  endif
@@ -538,7 +550,7 @@
 !-----------------------------------------------------------------------
       call setbcx (sbc(1,1,io2flx), imt, jmt)
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
 
 !-----------------------------------------------------------------------
 !     set boundary conditions for CFC11
@@ -560,7 +572,7 @@
 !     set flags to calculate new coefficients
 !-----------------------------------------------------------------------
       newcoef(:,:) = .true.
-# if defined O_crop_data_transient
+# if defined O_crop_data_transient || defined O_pasture_data_transient || defined O_agric_data_transient
 
 !-----------------------------------------------------------------------
 !     update boundary conditions over vegetation

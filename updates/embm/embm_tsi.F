@@ -70,11 +70,11 @@
       call defvar ('T_avgper', iou, 1, id, c0, c0, ' ', 'F'
      &,   'averaging period', ' ','day')
       call defvar ('A_sat', iou, 1, id, -c100, c500, ' ', 'F'
-#  if defined O_units_temperature_Celsius
+# if defined O_units_temperature_Celsius
      &,   'global average surface air temperature', ' ', 'C')
-#  else
+# else
      &,   'global average surface air temperature', ' ', 'K')
-#  endif
+# endif
       call defvar ('A_shum', iou, 1, id, -c100, c100, ' ', 'F'
      &,   'global average surface specific humidity', ' ', '1')
       call defvar ('F_precip', iou, 1, id, -c100, c100, ' '
@@ -83,15 +83,24 @@
      &,   'F', 'global average evaporation', ' ','kg m-2 s-1')
       call defvar ('A_co2', iou, 1, id, c0, c1e3, ' '
      &,   'F', 'global average CO2 concentration', ' ','ppm')
+# if defined O_save_carbon_totals
+      call defvar ('A_totcarb', iou, 1, id, -c1e3, c1e3, ' ', 'F'
+     &, 'global total atmosphere carbon', ' ', 'Pg')
+      call defvar ('A_carbemit', iou, 1, id, -c1e3, c1e3, ' ', 'F'
+     &, 'global total accumulated carbon emissions', ' ', 'Pg')
+      call defvar ('F_co2emit', iou, 1, id, c0, c1e3, ' '
+     &,   'F', 'global total CO2 emissions', ' ','Pg yr-1')
+# else
       call defvar ('F_co2emit', iou, 1, id, c0, c1e3, ' '
      &,   'F', 'global total CO2 emissions', ' ','kg s-1')
+# endif
       call defvar ('A_maxiter', iou, 1, id, -c1e3, c1e3, ' '
      &,   'F', 'maximum atmosphere solver iterations', ' ','1')
 # if defined O_carbon_14
       call defvar ('A_dc14', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &,   'global average delta C14 concentration', ' ','permil')
 # endif
-#  if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
       call defvar ('A_cfc11', iou, 1, id, -c1e3, c1e3, ' '
      &,   'F', 'global average CFC11 concentration', ' ','ppt')
       call defvar ('A_cfc12', iou, 1, id, -c1e3, c1e3, ' '
@@ -241,32 +250,26 @@
      &,   'F', 'global average sea surface nitrate', ' ','mol m-3')
 #  endif
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
       call defvar ('O_cfc11sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface cfc11', ' ','mol m-3')
       call defvar ('O_cfc12sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface cfc12', ' ','mol m-3')
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       call defvar ('A_sulphfor', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &, 'global average upward shortwave flux due to sulphates'
      &, ' ', 'W m-2')
 # endif
-# if defined O_volcano_data_transient
+# if defined O_volcano_data || defined O_volcano_data_transient
       call defvar ('A_volcfor', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &, 'global average outward shortwave flux due to volcanos'
      &, ' ', 'W m-2')
 # endif
-# if defined O_aggfor_data_transient
+# if defined O_aggfor_data || defined O_aggfor_data_transient
       call defvar ('A_aggfor', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &, 'global average longwave reduction due to additional gases'
      &, ' ', 'W m-2')
-# endif
-# if defined O_save_carbon_totals
-      call defvar ('A_totcarb', iou, 1, id, -c1e3, c1e3, ' ', 'F'
-     &, 'global average total atmosphere carbon', ' ', 'Pg')
-      call defvar ('A_carbemit', iou, 1, id, -c1e3, c1e3, ' ', 'F'
-     &, 'global total carbon emissions', ' ', 'Pg')
 # endif
 
 !-----------------------------------------------------------------------
@@ -321,6 +324,7 @@
       real osalb, sst, sss, ssdic, ssc14, ssalk, sso2, sspo4, ssno3
       real sscfc11, sscfc12, sulph, volc, agg, catm, carbemit, time, tmp
       real c0, c1, c100, c1e3, c1e4, c1e6, p1, p001, p035, cal2J, C2K
+      real kgsPgyr
 
       c0 = 0.
       c1 = 1.
@@ -333,6 +337,7 @@
       p001 = 0.001
       p035 = 0.035
       cal2J = 2.389e-05
+      kgsPgyr = 1.e12/(86400.*365.)
 
 !-----------------------------------------------------------------------
 !     open file and get latest record number
@@ -346,21 +351,27 @@
       call putvars ('time', iou, ntrec, time, c1, c0)
       call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
       call putvars ('T_avgper', iou, ntrec, avgper, c1, c0)
-#  if defined O_units_temperature_Celsius
+# if defined O_units_temperature_Celsius
       call putvars ('A_sat', iou, ntrec, sat, c1, c0)
-#  else
+# else
       call putvars ('A_sat', iou, ntrec, sat, c1, -C2K)
-#  endif
+# endif
       call putvars ('A_shum', iou, ntrec, shum, c1, c0)
       call putvars ('F_precip', iou, ntrec, precip, p1, c0)
       call putvars ('F_evap', iou, ntrec, evap, p1, c0)
       call putvars ('A_co2', iou, ntrec, co2ccn, c1, c0)
+# if defined O_save_carbon_totals
+      call putvars ('A_totcarb', iou, ntrec, catm, c1, c0)
+      call putvars ('A_carbemit', iou, ntrec, carbemit, c1, c0)
+      call putvars ('F_co2emit', iou, ntrec, co2emit, kgsPgyr, c0)
+# else
       call putvars ('F_co2emit', iou, ntrec, co2emit, c1, c0)
+# endif
       call putvars ('A_maxiter', iou, ntrec, scan, c1, c0)
 # if defined O_carbon_14
       call putvars ('A_dc14', iou, ntrec, dc14ccn, c1, c0)
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
       call putvars ('A_cfc11', iou, ntrec, cfc11ccn, c1, c0)
       call putvars ('A_cfc12', iou, ntrec, cfc12ccn, c1, c0)
 # endif
@@ -455,22 +466,18 @@
       call putvars ('O_no3sur', iou, ntrec, ssno3, c1e3, c0)
 #  endif
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
       call putvars ('O_cfc11sur', iou, ntrec, sscfc11, c1, c0)
       call putvars ('O_cfc12sur', iou, ntrec, sscfc12, c1, c0)
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       call putvars ('A_sulphfor', iou, ntrec, sulph, c1e3, c0)
 # endif
-# if defined O_volcano_data_transient
+# if defined O_volcano_data || defined O_volcano_data_transient
       call putvars ('A_volcfor', iou, ntrec, volc, c1e3, c0)
 # endif
-# if defined O_aggfor_data_transient
+# if defined O_aggfor_data || defined O_aggfor_data_transient
       call putvars ('A_aggfor', iou, ntrec, agg, c1e3, c0)
-# endif
-# if defined O_save_carbon_totals
-      call putvars ('A_totcarb', iou, ntrec, catm, c1, c0)
-      call putvars ('A_carbemit', iou, ntrec, carbemit, c1, c0)
 # endif
 #endif
 

@@ -59,11 +59,17 @@
 !     pcfactor     = precip - cloud correlation factor ( %/100)
 !     rf1          = factor used in calculating lapse rate reduction
 !     rf2          = factor used in calculating lapse rate reduction
-!     orbit_yr     = orbital forcing year (-/+ = BC/AD)
-!     solar_yr     = solar forcing year (-/+ = BC/AD)
-!     c14_yr       = c14 forcing year (-/+ = BC/AD)
 !     co2_yr       = co2 forcing year (-/+ = BC/AD)
-!     ice_yr       = ice sheet forcing year (-/+ = BC/AD)
+!     agric_yr     = agricutural forcing year (-/+ = BC/AD)
+!     landice_yr   = ice sheet forcing year (-/+ = BC/AD)
+!     solar_yr     = solar forcing year (-/+ = BC/AD)
+!     orbit_yr     = orbital forcing year (-/+ = BC/AD)
+!     volcano_yr   = volcanic forcing year (-/+ = BC/AD)
+!     sulph_yr     = sulphate forcing year (-/+ = BC/AD)
+!     aggfor_yr    = additional greenhouse gas forcing year (-/+ = BC/AD)
+!     cfcs_yr      = cfc forcing year (-/+ = BC/AD)
+!     c14_yr       = c14 forcing year (-/+ = BC/AD)
+!     ice_yr       = redundant (same as landice_yr, kept for compatibility)
 !     dalt_v       = dalton number over vegetation (no vegetation model)
 !     dalt_o       = dalton number over ocean
 !     dalt_i       = dalton number over ice
@@ -77,14 +83,18 @@
 !     dsealev      = anomalous sea level change in segtim (cm)
 !     sealev_yr    = sea level forcing year (-/+ = BC/AD)
 !     itrack_co2   = index for averaging co2 array
-!     ntrack_co2   = number to be points for average co2
+!     ntrack_co2   = number of points for average co2
 !     itrack_sat   = index for averaging sat array
-!     ntrack_sat   = number to be points for average sat
+!     ntrack_sat   = number of points for average sat
 !     vcsref       = climate sensitivity reference temperature (C)
 !     vcsfac       = climate sensitivity factor (mW/m2/C)
 !     vcsyri       = year to start changing the climate sensitivity (year)
 !     gtoppm       = conversion from g cm-2 to ppmv
 !     carbemit     = accumulated co2 emissions (Pg)
+!     adiff        = anomolous diffusion factor (percent/100/C)
+!     dtbar        = global average sat anomoly (C)
+!     cropf        = scaler for crop area
+!     pastf        = scaler for pasture area
 
       integer namix, lf, niats, nivts, nivc, ns, itrack_co2
       integer ntrack_co2, itrack_sat, ntrack_sat
@@ -99,10 +109,11 @@
       real rhoocn, esocn, vlocn, cdice, dampice, rhoice, rhosno, esice
       real slice, flice, condice, tsno, hsno_max, totaltime, rlapse
       real soilmax, eslnd, pass, ice_calb, sno_calb, pcfactor, rf1, rf2
-      real orbit_yr, solar_yr, c14_yr, co2_yr, ice_yr, dalt_v, dalt_o
+      real co2_yr, agric_yr, landice_yr, solar_yr, orbit_yr, volcano_yr
+      real sulph_yr, aggfor_yr, cfcs_yr, c14_yr, ice_yr, dalt_v, dalt_o
       real dalt_i, rhmax, volcfor, aggfor, aggfor_os, atmsa, ocnsa
       real sealev, dsealev, sealev_yr, vcsref, vcsfac, vcsyri, gtoppm
-      real carbemit
+      real carbemit, adiff, dtbar, cropf, pastf
 
       common /cembm_r/ pyear, dts, co2ccn, co2emit, co2emit_fuel
       common /cembm_r/ co2emit_land, anthro, co2for, c14ccn, dc14ccn
@@ -113,11 +124,13 @@
       common /cembm_r/ rhosno, esice, slice, flice, condice, vlocn
       common /cembm_r/ cdice, tsno, hsno_max, totaltime, rlapse, soilmax
       common /cembm_r/ eslnd, pass, ice_calb, sno_calb, pcfactor, rf1
-      common /cembm_r/ rf2, orbit_yr, solar_yr, c14_yr, co2_yr, ice_yr
-      common /cembm_r/ dalt_v, dalt_o, dalt_i, rhmax, volcfor, aggfor
-      common /cembm_r/ aggfor_os, atmsa, ocnsa, sealev, dsealev
-      common /cembm_r/ sealev_yr, vcsref, vcsfac, vcsyri, gtoppm
-      common /cembm_r/ carbemit
+      common /cembm_r/ rf2, co2_yr, agric_yr, landice_yr, solar_yr
+      common /cembm_r/ orbit_yr, volcano_yr, sulph_yr, aggfor_yr
+      common /cembm_r/ cfcs_yr, c14_yr, ice_yr, dalt_v, dalt_o, dalt_i
+      common /cembm_r/ rhmax, volcfor, aggfor, aggfor_os, atmsa, ocnsa
+      common /cembm_r/ sealev, dsealev, sealev_yr, vcsref, vcsfac
+      common /cembm_r/ vcsyri, gtoppm, carbemit, adiff, dtbar, cropf
+      common /cembm_r/ pastf
 
 !     ntatsa        = time step counter for time averaging
 !     ntatia        = number of time averaged time step integrals

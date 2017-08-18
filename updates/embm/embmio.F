@@ -20,7 +20,7 @@
 
       logical exists, inqvardef
 
-      real avgper, ca, time, wt, wtp1
+      real ca, time, wt, wtp1
       real c100, c500, C2K, tmp
 
       include "size.h"
@@ -59,13 +59,14 @@
       integer mskhr(imt,jmt)
 # endif
 
-# if defined O_embm_running_average
-      real tmpij(imtm2,jmtm2), tmpi(imtm2), tmpj(jmtm2)
-# endif
       real tmp_at(imt,jmt,nat)
 # if defined O_mtlm
       real sm(imt,jmt), st(imt,jmt), hs(imt,jmt), ro(imt,jmt)
       real rntatsl, rntatil
+# endif
+      real dmsk(imt,jmt)
+# if defined O_embm_adiff
+      real tmp_dt(imt,jmt)
 # endif
 
       real p_alb(is:ie,js:je), a_alb(is:ie,js:je), s_alb(is:ie,js:je)
@@ -78,57 +79,6 @@
 
 # if !defined O_mom
       mskhr(:,:) = 0.0
-# endif
-
-# if defined O_embm_running_average
-
-      if (timavgts .or. eorun) then
-
-!-----------------------------------------------------------------------
-!       write running average air temperature and humidity
-!-----------------------------------------------------------------------
-
-        call embmbc (rtbar)
-        fname = new_file_name ("A_satref.nc")
-        call opennew (fname, iou)
-        call redef (iou)
-        call defdim ('longitude', iou, imtm2, id_xt)
-        call defdim ('latitude', iou, jmtm2, id_yt)
-        it(:) = id_xt
-        call defvar ('longitude', iou, 1, it, c0, c0, 'X', 'F'
-     &,   'longitude', 'longitude', 'degrees')
-        it(:) = id_yt
-        call defvar ('latitude', iou, 1, it, c0, c0, 'Y', 'F'
-     &,   'latitude', 'latitude', 'degrees')
-        it(1) = id_xt
-        call defvar ('A_slat', iou, 2, it, -c100, c500
-     &,   '', 'F', 'running annual average sea level air temperature'
-#  if defined O_units_temperature_Celsius
-     &,   '', 'C')
-#  else
-     &,   '', 'K')
-#  endif
-        call enddef (iou)
-        ib(:) = 1
-        ic(:) = imtm2
-        tmpi(1:imtm2) = xt(2:imtm1)
-        call putvara ('longitude', iou, imtm2, ib, ic, tmpi, c1, c0)
-        ic(:) = jmtm2
-        tmpj(1:jmtm2) = yt(2:jmtm1)
-        call putvara ('latitude', iou, jmtm2, ib, ic, tmpj, c1, c0)
-        ib(:) = 1
-        ic(:) = 1
-        ic(1) = imtm2
-        ic(2) = jmtm2
-        tmpij(1:imtm2,1:jmtm2) = rtbar(2:imtm1,2:jmtm1)
-       call putvara ('A_slat', iou, imtm2*jmtm2, ib, ic, tmpij
-#  if defined O_units_temperature_Celsius
-     &,   c1, c0)
-#  else
-     &,   c1, -C2K)
-#  endif
-
-      endif
 # endif
 
 # if defined O_time_step_monitor
@@ -144,32 +94,14 @@
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = time
         call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-
-        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
-          write (*,'(1x, a3, i7, 1x, a32, 3(a,1pe13.6))')
-     &      'ts=',itt, nstamp, ' iterations =', tai_maxit
-     &,     ' TAbar=', tai_sat, ' QAbar=', tai_shum
-        endif
-#  if defined O_mtlm
-        rntatil = 0.
-        if (ntatil .gt. 0) rntatil = 1./float(ntatil)
-        tai_hsno = tai_hsno + tai_LYING_SNOW*1000.*rntatil/rhosno
-#  endif
-        call def_tsi
-        call def_tsi_embm (fname)
-#  if defined O_save_carbon_totals
-!       convert from ppmv to Pg
-        tai_catm = tai_co2ccn*1.e-15*atmsa/gtoppm
-#  else
-        tai_catm = 0.
-#  endif
-
+# if !defined O_mom
+        avgtimtsi = time
 #  if !defined O_save_time_relyear0
 !       make output time relative to year 1
-        time = time - 1.
+        avgtimtsi = avgtimtsi - 1.
 #  endif
-        avgper = tsiper*accel
-        if (avgper .le. 1e-6) avgper = 0.
+        avgpertsi = dtatm*ntatia*secday
+        if (avgpertsi .le. 1e-6) avgpertsi = 0.
 #  if defined O_save_time_endper
         tmp = 0.
 #  elif defined O_save_time_startper
@@ -179,25 +111,47 @@
 #  endif
 #  if defined O_units_time_years
 #   if defined O_calendar_360_day
-        time = time - tmp*avgper/360.
+        avgtimtsi = avgtimtsi - tmp*avgpertsi/360.
 #   elif defined O_calendar_gregorian
-        time = time - tmp*avgper/365.25
+        avgtimtsi = avgtimtsi - tmp*avgpertsi/365.25
 #   else
-        time = time - tmp*avgper/365.
+        avgtimtsi = avgtimtsi - tmp*avgpertsi/365.
 #   endif
 #  else
 #   if defined O_calendar_360_day
-        time = time*360. - tmp*avgper
+        avgtimtsi = avgtimtsi*360. - tmp*avgpertsi
 #   elif defined O_calendar_gregorian
-        time = time*365.25 - tmp*avgper
+        avgtimtsi = avgtimtsi*365.25 - tmp*avgpertsi
 #   else
-        time = time*365. - tmp*avgper
+        avgtimtsi = avgtimtsi*365. - tmp*avgpertsi
 #   endif
+#  endif
+# endif
+
+#  if defined O_mtlm
+        rntatil = 0.
+        if (ntatil .gt. 0) rntatil = 1./float(ntatil)
+        tai_hsno = tai_hsno + tai_LYING_SNOW*1000.*rntatil/rhosno
+#  endif
+#  if defined O_save_carbon_totals
+!       convert from ppmv to Pg
+        tai_catm = tai_co2ccn*1.e-15*atmsa/gtoppm
+#  else
+        tai_catm = 0.
 #  endif
 !       convert emissions from g cm-2 to kg s-1
         tmp = tai_co2emit*atmsa*1.e-3
 
-        call embm_tsi_out (fname, avgper, time, nstamp, tai_sat
+        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
+          write (*,'(1x, a3, i7, 1x, a32, 3(a,1pe13.6))')
+     &      'ts=',itt, nstamp, ' iterations =', tai_maxit
+     &,     ' TAbar=', tai_sat, ' QAbar=', tai_shum
+        endif
+
+        call def_tsi
+        call def_tsi_embm (fname)
+
+        call embm_tsi_out (fname, avgpertsi, avgtimtsi, nstamp, tai_sat
      &,                    tai_shum, tai_precip, tai_evap, tai_ohice
      &,                    tai_oaice, tai_hsno, tai_lhice, tai_laice
      &,                    tai_co2ccn, tmp, tai_dc14ccn, tai_cfc11ccn
@@ -300,14 +254,14 @@
         call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
         nyear = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-        call def_tavg
-        call def_tavg_embm (fname)
+# if !defined O_mom
+        avgtimtavg = time
 #  if !defined O_save_time_relyear0
 !       make output time relative to year 1
-        time = time - 1.
+        avgtimtavg = avgtimtavg - 1.
 #  endif
-        avgper = timavgper*accel
-        if (avgper .le. 1e-6) avgper = 0.
+        avgpertavg = dtatm*ntatia*secday
+        if (avgpertavg .le. 1e-6) avgpertavg = 0.
 #  if defined O_save_time_endper
         tmp = 0.
 #  elif defined O_save_time_startper
@@ -317,28 +271,35 @@
 #  endif
 #  if defined O_units_time_years
 #   if defined O_calendar_360_day
-        time = time - tmp*avgper/360.
+        avgtimtavg = avgtimtavg - tmp*avgpertavg/360.
 #   elif defined O_calendar_gregorian
-        time = time - tmp*avgper/365.25
+        avgtimtavg = avgtimtavg - tmp*avgpertavg/365.25
 #   else
-        time = time - tmp*avgper/365.
+        avgtimtavg = avgtimtavg - tmp*avgpertavg/365.
 #   endif
 #  else
 #   if defined O_calendar_360_day
-        time = time*360. - tmp*avgper
+        avgtimtavg = avgtimtavg*360. - tmp*avgpertavg
 #   elif defined O_calendar_gregorian
-        time = time*365.25 - tmp*avgper
+        avgtimtavg = avgtimtavg*365.25 - tmp*avgpertavg
 #   else
-        time = time*365. - tmp*avgper
+        avgtimtavg = avgtimtavg*365. - tmp*avgpertavg
 #   endif
 #  endif
+# endif
+
+        call def_tavg
+        call def_tavg_embm (fname)
 
         call embm_tavg_out (fname, is, ie, js, je, imt, jmt, nat, ncat
-     &,   xt, yt, xu, yu, dxt, dyt, dxu, dyu, avgper, time, nstamp
-     &,   mapat, ta_at, sat, ta_precip, ta_evap, ta_disch, ta_vflux
-     &,   ta_outlwr, ta_uplwr, ta_upsens, ta_dnswr, ta_solins
+     &,   xt, yt, xu, yu, dxt, dyt, dxu, dyu, avgpertavg, avgtimtavg
+     &,   nstamp, mapat, ta_at, sat, ta_precip, ta_evap, ta_disch
+     &,   ta_vflux, ta_outlwr, ta_uplwr, ta_upsens, ta_dnswr, ta_solins
      &,   ta_outswr, ta_netrad, p_alb, a_alb, s_alb, elev, ta_psno
-     &,   ta_ws, ta_runoff, ta_wx, ta_wy
+     &,   ta_ws, ta_runoff
+#  if defined O_save_embm_wind
+     &,   ta_wx, ta_wy
+#  endif
 #  if defined O_embm_awind
      &,   ta_awx, ta_awy, ta_rtbar, ta_apress
 #  endif
@@ -372,7 +333,7 @@
      &,   ta_co2emit
 #   endif
 #  endif
-#  if defined O_sulphate_data_transient
+#  if defined O_sulphate_data || defined O_sulphate_data_transient
      &,   ta_sulph
 #  endif
      &,   tmsk, mskhr, nriv, ntrec)
@@ -395,8 +356,14 @@
 
 # if defined O_orbit_transient
 
-        orbit_yr = year0 + accel_yr0 + (relyr - accel_yr0)*accel
-        call orbit (orbit_yr, eccen, obliq, mvelp, lambm0)
+        tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
+#  if defined O_orbit_transient_repyr
+        if (tmp .gt. orbit_yr) then
+          tmp = orbit_yr
+          print*, "Warning => embmio: repeating orbit year", tmp
+        endif
+#  endif
+        call orbit (tmp, eccen, obliq, mvelp, lambm0)
 # endif
 # if defined O_landice_data_transient
 
@@ -498,7 +465,7 @@
         enddo
 #  endif
 # endif
-# if defined O_embm_running_average || defined O_embm_awind
+# if defined O_embm_awind || defined O_embm_adiff
 
 !       make new annual and running average
         call embmbc (atbar)
@@ -515,6 +482,12 @@
 #  if defined O_embm_awind
 
         call calc_awind (is, ie, js, je)
+#  endif
+#  if defined O_embm_adiff
+
+        dmsk(:,:) = 1.
+        tmp_dt(:,:) = rtbar(:,:) - tbar(:,:)
+        call areaavg (tmp_dt, dmsk, dtbar)
 #  endif
 # endif
 
@@ -597,8 +570,10 @@
         ta_vflux(:,:) = 0.
         ta_ws(:,:) = 0.
         ta_runoff(:,:) = 0.
+# if defined O_save_embm_wind
         ta_wx(:,:,:) = 0.
         ta_wy(:,:,:) = 0.
+# endif
 # if defined O_embm_awind
         ta_awx(:,:) = 0.
         ta_awy(:,:) = 0.
@@ -643,7 +618,7 @@
        ta_co2emit(:,:) = 0.
 #  endif
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
         ta_sulph(:,:) = 0.
 # endif
         ta_psum(:) = 0.
@@ -677,13 +652,15 @@
         ta_vflux(:,:) = ta_vflux(:,:) + vflux(:,:)
         ta_ws(:,:) = ta_ws(:,:) + sbc(:,:,iws)
         ta_runoff(:,:) = ta_runoff(:,:) + runoff(:,:)
+# if defined O_save_embm_wind
         ta_wx(:,:,ishum) = ta_wx(:,:,ishum) + sbc(:,:,iwxq)
         ta_wy(:,:,ishum) = ta_wy(:,:,ishum) + sbc(:,:,iwyq)
         ta_wx(:,:,isat) = ta_wx(:,:,isat) + sbc(:,:,iwxt)
         ta_wy(:,:,isat) = ta_wy(:,:,isat) + sbc(:,:,iwyt)
-# if defined O_carbon_co2_2d
+#  if defined O_carbon_co2_2d
         ta_wx(:,:,ico2) = ta_wx(:,:,ico2) + sbc(:,:,iwxc)
         ta_wy(:,:,ico2) = ta_wy(:,:,ico2) + sbc(:,:,iwyc)
+#  endif
 # endif
 # if defined O_embm_awind
         ta_awx(:,:) = ta_awx(:,:) + awx(:,:)
@@ -744,7 +721,7 @@
         ta_co2emit(:,:) = ta_co2emit(:,:) + co2emit*co2dist(:,:,2)
 #  endif
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
         ta_sulph(:,:) = ta_sulph(:,:) + sulph(:,:,2)
      &                  *solins(:,:)*sbc(:,:,iaca)*pass
 # endif
@@ -770,8 +747,10 @@
         ta_vflux(:,:) = ta_vflux(:,:)*rntatsa
         ta_ws(:,:) = ta_ws(:,:)*rntatsa
         ta_runoff(:,:) = ta_runoff(:,:)*rntatsa
+# if defined O_save_embm_wind
         ta_wx(:,:,:) = ta_wx(:,:,:)*rntatsa
         ta_wy(:,:,:) = ta_wy(:,:,:)*rntatsa
+# endif
 # if defined O_embm_awind
         ta_awx(:,:) = ta_awx(:,:)*rntatsa
         ta_awy(:,:) = ta_awy(:,:)*rntatsa
@@ -817,7 +796,7 @@
         ta_co2emit(:,:) = ta_co2emit(:,:)*rntatsa
 #  endif
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
         ta_sulph(:,:) = ta_sulph(:,:)*rntatsa
 # endif
         ta_psum(:) = ta_psum(:)*rntatsa
@@ -863,7 +842,7 @@
 # if defined O_tai_rad
       real tmpij(imt,jmt)
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
       real ts_sulph(imt,jmt)
 # endif
 
@@ -981,7 +960,7 @@
 # if defined O_carbon && defined O_carbon_14
         tai_dc14ccn = tai_dc14ccn + dc14ccn
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
         tai_cfc11ccn = tai_cfc11ccn + 0.5*(cfc11ccnn + cfc11ccns)
         tai_cfc12ccn = tai_cfc12ccn + 0.5*(cfc12ccnn + cfc12ccns)
 # endif
@@ -1000,7 +979,8 @@
         call areaavg (evap, dmsk, tmp)
         tai_oevap  = tai_oevap + tmp
 # endif
-# if defined O_ice_cpts && defined O_ice
+# if defined O_ice
+#  if defined O_ice_cpts
         sum = 0.
         do n=1,ncat
           call areatot (heff(1,1,2,n), dmsk, tmp)
@@ -1019,13 +999,14 @@
           sum = sum + tmp
         enddo
         tai_hsno = tai_hsno + sum
-# elif defined O_ice
+#  else
         call areatot (hice(1,1,2), dmsk, tmp)
         tai_ohice = tai_ohice + tmp
         call areatot (aice(1,1,2), dmsk, tmp)
         tai_oaice = tai_oaice + tmp
         call areatot (hsno(1,1,2), dmsk, tmp)
         tai_hsno = tai_hsno + tmp
+#  endif
 # endif
 
 !-----------------------------------------------------------------------
@@ -1266,22 +1247,22 @@
         tai_ssno3 = tai_ssno3 + tmp
 #  endif
 # endif
-# if defined O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
         call areaavg (sbc(1,1,isscfc11), dmsk, tmp)
         tai_sscfc11 = tai_sscfc11 + tmp
         call areaavg (sbc(1,1,isscfc12), dmsk, tmp)
         tai_sscfc12 = tai_sscfc12 + tmp
 # endif
-# if defined O_sulphate_data_transient
+# if defined O_sulphate_data || defined O_sulphate_data_transient
         ts_sulph(:,:) = sulph(:,:,2)*solins(:,:)*sbc(:,:,iaca)*pass
         dmsk(:,:) = 1.
         call areaavg (ts_sulph, dmsk, tmp)
         tai_sulph = tai_sulph + tmp
 # endif
-# if defined O_volcano_data_transient
+# if defined O_volcano_data || defined O_volcano_data_transient
         tai_volc = tai_volc + volcfor
 # endif
-# if defined O_aggfor_data_transient
+# if defined O_aggfor_data || defined O_aggfor_data_transient
         tai_agg = tai_agg + aggfor
 # endif
         tai_carbemit = tai_carbemit + carbemit

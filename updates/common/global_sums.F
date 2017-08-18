@@ -169,8 +169,13 @@
             tlc(3) = tlc(3) + (CV(L) + CS(L)
 #   if defined O_carbon
 !           add in most recent fluxes not felt by atmosphere yet
+#    if defined O_mtlm_segday
      &             + (sbc(i,jrow,isr) - sbc(i,jrow,inpp)
-     &             + sbc(i,jrow,iburn))*segtim*SEC_DAY
+     &             + sbc(i,jrow,iburn)*(DAY_TRIF-ntlbc))*segtim*SEC_DAY
+#    else
+     &             + ((sbc(i,jrow,isr) - sbc(i,jrow,inpp))*segtim
+     &             + sbc(i,jrow,iburn)*(DAY_TRIF-ntlbc*segtim))*SEC_DAY
+#    endif
 #   endif
 !           add in driving fluxes not felt by triffid yet
      &             - RESP_S_DR(L)*RFTIME
@@ -361,14 +366,22 @@
 
           call opennext (fname, time, ntrec, iou)
           if (ntrec .le. 0) ntrec = 1
-         
-	  call putvars ('time', iou, ntrec, time, c1, c0)
+
+          call putvars ('time', iou, ntrec, time, c1, c0)
           call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
           call putvars ('T_avgper', iou, ntrec, avgper, c1, c0)
 # if defined O_co2emit_diag
           call putvars ('F_co2diag', iou, ntrec
+#  if defined O_save_carbon_totals
+     &,     dtc2, tsiint*1.e12/yrlen, c0)
+#  else
      &,     dtc2, tsiint*daylen, c0)
-          carbemit = carbemit + dtc2*1e-12
+#  endif
+          carbemit = dtc2*1e-12
+          dtoic1 = dtoic1 - dtc1
+          dtoic2 = dtoic2 - dtc2
+          dtc1 = 0.
+          dtc2 = 0.
 # endif
 # if defined O_global_sums
           call putvars ('G_dtheat', iou, ntrec, dth1, c1, c0)
@@ -499,7 +512,11 @@
      &, 'averaging period', ' ','day')
 # if defined O_co2emit_diag
       call defvar ('F_co2diag', iou, 1, id, -c1e20, c1e20, ' '
+#  if defined O_save_carbon_totals
+     &, 'F', 'diagnosed carbon emissions', ' ', 'Pg yr-1')
+#  else
      &, 'F', 'diagnosed carbon emissions', ' ', 'kg s-1')
+#  endif
 # endif
 # if defined O_global_sums
       call defvar ('G_dtheat', iou, 1, id, -c1e20

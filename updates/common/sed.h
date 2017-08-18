@@ -70,7 +70,7 @@
       real buried_calfrac, depth_age, zrct, water_z_p, k1, k2, k3, csat
       real rc, sed_ml_mass, ttrorg, ttrcal, c_advect, zsed, delz
       real rain_org_p, rain_cal_p, co3_p, dissc, dissn, weath, weathflx
-      real sed_year, sedsa, carblith
+      real dicwflx, sed_year, sedsa, carblith
 
       common /sed_r/ carb(nzmax,3,ipmax), dcpls(nzmax,3,ipmax)
       common /sed_r/ dcmin(nzmax,3,ipmax)
@@ -86,8 +86,8 @@
       common /sed_r/ ttrcal(ipmax), sed_ml_mass(ipmax), c_advect(ipmax)
       common /sed_r/ zsed(nzmax), delz(nzmax), rain_org_p(ipmax)
       common /sed_r/ rain_cal_p(ipmax), co3_p(ipmax)
-      common /sed_r/ dissc, dissn, weath, weathflx, sed_year, sedsa
-      common /sed_r/ carblith
+      common /sed_r/ dissc, dissn, weath, weathflx, dicwflx, sed_year
+      common /sed_r/ sedsa, carblith
 
 !     ntatss         = time step counter for time averaging
 !     ta_ttrcal      = time average dissolution rate of calcite

@@ -819,7 +819,8 @@
 
       return
       end
-# if defined O_global_sums || defined O_co2emit_diag
+#endif
+#if defined O_global_sums || defined O_co2emit_diag
 
       subroutine def_tsi_gsums (fname)
 !=======================================================================
@@ -862,5 +863,4 @@
 
       return
       end
-# endif
 #endif
