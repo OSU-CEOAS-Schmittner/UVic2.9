@@ -84,7 +84,6 @@
 !     vcsfac       = climate sensitivity factor (mW/m2/C)
 !     vcsyri       = year to start changing the climate sensitivity (year)
 !     gtoppm       = conversion from g cm-2 to ppmv
-!     carbemit     = accumulated co2 emissions (Pg)
 
       integer namix, lf, niats, nivts, nivc, ns, itrack_co2
       integer ntrack_co2, itrack_sat, ntrack_sat
@@ -102,7 +101,6 @@
       real orbit_yr, solar_yr, c14_yr, co2_yr, ice_yr, dalt_v, dalt_o
       real dalt_i, rhmax, volcfor, aggfor, aggfor_os, atmsa, ocnsa
       real sealev, dsealev, sealev_yr, vcsref, vcsfac, vcsyri, gtoppm
-      real carbemit
 
       common /cembm_r/ pyear, dts, co2ccn, co2emit, co2emit_fuel
       common /cembm_r/ co2emit_land, anthro, co2for, c14ccn, dc14ccn
@@ -113,11 +111,10 @@
       common /cembm_r/ rhosno, esice, slice, flice, condice, vlocn
       common /cembm_r/ cdice, tsno, hsno_max, totaltime, rlapse, soilmax
       common /cembm_r/ eslnd, pass, ice_calb, sno_calb, pcfactor, rf1
-      common /cembm_r/ rf2, orbit_yr, solar_yr, c14_yr, co2_yr, ice_yr
-      common /cembm_r/ dalt_v, dalt_o, dalt_i, rhmax, volcfor, aggfor
+      common /cembm_r/ solar_yr, c14_yr, co2_yr, ice_yr, dalt_v, dalt_o
+      common /cembm_r/ rf2, orbit_yr, dalt_i, rhmax, volcfor, aggfor
       common /cembm_r/ aggfor_os, atmsa, ocnsa, sealev, dsealev
       common /cembm_r/ sealev_yr, vcsref, vcsfac, vcsyri, gtoppm
-      common /cembm_r/ carbemit
 
 !     ntatsa        = time step counter for time averaging
 !     ntatia        = number of time averaged time step integrals
@@ -186,7 +183,6 @@
 !     tai_volc      = average volcanic forcing
 !     tai_agg       = average additional greenhouse gas forcing
 !     tai_catm      = average total carbon in atmosphere
-!     tai_carbemit  = average taccumulated co2 emissions
 
       integer ntatsa, ntatia
 
@@ -204,7 +200,7 @@
       real tai_palb, tai_aalb, tai_salb, tai_lsalb, tai_osalb, tai_sst
       real tai_sss, tai_ssdic, tai_ssc14, tai_ssalk, tai_sso2, tai_sspo4
       real tai_ssno3, tai_sscfc11, tai_sscfc12, tai_sulph, tai_volc
-      real tai_agg, tai_catm, tai_carbemit
+      real tai_agg, tai_catm
 
       common /cembm_r/ tai_sat, tai_shum, tai_precip, tai_evap
       common /cembm_r/ tai_ohice, tai_oaice, tai_hsno, tai_lhice
@@ -222,4 +218,4 @@
       common /cembm_r/ tai_sss, tai_ssdic, tai_ssc14, tai_ssalk
       common /cembm_r/ tai_sso2, tai_sspo4, tai_ssno3, tai_sscfc11
       common /cembm_r/ tai_sscfc12, tai_sulph, tai_volc, tai_agg
-      common /cembm_r/ tai_catm, tai_carbemit
+      common /cembm_r/ tai_catm

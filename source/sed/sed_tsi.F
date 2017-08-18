@@ -93,8 +93,8 @@
       call defvar ('S_rainrat', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &, 'rain ratio', ' ', '1')
 # if defined O_save_carbon_totals
-      call defvar ('S_carblith', iou, 1, id, -c1e3, c1e3, ' ', 'F'
-     &, 'global average change in lithosphere carbon', ' ', 'Pg')
+      call defvar ('S_totcarb', iou, 1, id, -c1e3, c1e3, ' ', 'F'
+     &, 'global average total ocean sediment carbon', ' ', 'Pg')
       call defvar ('F_carbo2s', iou, 1, id, -c1e3, c1e3, ' ', 'F'
      &, 'global average total ocean to sediment carbon flux'
      &, ' ', 'Pg year-1')
@@ -113,7 +113,7 @@
 
       subroutine sed_tsi_out (fname, avgper, time, stamp, ttrcal
      &,                       rain_cal, cal, calmass, calmass_bur, co3
-     &,                       co3sat, weathflx, rainr, carblith, cfo2s
+     &,                       co3sat, weathflx, rainr, csed, cfo2s
      &,                       cfl2o, ntrec)
 !=======================================================================
 !     output routine for sediment time step integrals
@@ -136,7 +136,7 @@
       integer iou, ntrec, nyear, nmonth, nday, nhour, nmin, nsec
 
       real ttrcal, rain_cal, cal, calmass, calmass_bur, co3, co3sat
-      real weathflx, rainr, carblith, cfo2s, cfl2o, avgper, time, tmp
+      real weathflx, rainr, csed, cfo2s, cfl2o, avgper, time, tmp
       real c0, c1, c1e3, c1e4, c12e6, p01, p001, p0001
 
       c0 = 0.
@@ -170,7 +170,7 @@
       call putvars ('F_weath', iou, ntrec, weathflx, c1, c0)
       call putvars ('S_rainrat', iou, ntrec, rainr, c1, c0)
 # if defined O_save_carbon_totals
-      call putvars ('S_carblith', iou, ntrec, carblith, c1, c0)
+      call putvars ('S_totcarb', iou, ntrec, csed, c1, c0)
       call putvars ('F_carbo2s', iou, ntrec, cfo2s, c1, c0)
       call putvars ('F_carbl2o', iou, ntrec, cfl2o, c1, c0)
 # endif

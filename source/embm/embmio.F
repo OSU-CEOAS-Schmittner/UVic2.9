@@ -214,8 +214,7 @@
      &,                    tai_sst, tai_sss, tai_ssdic, tai_ssc14
      &,                    tai_ssalk, tai_sso2, tai_sspo4, tai_ssno3
      &,                    tai_sscfc11, tai_sscfc12, tai_sulph
-     &,                    tai_volc, tai_agg, tai_catm, tai_carbemit
-     &,                    ntrec)
+     &,                    tai_volc, tai_agg, tai_catm, ntrec)
 
         call ta_embm_tsi (is, ie, js, je, 0)
 
@@ -939,7 +938,6 @@
         tai_sulph = 0.
         tai_volc = 0.
         tai_agg = 0.
-        tai_carbemit = 0.
 
       elseif (iflag .eq. 1) then
 
@@ -1284,7 +1282,6 @@
 # if defined O_aggfor_data_transient
         tai_agg = tai_agg + aggfor
 # endif
-        tai_carbemit = tai_carbemit + carbemit
 
       elseif (iflag .eq. 2 .and. ntatia .ne. 0) then
 
@@ -1355,7 +1352,6 @@
         tai_sulph = tai_sulph*rntatia
         tai_volc = tai_volc*rntatia
         tai_agg = tai_agg*rntatia
-        tai_carbemit = tai_carbemit*rntatia
 
       endif
 

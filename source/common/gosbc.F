@@ -19,7 +19,6 @@
       include "stdunits.h"
       include "calendar.h"
       include "csbc.h"
-      include "coord.h"
       include "grdvar.h"
       include "tmngr.h"
       include "switch.h"
@@ -175,11 +174,7 @@
 #  if defined O_carbon
             sbc(i,j,inpp) =  sbc(i,j,inpp)*f1l
             sbc(i,j,isr) =  sbc(i,j,isr)*f1l
-#   if defined O_mtlm_segday
-            sbc(i,j,iburn) =  sbc(i,j,iburn)*f1l/segtim
-#   else
             sbc(i,j,iburn) =  sbc(i,j,iburn)*f1l
-#   endif
 #  endif
           else
             sbc(i,j,iro) = sbc(i,j,iro)*f1a
@@ -218,40 +213,35 @@
 !-----------------------------------------------------------------------
 !     apply CaCO3 weathering flux proportional to discharge
 !-----------------------------------------------------------------------
-#   if defined O_sed_constrain_weath
-      if (weathflx .lt. 0.) weathflx = 0.
-#   endif
-      tmp = 0.
-      do j=2,jmtm1
-        do i=2,imtm1
-          if (kmt(i,j) .ne. 0.) then
-            tmp = tmp + disch(i,j)*dxt(i)*dyt(j)*cst(j)
-          endif
+      if (weathflx .gt. 0) then
+        tmp = 0.
+        do j=2,jmtm1
+          do i=2,imtm1
+            if (tmsk(i,j) .ge. 0.5) then
+              tmp = tmp + disch(i,j)*dxt(i)*dyt(j)*cst(j)
+            endif
+          enddo
         enddo
-      enddo
-      tmp = weathflx/tmp
-      do j=2,jmtm1
-#   if defined O_global_sums || defined O_save_carbon_totals
-        fgs = dyt(j)*cst(j)*segtim/secday
+        tmp = weathflx/tmp
+        do j=2,jmtm1
+#   if defined O_global_sums
+          fgs = tmp*dyt(j)*cst(j)*segtim/secday
 #   endif
-        do i=2,imtm1
-          if (kmt(i,j) .ne. 0.) then
+          do i=2,imtm1
+            if (tmsk(i,j) .ge. 0.5) then
 #   if defined O_carbon
-            sbc(i,j,idicflx) = sbc(i,j,idicflx) + disch(i,j)*tmp
-#   if defined O_npzd_alk
-            sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + disch(i,j)*2.*tmp
-#   endif
-#    if defined O_save_carbon_totals
-            carblith = carblith - disch(i,j)*dxt(i)*tmp*fgs
-     &              - sbc(i,j,ibdicfx)*dxt(i)*fgs*dzt(kmt(i,j))      
-#    endif
+              sbc(i,j,idicflx) = sbc(i,j,idicflx) + disch(i,j)*tmp
 #    if defined O_global_sums
-            dtoic = dtoic - disch(i,j)*dxt(i)*tmp*fgs
+              dtoic = dtoic - disch(i,j)*dxt(i)*fgs
 #    endif
 #   endif
-          endif
+#   if defined O_npzd_alk
+              sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + disch(i,j)*2.*tmp
+#   endif
+            endif
+          enddo
         enddo
-      enddo
+      endif
 
 #  endif
 # endif

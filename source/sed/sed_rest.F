@@ -106,16 +106,12 @@
       call getvars ('second', iou, 1, tmp, c1, c0)
       nsec = tmp
       call mkstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
-      tmp = carblith
-      call getvars ('carblith', iou, 1, tmp, c1, c0)
-      carblith = tmp
       if (init_time_in) then
         itt = 0
         irstdy = 0
         msrsdy = 0
         relyr = 0.
         call mkstmp (stamp, year0, month0, day0, hour0, min0, sec0)
-	carblith = 0.
       endif
       tmp = atsed
       call getvars ('atsed', iou, 1, tmp, c1, c0)
@@ -605,8 +601,6 @@
      &, 'minute', ' ',' ')
       call defvar ('second', iou, 1, it, c0, c0, ' ', 'D'
      &, 'second', ' ',' ')
-      call defvar ('carblith', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'carblith', ' ',' ')
       call defvar ('atsed', iou, 1, it, c0, c0, ' ', 'D'
      &, 'atsed', ' ',' ')
       call defvar ('weathflx', iou, 1, it, c0, c0, ' ', 'D'
@@ -884,7 +878,6 @@
         tmp = 0.
         call putvars ('msrsdy', iou, ntrec, tmp, c1, c0)
         call mkstmp (nstamp, year0, month0, day0, hour0, min0, sec0)
-	carblith = 0.
       else
         tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call putvars ('time', iou, ntrec, tmp, c1, c0)
@@ -908,8 +901,6 @@
       call putvars ('minute', iou, 1, tmp, c1, c0)
       tmp = nsec
       call putvars ('second', iou, 1, tmp, c1, c0)
-      tmp = carblith
-      call putvars ('carblith', iou, 1, tmp, c1, c0)
       tmp = atsed
       call putvars ('atsed', iou, 1, tmp, c1, c0)
       tmp = weathflx

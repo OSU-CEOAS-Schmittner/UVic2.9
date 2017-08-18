@@ -10,8 +10,10 @@
 
       implicit none
 
-      character(120) :: fname
+      character(120) :: name, new_file_name, file_stamp
       character(32) :: nstamp
+      save name
+      data name /' '/
 
       integer i, iou, id_time, ind, j, jrow, k, l, n, nc, ntrec
       integer nyear, nmonth, nday, nhour, nmin, nsec, it(10)
@@ -28,7 +30,7 @@
       real dth1,  dth2,  dtf1,  dtf2,  dtc1,  dtc2
       real tah(3), taf(3), tac(3), tsh(3), tsf(3), tsc(3), tih(3)
       real tif(3), tic(3), tlh(3), tlf(3), tlc(3), toh(3), tof(3)
-      real toc(3), th, tf, tc, RFTIME, time, tmp, c1e20, vol, avgper
+      real toc(3), th, tf, tc, RFTIME, time, tmp, c1e20, vol
 
       save tah, taf, tac, tsh, tsf, tsc, tih, tif, tic, tlh, tlf, tlc
       save toh, tof, toc, dtoih1, dtoic1
@@ -62,6 +64,9 @@
 # endif
 # if defined O_mtlm
       include "mtlm.h"
+# endif
+# if defined O_sed
+      include "sed.h"
 # endif
       include "tmngr.h"
 
@@ -97,6 +102,12 @@
         toc(n) = 0.
       enddo
 
+# if !defined O_embm
+      dtoih = 0.0
+# endif
+# if !defined O_sed
+      dtoic = 0.0
+# endif
 # if defined O_mtlm
 #  if defined O_mtlm_segday
       RFTIME = DAY_TRIF*segtim/DAY_YEAR
@@ -171,9 +182,9 @@
 !           add in most recent fluxes not felt by atmosphere yet
      &             + (sbc(i,jrow,isr) - sbc(i,jrow,inpp)
      &             + sbc(i,jrow,iburn))*segtim*SEC_DAY
-#   endif
 !           add in driving fluxes not felt by triffid yet
      &             - RESP_S_DR(L)*RFTIME
+#   endif
      &               )*area*1.e-4
             do N=1,NPFT
               tlc(3) = tlc(3) + NPP_DR(L,N)*FRAC(L,N)*RFTIME*area*1.0e-4
@@ -243,10 +254,12 @@
       toc(3) = toc(3)*12.e-9
 
 # endif
-!     dtoic includes any sediment burial, weathering or emissions
+# if defined O_sed
+!     sediment
 !     12e-9 kg/umol
       dtoic = dtoic*12e-9
 
+# endif
 !     calculate differences from start of run
 
       dtah1 = tah(3) - tah(1)
@@ -318,85 +331,103 @@
         dtf2 = dtaf2 + dtsf2 + dtif2 + dtlf2 + dtof2
         dtc2 = dtac2 + dtsc2 + dtic2 + dtlc2 + dtoc2 + dtoic2
 
-        if (tsits) then
-
+        if (iotsi .ne. stdout) then
           time = year0 + accel_yr0 + (relyr - accel_yr0)*accel
-          call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
-          nyear = time
-          call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-
-          call def_tsi
-          call def_tsi_gsums (fname)
-
+# if !defined O_units_time_years
+#  if defined O_calendar_360_day
+          time = time*360.
+#  elif defined O_calendar_gregorian
+          time = time*365.25
+#  else
+          time = time*365.
+#  endif
+# endif
+          defined = .true.
+          ntrec = 1
+          if (name .eq. ' ') then
+            defined = .false.
+            ntrec = 0
+            call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
+            nyear = year0 + accel_yr0 + (relyr - accel_yr0)*accel
+            call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
+            name = file_stamp ('gsums',nstamp,'.nc')
+            name = new_file_name (name)
+          endif
+          call opennext (name, time, ntrec, iou)
+          if (.not. defined .or. ntrec .eq. 0) then
+            call redef (iou)
+            call putatttext (iou, 'global', 'Conventions', 'CF-1.0')
+            call putatttext (iou, 'global', 'experiment_name', expnam)
+            call putatttext (iou, 'global', 'run_stamp', runstamp)
+            call defdim ('time', iou, 0, id_time)
+            it(:) = id_time
+            call defvar ('time', iou, 1, it, c0, c0, 'T', 'D'
+# if defined O_units_time_years
 #  if !defined O_save_time_relyear0
-!         make output time relative to year 1
-          time = time - 1.
-#  endif
-          avgper = tsiper*accel
-          if (avgper .le. 1e-6) avgper = 0.
-#  if defined O_save_time_endper
-          tmp = 0.
-#  elif defined O_save_time_startper
-          tmp = 1.
+     &,       'time', 'time', 'years since 1-1-1')
 #  else
-          tmp = 0.5
+     &,       'time', 'time', 'years since 0-1-1')
 #  endif
-#  if defined O_units_time_years
-#   if defined O_calendar_360_day
-          time = time - tmp*avgper/360.
-#   elif defined O_calendar_gregorian
-          time = time - tmp*avgper/365.25
-#   else
-          time = time - tmp*avgper/365.
-#   endif
+# else
+#  if !defined O_save_time_relyear0
+     &,       'time', 'time', 'days since 1-1-1')
 #  else
-#   if defined O_calendar_360_day
-          time = time*360. - tmp*avgper
-#   elif defined O_calendar_gregorian
-          time = time*365.25 - tmp*avgper
-#   else
-          time = time*365. - tmp*avgper
-#   endif
+     &,       'time', 'time', 'days since 0-1-1')
 #  endif
+# endif
+            call putatttext (iou, 'time', 'calendar', calendar)
+# if defined O_co2emit_diag
+            call defvar ('F_co2diag', iou, 1, it, -c1e20, c1e20, ' '
+     &,       'F', 'diagnosed carbon emissions', ' ', 'kg s-1')
+# endif
+# if defined O_global_sums
+            call defvar ('G_dtheat', iou, 1, it, -c1e20
+     &,       c1e20, ' ', 'F', 'heat conservation error', ' ', 'J')
+            call defvar ('G_dtwater', iou, 1, it, -c1e20
+     &,       c1e20, ' ', 'F', 'water conservation error', ' ', 'kg')
+            call defvar ('G_dtcarb', iou, 1, it, -c1e20
+     &,       c1e20, ' ', 'F', 'carbon conservation error', ' ', 'kg')
+# endif
+            call enddef (iou)
+            if (ntrec .eq. 0 ) ntrec = 1
+          endif
 
-          call opennext (fname, time, ntrec, iou)
-          if (ntrec .le. 0) ntrec = 1
-         
-	  call putvars ('time', iou, ntrec, time, c1, c0)
+# if !defined O_save_time_relyear0
+          time = time - 1.
+# endif
+          call putvars ('time', iou, ntrec, time, c1, c0)
           call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
-          call putvars ('T_avgper', iou, ntrec, avgper, c1, c0)
 # if defined O_co2emit_diag
           call putvars ('F_co2diag', iou, ntrec
      &,     dtc2, tsiint*daylen, c0)
-          carbemit = carbemit + dtc2*1e-12
 # endif
 # if defined O_global_sums
           call putvars ('G_dtheat', iou, ntrec, dth1, c1, c0)
           call putvars ('G_dtwater', iou, ntrec, dtf1, c1, c0)
           call putvars ('G_dtcarb', iou, ntrec, dtc1, c1, c0)
 # endif
+        endif
 
 # if defined O_global_sums
-          if (iotsi .eq. stdout .or. iotsi .lt. 0) then
-            write (*,'(a,a)') 'Changes in heat, fresh water and carbon '
-     &,       'from start of run and last calculation'
-            write (*,'(a,e22.14,a,e22.14,a,e22.14,a
-     &,                  e22.14,a,e22.14,a,e22.14,a)')
-     &        ' d atm    ',dtah1, ' J ',dtaf1,' kg ',dtac1, ' kg'
-     &,                    dtah2, ' J ',dtaf2,' kg ',dtac2, ' kg'
-     &,       ' d snow   ',dtsh1, ' J ',dtsf1,' kg ',dtsc1, ' kg'
-     &,                    dtsh2, ' J ',dtsf2,' kg ',dtsc2, ' kg'
-     &,       ' d ice    ',dtih1, ' J ',dtif1,' kg ',dtic1, ' kg'
-     &,                    dtih2, ' J ',dtif2,' kg ',dtic2, ' kg'
-     &,       ' d lnd    ',dtlh1, ' J ',dtlf1,' kg ',dtlc1, ' kg'
-     &,                    dtlh2, ' J ',dtlf2,' kg ',dtlc2, ' kg'
-     &,       ' d ocn    ',dtoh1, ' J ',dtof1,' kg ',dtoc1, ' kg'
-     &,                    dtoh2, ' J ',dtof2,' kg ',dtoc2, ' kg'
-     &,       ' d out-in ',dtoih1,' J ',0.0,  ' kg ',dtoic1,' kg'
-     &,                    dtoih2,' J ',0.0,  ' kg ',dtoic2,' kg'
-     &,       ' d total  ',dth1,  ' J ',dtf1, ' kg ',dtc1,  ' kg'
-     &,                    dth2,  ' J ',dtf2, ' kg ',dtc2,  ' kg'
-          endif
+        if (iotsi .eq. stdout .or. iotsi .lt. 0) then
+          write (*,'(a,a)') 'Changes in heat, fresh water and carbon '
+     &,     'from start of run and last calculation'
+          write (*,'(a,e22.14,a,e22.14,a,e22.14,a
+     &,                e22.14,a,e22.14,a,e22.14,a)')
+     &      ' d atm    ',dtah1, ' J ',dtaf1,' kg ',dtac1, ' kg'
+     &,                  dtah2, ' J ',dtaf2,' kg ',dtac2, ' kg'
+     &,     ' d snow   ',dtsh1, ' J ',dtsf1,' kg ',dtsc1, ' kg'
+     &,                  dtsh2, ' J ',dtsf2,' kg ',dtsc2, ' kg'
+     &,     ' d ice    ',dtih1, ' J ',dtif1,' kg ',dtic1, ' kg'
+     &,                  dtih2, ' J ',dtif2,' kg ',dtic2, ' kg'
+     &,     ' d lnd    ',dtlh1, ' J ',dtlf1,' kg ',dtlc1, ' kg'
+     &,                  dtlh2, ' J ',dtlf2,' kg ',dtlc2, ' kg'
+     &,     ' d ocn    ',dtoh1, ' J ',dtof1,' kg ',dtoc1, ' kg'
+     &,                  dtoh2, ' J ',dtof2,' kg ',dtoc2, ' kg'
+     &,     ' d out-in ',dtoih1,' J ',0.0,  ' kg ',dtoic1,' kg'
+     &,                  dtoih2,' J ',0.0,  ' kg ',dtoic2,' kg'
+     &,     ' d total  ',dth1,  ' J ',dtf1, ' kg ',dtc1,  ' kg'
+     &,                  dth2,  ' J ',dtf2, ' kg ',dtc2,  ' kg'
         endif
 
       else
@@ -421,100 +452,9 @@
      &,   ' t ocn    ', toh(ind),' J ',tof(ind),' kg ',toc(ind),' kg'
      &,   ' t total  ', th,      ' J ',tf,      ' kg ',tc,      ' kg'
 
-# else
-        endif
 # endif
       endif
-
-      return
-      end
-
-      subroutine gsums_tsi_def (fname, calendar, expnam, runstamp)
-
-!=======================================================================
-!     output routine for atmospheric global sums step integrals
-
-!   inputs:
-!     fname      = file name
-!     calendar   = calendar
-!     expnam     = experiment name
-!     runstamp   = run stamp
-!=======================================================================
-
-      implicit none
-
-      character(*) :: fname, calendar, expnam, runstamp
-
-      integer id(1), id_time, iou
-
-      real c0, c1, c1e3, c1e20
-
-      c0 = 0.
-      c1 = 1.
-      c1e3 = 1.e3
-      c1e20 = 1.e20
-
-!-----------------------------------------------------------------------
-!     open file
-!-----------------------------------------------------------------------
-      call openfile (fname, iou)
-
-!-----------------------------------------------------------------------
-!     start definitions
-!-----------------------------------------------------------------------
-      call redef (iou)
-
-!-----------------------------------------------------------------------
-!     write global attributes
-!-----------------------------------------------------------------------
-      call putatttext (iou, 'global', 'Conventions', 'CF-1.0')
-      call putatttext (iou, 'global', 'experiment_name', expnam)
-      call putatttext (iou, 'global', 'run_stamp', runstamp)
-
-!-----------------------------------------------------------------------
-!     define dimensions
-!-----------------------------------------------------------------------
-      call defdim ('time', iou, 0, id_time)
-      id(1) = id_time
-
-!-----------------------------------------------------------------------
-!     define data
-!-----------------------------------------------------------------------
-      call defvar ('time', iou, 1, id, c0, c0, 'T', 'D'
-# if defined O_units_time_years
-#  if !defined O_save_time_relyear0
-     &, 'time', 'time', 'years since 1-1-1')
-#  else
-     &, 'time', 'time', 'years since 0-1-1')
-#  endif
-# else
-#  if !defined O_save_time_relyear0
-     &, 'time', 'time', 'days since 1-1-1')
-#  else
-     &, 'time', 'time', 'days since 0-1-1')
-#  endif
-# endif
-      call putatttext (iou, 'time', 'calendar', calendar)
-      call defvar ('T_avgper', iou, 1, id, c0, c0, ' ', 'F'
-     &, 'averaging period', ' ','day')
-# if defined O_co2emit_diag
-      call defvar ('F_co2diag', iou, 1, id, -c1e20, c1e20, ' '
-     &, 'F', 'diagnosed carbon emissions', ' ', 'kg s-1')
-# endif
-# if defined O_global_sums
-      call defvar ('G_dtheat', iou, 1, id, -c1e20
-     &, c1e20, ' ', 'F', 'heat conservation error', ' ', 'J')
-      call defvar ('G_dtwater', iou, 1, id, -c1e20
-     &, c1e20, ' ', 'F', 'water conservation error', ' ', 'kg')
-      call defvar ('G_dtcarb', iou, 1, id, -c1e20
-     &, c1e20, ' ', 'F', 'carbon conservation error', ' ', 'kg')
-# endif
-
-!-----------------------------------------------------------------------
-!     end definitions
-!-----------------------------------------------------------------------
-      call enddef (iou)
-
 #endif
+
       return
       end

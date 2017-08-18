@@ -196,7 +196,7 @@
       include "mtlm.h"
       include "csbc.h"
 
-      integer i, is, ie, j, js, je, iflag, L, n
+      integer is, ie, js, je, iflag, n
 
       real rntatsl
 
@@ -242,14 +242,7 @@
         ta_CS(:) = ta_CS(:) + CS(:)
         ta_RESP_S(:) = ta_RESP_S(:) + RESP_S(:)
         ta_LIT_C_T(:) = ta_LIT_C_T(:) + LIT_C_T(:)
-        do j=js,je
-          do i=is,ie
-            L = land_map(i,j)
-            if (L .ne. 0) then
-              ta_BURN(L) = ta_BURN(L) + sbc(i,j,iburn)
-            endif
-          enddo
-        enddo
+        ta_BURN(:) = ta_BURN(:) + BURN(:)
 
         do n=1,NPFT
           ta_GPP(:,n) = ta_GPP(:,n) + GPP(:,n)*FRAC(:,n)
@@ -358,7 +351,8 @@
 !       convert area to m2
         tai_LIT_C_T = tai_LIT_C_T + tmp*1.e-4
 
-        call areatot (sbc(:,:,iburn), dmsk, tmp)
+        call unloadland (POINTS, BURN, imt, jmt, land_map, data)
+        call areatot (data, dmsk, tmp)
 !       convert area to m2
         tai_BURN = tai_BURN + tmp*1.e-4
 

@@ -406,7 +406,7 @@
 #  if defined O_save_carbon_totals
 !       convert from umol cm-3 to Pg (redctn contained 1e-3)
         tai_cocn = (tai_dic + (tai_p + tai_z + tai_d + tai_di)
-     &             *redctn)*tcellv*12.e-21
+     &             *redctn*1.e3)*tcellv*12.e-21
 !       convert from umol cm-2 s-1 to Pg year-1
         tai_cfa2o = tai_dicflx*tcella(1)*yrlen*daylen*12.e-21
 #  else

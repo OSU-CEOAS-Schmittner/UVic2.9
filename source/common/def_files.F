@@ -82,9 +82,6 @@
 #if defined O_sed
       call def_tsi_sed (fname)
 #endif
-#if defined O_global_sums || defined O_co2emit_diag
-      call def_tsi_gsums (fname)
-#endif
 
       return
       end
@@ -819,48 +816,4 @@
 
       return
       end
-# if defined O_global_sums || defined O_co2emit_diag
-
-      subroutine def_tsi_gsums (fname)
-!=======================================================================
-!     defines tsi files for gsums
-
-!     output:
-!       fname = file name
-!=======================================================================
-
-      implicit none
-
-      character(120) :: fname, file_stamp, name, new_file_name
-      character(32) :: nstamp
-
-      integer iou, ntrec, nyear, nmonth, nday, nhour, nmin, nsec
-
-      logical defined
-
-      save name
-      data name /' '/
-
-      include "iounit.h"
-      include "tmngr.h"
-
-      if (name .eq. ' ') then
-        call rdstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
-        nyear = year0 + accel_yr0 + (relyr - accel_yr0)*accel
-        call mkstmp (nstamp, nyear, nmonth, nday, nhour, nmin, nsec)
-        name = file_stamp ('tsi_gsums',nstamp,'.nc')
-        name = new_file_name (name)
-        call inqdefined (name, defined)
-        if (defined) then
-          call opennext (name, relyr, ntrec, iou)
-        else
-          call opennew (name, iou)
-        endif
-        call gsums_tsi_def (name, calendar, expnam, runstamp)
-      endif
-      fname = name
-
-      return
-      end
-# endif
 #endif

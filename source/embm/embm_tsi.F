@@ -264,9 +264,7 @@
 # endif
 # if defined O_save_carbon_totals
       call defvar ('A_totcarb', iou, 1, id, -c1e3, c1e3, ' ', 'F'
-     &, 'global average total atmosphere carbon', ' ', 'Pg')
-      call defvar ('A_carbemit', iou, 1, id, -c1e3, c1e3, ' ', 'F'
-     &, 'global total carbon emissions', ' ', 'Pg')
+     &, 'global average total carbon atmosphere', ' ', 'Pg')
 # endif
 
 !-----------------------------------------------------------------------
@@ -290,7 +288,7 @@
      &,                        netrad, palb, aalb, salb, lsalb, osalb
      &,                        sst, sss, ssdic, ssc14, ssalk, sso2
      &,                        sspo4, ssno3, sscfc11, sscfc12, sulph
-     &,                        volc, agg, catm, carbemit, ntrec)
+     &,                        volc, agg, catm, ntrec)
 !=======================================================================
 !     output routine for atmospheric time step integrals
 
@@ -319,7 +317,7 @@
       real oprecip, levap, oevap, avgper, solins, upsens, uplwr
       real outlwr, dnswr, absswr, netrad, palb, aalb, salb, lsalb
       real osalb, sst, sss, ssdic, ssc14, ssalk, sso2, sspo4, ssno3
-      real sscfc11, sscfc12, sulph, volc, agg, catm, carbemit, time, tmp
+      real sscfc11, sscfc12, sulph, volc, agg, catm, time, tmp
       real c0, c1, c100, c1e3, c1e4, c1e6, p1, p001, p035, cal2J, C2K
 
       c0 = 0.
@@ -470,7 +468,6 @@
 # endif
 # if defined O_save_carbon_totals
       call putvars ('A_totcarb', iou, ntrec, catm, c1, c0)
-      call putvars ('A_carbemit', iou, ntrec, carbemit, c1, c0)
 # endif
 #endif
 

@@ -367,7 +367,7 @@
           psno(i,j) = 0.0
 # if defined O_ice_cpts && defined O_ice
 #  if defined O_mtlm
-          if (land_map(i,j) .eq. 0) hs(i,j) = hseff(i,j,idx,1)
+          hs(i,j) = hs(i,j) + hseff(i,j,idx,1)
           if (tair .le. c0 .and. hs(i,j) .lt. hsno_max)
      &      psno(i,j) = min((hsno_max - hs(i,j))/fc, precip(i,j))
 #  else
@@ -395,7 +395,7 @@
           endif
 # elif defined O_ice
 #  if defined O_mtlm
-          if (land_map(i,j) .eq. 0) hs(i,j) = hsno(i,j,2)
+          hs(i,j) = hs(i,j) + hsno(i,j,2)
           if (tair .le. c0 .and. hs(i,j) .lt. hsno_max)
      &      psno(i,j) = min((hsno_max - hs(i,j))/fc, precip(i,j))
 #  else

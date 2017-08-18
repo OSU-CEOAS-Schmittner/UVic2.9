@@ -651,7 +651,6 @@
 # if defined O_carbon && defined O_carbon_co2_2d
       at(:,:,:,ico2) = co2ccn
 # endif
-      carbemit = 0.
 # if defined O_co2emit_track_co2
       track_co2(:) = 2.e20
       ntrack_co2 = yrlen/segtim

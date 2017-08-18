@@ -107,16 +107,12 @@
       call getvars ('second', iou, ntrec, tmp, c1, c0)
       nsec = tmp
       call mkstmp (stamp, nyear, nmonth, nday, nhour, nmin, nsec)
-      tmp = carbemit
-      call getvars ('carbemit', iou, 1, tmp, c1, c0)
-      carbemit = tmp
       if (init_time_in) then
         itt = 0
         irstdy = 0
         msrsdy = 0
         relyr = 0.0
         call mkstmp (stamp, year0, month0, day0, hour0, min0, sec0)
-	carbemit = 0.
       endif
 # if defined O_carbon && !defined O_carbon_uncoupled && !defined O_co2ccn_data && !defined O_co2ccn_data_transient
       tmp = co2ccn
@@ -588,8 +584,6 @@
      &, 'minute', ' ',' ')
       call defvar ('second', iou, 1, it, c0, c0, ' ', 'D'
      &, 'second', ' ',' ')
-      call defvar ('carbemit', iou, 1, it, c0, c0, ' ', 'D'
-     &, 'carbemit', ' ',' ')
       call defvar ('co2ccn', iou, 1, it, c0, c0, ' ', 'D'
      &, 'co2ccn', ' ',' ')
 # if defined O_carbon_14
@@ -950,7 +944,6 @@
         tmp = 0.
         call putvars ('msrsdy', iou, ntrec, tmp, c1, c0)
         call mkstmp (nstamp, year0, month0, day0, hour0, min0, sec0)
-	carbemit = 0.
       else
         tmp = year0 + accel_yr0 + (relyr - accel_yr0)*accel
         call putvars ('time', iou, ntrec, tmp, c1, c0)
@@ -979,8 +972,6 @@
       call putvars ('minute', iou, ntrec, tmp, c1, c0)
       tmp = nsec
       call putvars ('second', iou, ntrec, tmp, c1, c0)
-      tmp = carbemit
-      call putvars ('carbemit', iou, ntrec, tmp, c1, c0)
       tmp = co2ccn
       call putvars ('co2ccn', iou, ntrec, tmp, c1, c0)
 # if defined O_carbon_14

@@ -145,8 +145,6 @@
       call put_names ('tsi_sed', 'tsi')
       call put_names ('tavg_sed', 'tavg')
 
-      call put_names ('tsi_gsums', 'tsi')
-
 !     write file name changes to filenames
       if (exists) then
         call getunit (iou, 'filenames','formatted sequential rewind')

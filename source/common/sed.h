@@ -61,16 +61,13 @@
 !     weath          = weathering flux (kg s-1)
 !     weathflx       = weathering flux (umol s-1)
 !     sed_year       = year for sediment profile
-!     sedsa          = surface area of potential deep sediments (cm2)
-!     carblith       = change in lithosphere carbon (umol)
-!                      set to zero if time is initialized
 
       real carb, dcpls, dcmin, pore, form, o2, orggg, orgml, calgg
       real calml, dopls, domin, dbpls, dbmin, buried_mass
       real buried_calfrac, depth_age, zrct, water_z_p, k1, k2, k3, csat
       real rc, sed_ml_mass, ttrorg, ttrcal, c_advect, zsed, delz
       real rain_org_p, rain_cal_p, co3_p, dissc, dissn, weath, weathflx
-      real sed_year, sedsa, carblith
+      real sed_year
 
       common /sed_r/ carb(nzmax,3,ipmax), dcpls(nzmax,3,ipmax)
       common /sed_r/ dcmin(nzmax,3,ipmax)
@@ -86,8 +83,7 @@
       common /sed_r/ ttrcal(ipmax), sed_ml_mass(ipmax), c_advect(ipmax)
       common /sed_r/ zsed(nzmax), delz(nzmax), rain_org_p(ipmax)
       common /sed_r/ rain_cal_p(ipmax), co3_p(ipmax)
-      common /sed_r/ dissc, dissn, weath, weathflx, sed_year, sedsa
-      common /sed_r/ carblith
+      common /sed_r/ dissc, dissn, weath, weathflx, sed_year
 
 !     ntatss         = time step counter for time averaging
 !     ta_ttrcal      = time average dissolution rate of calcite
@@ -121,7 +117,7 @@
 !     tai_co3         = time step integral of co3
 !     tai_co3sat      = time step integral of co3sat
 !     tai_rainr       = time step integral of rain ratio
-!     tai_carblith    = time step integral of carblith
+!     tai_csed        = average total carbon in sediments
 !     tai_cfo2s       = average total flux ocean to sediments
 !     tai_cfl2o       = average total flux land to ocean (weathering)
 
@@ -130,9 +126,9 @@
       common /sed_i/ ntatis
 
       real tai_ttrcal, tai_rain_cal, tai_cal, tai_weathflx, tai_calmass
-      real tai_calmass_bur, tai_co3, tai_co3sat, tai_rainr, tai_carblith
+      real tai_calmass_bur, tai_co3, tai_co3sat, tai_rainr, tai_csed
       real tai_cfo2s, tai_cfl2o
 
       common /sed_r/ tai_ttrcal, tai_rain_cal, tai_cal, tai_weathflx
       common /sed_r/ tai_calmass, tai_calmass_bur, tai_co3, tai_co3sat
-      common /sed_r/ tai_rainr, tai_carblith, tai_cfo2s, tai_cfl2o
+      common /sed_r/ tai_rainr, tai_csed, tai_cfo2s, tai_cfl2o

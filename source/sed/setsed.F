@@ -24,7 +24,6 @@
       include "calendar.h"
       include "csbc.h"
       include "coord.h"
-      include "grdvar.h"
       include "levind.h"
       include "sed.h"
       include "switch.h"
@@ -68,8 +67,6 @@
       kmin = max(1,kmin)
       ttrcal(:) = 0.
       rain_cal_p(:) = 0.
-      sedsa = 0.
-      carblith = 0.
       do j=2,jmtm1
         do i=2,imtm1
           if (kmt(i,j) .ge. kmin) then
@@ -78,7 +75,6 @@
             imap(ipsed) = i
             jmap(ipsed) = j
             water_z_p(ipsed) = zw(kmt(i,j))*0.01
-	    sedsa = sedsa + dxt(i)*dyt(j)*cst(j)
           endif
         enddo
       enddo

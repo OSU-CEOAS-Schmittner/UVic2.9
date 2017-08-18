@@ -454,6 +454,8 @@
      &                      + NPP(L,N)*FRAC(L,N)*TIMESTEP
             enddo
             sbc(i,j,isr) = sbc(i,j,isr) + RESP_S(L)*TIMESTEP
+            sbc(i,j,iburn) = 0.
+            BURN(L) = 0.
 # endif
           endif
         enddo
@@ -485,17 +487,12 @@
         endif
 
 !       diagnose the total land carbon before triffid
-        do j=2,jmt-1
-          do i=2,imt-1
-            L = land_map(i,j)
-            if (L .ne. 0) then
-              sbc(i,j,iburn) = sbc(i,j,iburn) + CS(L) 
-     &                       - RESP_S_DR(L)/GAMMA
-              do N=1,NPFT
-                sbc(i,j,iburn) = sbc(i,j,iburn) + FRAC(L,N)*C_VEG(L,N)
-     &                         + FRAC(L,N)*NPP_DR(L,N)/GAMMA
-              enddo
-            endif
+        do I=1,LAND_PTS
+          L = LAND_INDEX(I)
+          BURN(L) = CS(L) - RESP_S_DR(L)/GAMMA
+          do N=1,NPFT
+            BURN(L) = BURN(L) + FRAC(L,N)*C_VEG(L,N)
+     &              + FRAC(L,N)*NPP_DR(L,N)/GAMMA
           enddo
         enddo
 
@@ -514,10 +511,21 @@
           do i=2,imt-1
             L = land_map(i,j)
             if (L .ne. 0) then
-              sbc(i,j,iburn) = sbc(i,j,iburn) - CS(L)
+              BURN(L) = BURN(L) - CS(L)
               do N=1,NPFT
-                sbc(i,j,iburn) = sbc(i,j,iburn) - FRAC(L,N)*C_VEG(L,N)
+                BURN(L) = BURN(L) - FRAC(L,N)*C_VEG(L,N)
               enddo
+# if defined O_mtlm_segday
+#  if defined O_carbon
+              sbc(i,j,iburn) = BURN(L)/segtim
+#  endif
+              BURN(L) = BURN(L)/TIMESTEP/segtim
+# else
+#  if defined O_carbon
+              sbc(i,j,iburn) = BURN(L)
+#  endif
+              BURN(L) = BURN(L)/TIMESTEP
+# endif
             endif
           enddo
         enddo

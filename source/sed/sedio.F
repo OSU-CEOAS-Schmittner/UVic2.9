@@ -53,12 +53,16 @@
         call def_tsi
         call def_tsi_sed (fname)
 #  if defined O_save_carbon_totals
+!        tai_csed = (tai_calmass + tai_calmass_bur)*1.e-12
+!       convert from kg to Pg
+        tai_csed = tai_calmass*1.e-12
 !       convert from mol cm-2 s-1 to Pg year-1
-        tai_cfo2s = (tai_rain_cal - tai_ttrcal)*sedsa*12.e-15
+        tai_cfo2s = (tai_rain_cal - tai_ttrcal)*tcella(1)*12.e-15
      &               *yrlen*daylen
 !       convert from kg s-1 to Pg year-1
         tai_cfl2o = tai_weathflx*1.e-12*yrlen*daylen
 #  else
+        tai_csed = 0.
         tai_cfo2s = 0.
         tai_cfl2o = 0.
 #  endif
@@ -96,7 +100,7 @@
 
         call sed_tsi_out (fname, avgper, time, stamp, tai_ttrcal
      &,   tai_rain_cal, tai_cal, tai_calmass, tai_calmass_bur
-     &,   tai_co3, tai_co3sat, tai_weathflx, tai_rainr, tai_carblith
+     &,   tai_co3, tai_co3sat, tai_weathflx, tai_rainr, tai_csed
      &,   tai_cfo2s, tai_cfl2o, ntrec)
 
         call ta_sed_tsi (is, ie, js, je, 0)
@@ -329,7 +333,6 @@
         tai_co3sat = 0.
         tai_weathflx = 0.
         tai_rainr = 0.
-        tai_carblith = 0.
 
       elseif (iflag .eq. 1) then
 
@@ -380,8 +383,6 @@
         tai_co3sat = tai_co3sat + tmp
 !       convert umol C s-1 to kg C s-1
         tai_weathflx = tai_weathflx + weathflx*12.e-9
-!       convert umol to Pg
-        tai_carblith = tai_carblith + carblith*12.e-21
         tmpip(1:ipmax) = rain_cal_p(1:ipmax)
      &                   /(rain_org_p(1:ipmax) + 1.e-20)
         call unloadsed (ipmax, tmpip, imt, jmt, map_sed, tmpij)
@@ -401,7 +402,6 @@
         tai_co3 = tai_co3*rntatis
         tai_co3sat = tai_co3sat*rntatis
         tai_weathflx = tai_weathflx*rntatis
-        tai_carblith = tai_carblith*rntatis
         tai_rainr = tai_rainr*rntatis
       endif
 

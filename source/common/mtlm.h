@@ -149,16 +149,17 @@
 ! NPP         = Net Primary Productivity (kg C/m2/s).
 ! RESP_S      = Soil respiration rate (kg C/m2/s).
 ! LIT_C_T     = Gridbox mean carbon litter (kg C/m2/yr).
+! BURN        = Vegetation burning rate (kg C/m2/s).
 ! BF          = Burn fraction
 
       real C_VEG, CV, FTIME, HT, GPP, G_LEAF, G_LEAF_DAY
-      real G_LEAF_PHEN, NPP, RESP_S, LIT_C_T, BF
+      real G_LEAF_PHEN, NPP, RESP_S, LIT_C_T, BURN, BF
 
       common /land_r/ C_VEG(POINTS,NPFT), CV(POINTS), FTIME
       common /land_r/ HT(POINTS,NPFT), GPP(POINTS,NPFT)
       common /land_r/ G_LEAF(POINTS,NPFT), G_LEAF_DAY(POINTS,NPFT)
       common /land_r/ G_LEAF_PHEN(POINTS,NPFT), NPP(POINTS,NPFT)
-      common /land_r/ RESP_S(POINTS), LIT_C_T(POINTS), BF
+      common /land_r/ RESP_S(POINTS), LIT_C_T(POINTS), BURN(POINTS), BF
 
 !-----------------------------------------------------------------------
 ! Driving variables for TRIFFID

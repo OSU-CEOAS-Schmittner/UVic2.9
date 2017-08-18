@@ -508,7 +508,6 @@
       co2ccn = co2ccn + (co2emit - avgflxc*12.e-6)*segtim*daylen*gtoppm
 #   endif
 #  endif
-      carbemit = carbemit + co2emit*atmsa*segtim*daylen*1e-15
 #  if defined O_global_sums
 !     convert from g cm-2 s-1 to umol s-1 for conversion later
       dtoic = dtoic - co2emit*atmsa*segtim*daylen/12e-6
