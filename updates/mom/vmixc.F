@@ -106,24 +106,13 @@ c          q2=0.5
             zkappa = ogamma*edr/ZN2
 
 ! Andreas: high mixing in Southern Ocean below 500 m as in observations
-            zkappa = max(zkappa,tanh((zw(k)-50000.)/10000)*
-     &                          (1-tanh((tlat(i,j+joff)+40)/8))/2)
 c            zkappa = max(zkappa,tanh((zw(k)-50000.)/10000)*
-c     &                          (1-(1-tanh((tlat(i,j+joff)-50)/8))/2))
-            
+c     &                          (1-tanh((tlat(i,j+joff)+40)/8))/2)
 !           limit diff_cbt
 #   if defined O_bryan_lewis_vertical
             diff_cbt(i,k,j) = max(Ahv(k), min(100., zkappa + Ahv(k)))
 #   else
-c            diff_cbt(i,k,j) = max(kappa_h, min(100., zkappa + kappa_h))
-            if ((k .gt. 2).and.(tlat(i,j).ge.-25)
-     &           .and.(tlat(i,j).le.25)) then
-               diff_cbt(i,k,j) = max(kappa_h/2.
-     &,             min(100., zkappa + kappa_h/2.))
-            else
-               diff_cbt(i,k,j) = max(kappa_h, min(100.
-     &,             zkappa + kappa_h))
-            endif
+            diff_cbt(i,k,j) = max(kappa_h, min(100., zkappa + kappa_h))
 #   endif
 #  elif defined O_bryan_lewis_vertical
             diff_cbt(i,k,j) = Ahv(k)

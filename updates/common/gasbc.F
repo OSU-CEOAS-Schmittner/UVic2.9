@@ -1,3 +1,4 @@
+
       subroutine gasbc (is, ie, js, je)
 
 #if defined O_embm
@@ -18,53 +19,60 @@
       real depth
       real ak, aaqg, adicg, r13a, r13dic, batmc13, bdic13
 
-      include "size.h"
-      include "npzd.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "coord.h"
-      include "csbc.h"
-# if defined O_mom
-      include "mw.h"
-# endif
-# if defined O_ice
-#  if defined O_ice_cpts
-      include "cpts.h"
+#include "size.h"
+#include "npzd.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "coord.h"
+#include "csbc.h"
+#  if defined O_mom
+#include "mw.h"
 #  endif
-      include "ice.h"
-# endif
-      include "switch.h"
-      include "tmngr.h"
-      include "cembm.h"
-      include "atm.h"
-      include "insolation.h"
-      include "calendar.h"
-      include "grdvar.h"
-      include "levind.h"
-      include "solve.h"
-# if defined O_mtlm
-      include "mtlm.h"
+#  if defined O_ice
+#   if defined O_ice_cpts
+#include "cpts.h"
+#   endif
+#include "ice.h"
+#  endif
+#include "switch.h"
+#include "tmngr.h"
+#include "cembm.h"
+#include "atm.h"
+#include "insolation.h"
+#include "calendar.h"
+#include "grdvar.h"
+#include "levind.h"
+#include "solve.h"
+#  if defined O_mtlm
+#include "mtlm.h"
 c#  if defined O_mtlm_carbon_13
 c      include "mtlmc13.h"
 c#  endif
 c#  if defined O_mtlm_carbon_14
 c      include "mtlmc14.h"
 c#  endif
-# endif
-# if defined O_save_carbon_carbonate_chem
-      include "diaga.h"
-# endif
+#  endif
+#  if defined O_save_carbon_carbonate_chem
+#include "diaga.h"
+#  endif
 
 # if !defined O_embm_annual
       real cosz(is:ie,js:je)
 # endif
       real dmsk(is:ie,js:je)
 
+#ifndef O_TMM
       isp1 = is + 1
       iem1 = ie - 1
       jsp1 = js + 1
       jem1 = je - 1
+#else
+      isp1 = is
+      iem1 = ie
+      jsp1 = js
+      jem1 = je
+#endif
 
 !     xconv is constant to convert piston_vel from cm/hr -> cm/s
 !     here it is 100.*a*xconv (100 => m to cm, a=0.337, xconv=1/3.6e+05)
@@ -122,10 +130,20 @@ c#  endif
      &  call areaavg (sbc(1,1,isszoop), dmsk, gaost(izoop))
       if (issdetr .ne. 0)
      &  call areaavg (sbc(1,1,issdetr), dmsk, gaost(idetr))
-#   if defined O_npzd_iron
+#    if defined O_npzd_iron
       if (issdetrfe .ne. 0)
      &  call areaavg (sbc(1,1,issdetrfe), dmsk, gaost(idetrfe))
-#   endif
+#    endif
+#    if defined O_kk_ballast
+      if (issdetr_B .ne. 0)
+     &  call areaavg (sbc(1,1,issdetr_B), dmsk, gaost(idetr_B))
+#    endif
+#    if defined O_npzd_caco3
+      if (isscocc .ne. 0)
+     &  call areaavg (sbc(1,1,isscocc), dmsk, gaost(icocc))
+      if (isscaco3 .ne. 0)
+     &  call areaavg (sbc(1,1,isscaco3), dmsk, gaost(icaco3))
+#    endif
 #   endif
       if (issno3 .ne. 0)
      &  call areaavg (sbc(1,1,issno3), dmsk, gaost(ino3))
@@ -142,6 +160,10 @@ c#  endif
 #   if !defined O_npzd_no_vflux
       if (issphytn15 .ne. 0)
      &  call areaavg (sbc(1,1,issphytn15), dmsk, gaost(iphytn15))
+#    if defined O_npzd_caco3
+      if (isscoccn15 .ne. 0)
+     &  call areaavg (sbc(1,1,isscoccn15), dmsk, gaost(icoccn15))
+#    endif      
       if (isszoopn15 .ne. 0)
      &  call areaavg (sbc(1,1,isszoopn15), dmsk, gaost(izoopn15))
       if (issdetrn15 .ne. 0)
@@ -154,6 +176,12 @@ c#  endif
 #   if !defined O_npzd_no_vflux
       if (issphytc13 .ne. 0)
      &  call areaavg (sbc(1,1,issphytc13), dmsk, gaost(iphytc13))
+#    if defined O_npzd_caco3
+      if (isscoccc13 .ne. 0)
+     &  call areaavg (sbc(1,1,isscoccc13), dmsk, gaost(icoccc13))
+      if (isscaco3c13 .ne. 0)
+     &  call areaavg (sbc(1,1,isscaco3c13), dmsk, gaost(icaco3c13))
+#    endif      
       if (isszoopc13 .ne. 0)
      &  call areaavg (sbc(1,1,isszoopc13), dmsk, gaost(izoopc13))
       if (issdetrc13 .ne. 0)
@@ -214,11 +242,17 @@ c#  endif
 # endif
 # if defined O_npzd
       sbc(:,:,ipo4flx) = 0.
-      sbc(:,:,idopflx) = 0.
 #  if !defined O_npzd_no_vflux
       sbc(:,:,iphytflx) = 0.
       sbc(:,:,izoopflx) = 0.
       sbc(:,:,idetrflx) = 0.
+#   if defined O_kk_ballast
+      sbc(:,:,idetrflx_B) = 0.
+#   endif
+#   if defined O_npzd_caco3
+      sbc(:,:,icoccflx) = 0.
+      sbc(:,:,icaco3flx) = 0.
+#   endif
 #  endif
 #  if defined O_npzd_iron
       sbc(:,:,idfeflx) = 0. 
@@ -228,6 +262,7 @@ c#  endif
 #   endif
 #  endif
 #  if defined O_npzd_nitrogen
+      sbc(:,:,idopflx) = 0.
       sbc(:,:,ino3flx) = 0.
       sbc(:,:,idonflx) = 0.
 #   if !defined O_npzd_no_vflux
@@ -238,20 +273,27 @@ c#  endif
       sbc(:,:,idon15flx) = 0.
 #    if !defined O_npzd_no_vflux
       sbc(:,:,iphytn15flx) = 0.
+#     if defined O_npzd_caco3
+      sbc(:,:,icoccn15flx) = 0.
+#     endif      
       sbc(:,:,izoopn15flx) = 0.
       sbc(:,:,idetrn15flx) = 0.
       sbc(:,:,idiazn15flx) = 0.
 #    endif
 #   endif
-#   if defined O_carbon_13
-      sbc(:,:,idoc13flx) = 0.
-#    if !defined O_npzd_no_vflux
+#  endif      
+#  if defined O_carbon_13
+#   if !defined O_npzd_no_vflux
       sbc(:,:,iphytc13flx) = 0.
+#    if defined O_npzd_caco3
+      sbc(:,:,icoccc13flx) = 0
+      sbc(:,:,icaco3c13flx) = 0
+#    endif
       sbc(:,:,izoopc13flx) = 0.
       sbc(:,:,idetrc13flx) = 0.
-#     if defined O_npzd_nitrogen
+#    if defined O_npzd_nitrogen
+      sbc(:,:,idoc13flx) = 0.
       sbc(:,:,idiazc13flx) = 0.
-#     endif
 #    endif
 #   endif
 #  endif

@@ -304,9 +304,6 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isspo4)
       call getvara ('sbc_sspo4', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,isspo4) = tmpij(ils:ile,jls:jle)
-      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
-      call getvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
-      sbc(ils:ile,jls:jle,issdop) = tmpij(ils:ile,jls:jle)
 # endif
 # if defined O_npzd_o2
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isso2)
@@ -319,6 +316,9 @@
       sbc(ils:ile,jls:jle,issalk) = tmpij(ils:ile,jls:jle)
 # endif
 # if defined O_npzd_nitrogen
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
+      call getvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issdop) = tmpij(ils:ile,jls:jle)
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issno3)
       call getvara ('sbc_ssno3', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issno3) = tmpij(ils:ile,jls:jle)
@@ -774,8 +774,6 @@
 # if defined O_npzd
       call defvar ('sbc_sspo4', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sspo4', ' ', ' ')
-      call defvar ('sbc_ssdop', iou, 3, it, -c1e20, c1e20, ' ', 'D'
-     &, 'ssdop', ' ', ' ')
 # endif
 # if defined O_npzd_o2
       call defvar ('sbc_sso2', iou, 3, it, -c1e20, c1e20, ' ', 'D'
@@ -786,6 +784,8 @@
      &, 'ssalk', ' ', ' ')
 # endif
 # if defined O_npzd_nitrogen
+      call defvar ('sbc_ssdop', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssdop', ' ', ' ')
       call defvar ('sbc_ssno3', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssno3', ' ', ' ')
       call defvar ('sbc_ssdon', iou, 3, it, -c1e20, c1e20, ' ', 'D'
@@ -1215,8 +1215,6 @@
 # if defined O_npzd
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isspo4)
       call putvara ('sbc_sspo4', iou, ln, ib, ic, tmpij, c1, c0)
-      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
-      call putvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
 # if defined O_npzd_o2
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isso2)
@@ -1227,6 +1225,8 @@
       call putvara ('sbc_ssalk', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
 # if defined O_npzd_nitrogen
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
+      call putvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issno3)
       call putvara ('sbc_ssno3', iou, ln, ib, ic, tmpij, c1, c0)
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon)

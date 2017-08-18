@@ -55,6 +55,8 @@
 ! TLEAF_OF = Temperature below which leaves are dropped.
 ! TLOW     = Lower temperature for photosynthesis (deg C)
 ! TUPP     = Upper temperature for photosynthesis (deg C)
+! Mar 16, 2016 Andreas next line moved here from mtlm.h
+! MAF      = Moisture availability factor PFT/soil dependence
 
       real ALPHA(NPFT), A_WL(NPFT), A_WS(NPFT), B_WL(NPFT)
       real DGL_DM(NPFT), DGL_DT(NPFT), DQCRIT(NPFT)
@@ -65,6 +67,7 @@
       real NL0(NPFT), NR_NL(NPFT), NS_NL(NPFT), OMEGA(NPFT)
       real R_GROW(NPFT), SIGL(NPFT), TLEAF_OF(NPFT)
       real TLOW(NPFT), TUPP(NPFT)
+      real MAF(NTYPE)
 
 !-----------------------------------------------------------------------
 !                        BT     NT    C3G    C4G     S
@@ -99,3 +102,6 @@
       data TLEAF_OF/ 273.15,243.15,258.15,258.15,243.15 /
       data TLOW    /  -10.0, -15.0,  -5.0,   8.0, -10.0 /
       data TUPP    /   33.0,  25.0,  33.0,  42.0,  33.0 /
+
+      data MAF / 1.0, 1.0, 0.95, 0.95, 0.97, 0.95 /
+

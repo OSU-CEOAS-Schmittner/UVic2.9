@@ -26,10 +26,34 @@
       real ta_rnfix, ta_rwcdeni, ta_rexpocal, ta_rprocal, ta_rgraz_Z
       real ta_rgraz_Det, ta_ravej, ta_ravej_D, ta_rgmax, ta_rno3P
       real ta_rpo4P, ta_rpo4_D, ta_kpipe, ta_rsedrr, ta_rbdeni
-      real ta_rmorp_D, ta_rnpp_dop, ta_rnpp_D_dop
-
+      real ta_rmorp_D, ta_rnpp_dop, ta_rnpp_D_dop, ta_rnpp_C_dop
+# if defined O_kk_ballast
+      real ta_rremi_B, ta_rexpo_B, ta_rgraz_Det_B
+# endif
+# if defined O_npzd_caco3
+      real ta_rexpocaco3, ta_rdissl, ta_rimpocaco3, ta_rcalatt
+      real ta_rmorpt_C, ta_rnpp_C, ta_rgraz_C, ta_rmorp_C
+  
+      common /ta_npzd_r/ ta_rnpp_C(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rgraz_C(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorp_C(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorpt_C(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rexpocaco3(imt,km,jmt)
+      common /ta_npzd_r/ ta_rimpocaco3(imt,km,jmt)
+      common /ta_npzd_r/ ta_rdissl(imt,km,jmt)
+      common /ta_npzd_r/ ta_rcalatt(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rprocal(imt,kpzd,jmt)
+# else
+      common /ta_npzd_r/ ta_rprocal(imt,jmt)
+# endif
+# if defined O_kk_ballast
+      common /ta_npzd_r/ ta_rremi_B(imt,km,jmt)
+      common /ta_npzd_r/ ta_rexpo_B(imt,km,jmt)
+      common /ta_npzd_r/ ta_rgraz_Det_B(imt,kpzd,jmt)
+# endif
       common /ta_npzd_r/ ta_rnpp(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rnpp_dop(imt,kpzd,jmt) 
+      common /ta_npzd_r/ ta_rnpp_C_dop(imt,kpzd,jmt) 
       common /ta_npzd_r/ ta_rgraz(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rmorp(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rmorpt(imt,kpzd,jmt)
@@ -38,7 +62,6 @@
       common /ta_npzd_r/ ta_rremi(imt,km,jmt)
       common /ta_npzd_r/ ta_rexpo(imt,km,jmt)
       common /ta_npzd_r/ ta_rexpocal(imt,km,jmt)
-      common /ta_npzd_r/ ta_rprocal(imt,jmt)
       common /ta_npzd_r/ ta_rsedrr(imt,jmt)
       common /ta_npzd_r/ ta_rnpp_D(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rnpp_D_dop(imt,kpzd,jmt)
@@ -79,7 +102,8 @@
       real ta_rchl, ta_rchl_D
       real ta_rdeffe, ta_rremife, ta_rexpofe, ta_rfeprime
       real ta_rfesed, ta_rbfe
-    
+      real ta_rdeffe_C
+     
       common /ta_npzd_r/ ta_rfeorgads(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rfecol(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rdeffe(imt,kpzd,jmt)
@@ -88,3 +112,4 @@
       common /ta_npzd_r/ ta_rfeprime(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rfesed(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rbfe(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rdeffe_C(imt,kpzd,jmt)

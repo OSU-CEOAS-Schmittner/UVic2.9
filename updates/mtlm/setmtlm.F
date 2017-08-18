@@ -44,8 +44,6 @@
       real LAI_BAL, epsln
       parameter (epsln=1.0e-20)
 
-      data MAF / 1.0, 1.0, 0.95, 0.95, 0.97, 0.95 /
-
       isp1 = is+1
       iem1 = ie-1
       jsp1 = js+1

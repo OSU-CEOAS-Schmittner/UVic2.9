@@ -12,8 +12,8 @@
       integer last_reserved_unit, i, last_reserved
       parameter (last_reserved_unit=0)
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       do i=0,maxfilenames
         hide_file(i) = .false.
@@ -75,8 +75,8 @@
 
       implicit none
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       return
       end
@@ -100,8 +100,8 @@
 
       logical opened
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       do i = 1,maxunit
         if (.NOT. inuse(i)) then
@@ -156,8 +156,8 @@
       integer errors, irec_len, iblock, iword, ibyte, inum
       integer ibuffer, maxsize, layer, i, iounit
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       data ssequential  /'SEQUENTIAL'/
       data sdirect      /'DIRECT'/
@@ -489,8 +489,8 @@
 
       integer ifn, iounit
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       ifn = ifile(iounit)
       if (iounit .ge. 1 .and. iounit .le. maxunit) then
@@ -525,8 +525,8 @@
 
       integer ifn
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       do ifn=1,nfiles
         if (iunit(ifn) .ne. 0) then
@@ -579,8 +579,8 @@
 
       integer i
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       write(stdout, '(/,a,/)') 'i/o units in use'
       write(stdout, '(a5,tr1,a,tr1,a)') ' unit', 'hidden', 'file name'
@@ -608,8 +608,8 @@
 
       integer i
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       write(stdout, '(/,a,/)') '  Files Used in This Run'
       write(stdout, '(a5,tr1,a,tr1,a)') '     ', 'hidden', 'file name'
@@ -635,8 +635,8 @@
 
       integer iounit
 
-      include "stdunits.h"
-      include "iomngr.h"
+#include "stdunits.h"
+#include "iomngr.h"
 
       nfiles = nfiles + 1
       inuse(iounit) = .true.

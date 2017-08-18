@@ -62,6 +62,9 @@
 !       issphytn15  = sea surface concentration of phytoplankton n15 
 !                     (nmol P cm-3)
 !       iphytn15flx = sea surface flux of phytoplankton n15 (nmol P cm-2 s-1)
+!       isscoccn15  = sea surface concentration of calcifiers n15 
+!                     (nmol P cm-3)
+!       icoccn15flx = sea surface flux of calcifiers n15 (nmol P cm-2 s-1)  
 !       isszoopn15  = sea surface concentration of zooplankton n15 (nmol P cm-3)
 !       izoopn15flx = sea surface flux of zooplankton n15 (nmol P cm-2 s-1)
 !       issdetrn15  = sea surface concentration of detritus n15 (nmol P cm-3)
@@ -70,6 +73,8 @@
 !       idiazn15flx = sea surface flux of diazotraphs (nmol P cm-2 s-1)
 !       issphytc13= sea surface concentration of phytc13 (nmol P cm-3)
 !       iphytc13flx= sea surface flux of phytc13 (nmol P cm-2 s-1)
+!       isscoccc13= sea surface concentration of coccc13 (nmol P cm-3)
+!       icoccc13flx= sea surface flux of coccc13 (nmol P cm-2 s-1)			  
 !       isszoopc13= sea surface concentration of zoopc13 (nmol P cm-3)
 !       izoopc13flx= sea surface flux of zoopc13 (nmol P cm-2 s-1)
 !       issdetrc13= sea surface concentration of detrc13 (nmol P cm-3)
@@ -158,7 +163,7 @@
 #if defined O_carbon
      &                  + 2
 # if defined O_carbon_13
-     &                  + 2
+     &                  + 2		 
 # endif
 # if defined O_carbon_14
      &                  + 2
@@ -171,35 +176,47 @@
      &                  + 2
 #endif
 #if defined O_npzd
-     &                  + 4
+     &                  + 2
 # if !defined O_npzd_no_vflux
      &                  + 6
-# endif
-#endif
-#if defined O_npzd_nitrogen
+#  if defined O_kk_ballast
+     &                  + 2
+#  endif
+#  if defined O_npzd_caco3
      &                  + 4
-# if !defined O_npzd_no_vflux
-     &                  + 2
+#  endif
 # endif
-#if defined O_npzd_iron
+# if defined O_npzd_iron
      &                  + 3
-# if !defined O_npzd_no_vflux
+#  if !defined O_npzd_no_vflux
      &                  + 2
+#  endif
 # endif
-#endif
+# if defined O_npzd_nitrogen
+     &                  + 6
+#  if !defined O_npzd_no_vflux
+     &                  + 2
+#  endif
 #  if defined O_npzd_nitrogen_15
      &                  + 4
 #   if !defined O_npzd_no_vflux
      &                  + 8
+#    if defined O_npzd_caco3
+     &                  + 2
+#    endif		 
 #   endif
 #  endif
-# if defined O_carbon_13
+# endif
+#endif
+#if defined O_carbon_13
      &                  + 2
-#  if !defined O_npzd_no_vflux
+# if !defined O_npzd_no_vflux
      &                  + 6
-#   if defined O_npzd_nitrogen
+#  if defined O_npzd_caco3
+     &                  + 4
+#  endif
+#  if defined O_npzd_nitrogen
      &                  + 2
-#   endif
 #  endif
 # endif
 #endif
@@ -220,7 +237,6 @@
 #endif
 #if defined O_sed
      &                  + 7
-
 # if defined O_carbon
      &                  + 1
 # endif
@@ -249,7 +265,13 @@
       integer issdic13, idic13flx, issdoc13, issphytc13, idoc13flx
       integer iphytc13flx, isszoopc13, izoopc13flx, issdetrc13
       integer idetrc13flx, issdiazc13, idiazc13flx
-
+      integer issdetr_B, idetrflx_B, isscoccc13, icoccc13flx
+      integer isscocc, icoccflx, isscoccn15, icoccn15flx
+      integer isscaco3, icaco3flx, isscaco3c13, icaco3c13flx
+			  
+      common /csbc_i/ isscaco3, icaco3flx			  
+      common /csbc_i/ isscocc, icoccflx
+      common /csbc_i/ issdetr_B, idetrflx_B
       common /csbc_i/ itaux, itauy, iws, iaca, isca, ihflx, isflx, isst
       common /csbc_i/ isss, iwa, iro, iwxq, iwyq, iwxt, iwyt, iwxc, iwyc
       common /csbc_i/ ipsw, isu, isv, igu, igv, issdic, idicflx, issalk
@@ -266,13 +288,14 @@
       common /csbc_i/ issdin15, idin15flx, issdon15, idon15flx
       common /csbc_i/ issphytn15, iphytn15flx, isszoopn15, izoopn15flx 
       common /csbc_i/ idetrn15flx, issdiazn15, idiazn15flx
-      common /csbc_i/ issdetrn15
+      common /csbc_i/ issdetrn15, isscoccn15, icoccn15flx
       common /csbc_i/ issdic13, idic13flx, issdoc13, idoc13flx 
       common /csbc_i/ issphytc13, iphytc13flx, isszoopc13, izoopc13flx 
       common /csbc_i/ issdetrc13, idetrc13flx, issdiazc13, idiazc13flx
       common /csbc_i/ issdfe, idfeflx, issdetrfe, idetrfeflx
       common /csbc_i/ idfeadep
-
+      common /csbc_i/ isscoccc13, icoccc13flx, isscaco3c13, icaco3c13flx
+			  
       character(20) :: mapsbc
       common /csbc_c/ mapsbc(numsbc)
 

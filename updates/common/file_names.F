@@ -114,7 +114,7 @@
       call put_names ('O_slhref', 'data/O_slhref')
       call put_names ('O_tau', 'data/O_tau')
       call put_names ('O_temp', 'data/O_temp')
-      call put_names ('O_tidenrg_egbert', 'data/O_tidenrg_egbert')
+      call put_names ('O_tidenrg_green', 'data/O_tidenrg_green')
       call put_names ('O_totcarb', 'data/O_totcarb')
       call put_names ('O_fe_dissolved', 'data/O_fe_dissolved')
       call put_names ('O_feflux', 'data/O_feflux')

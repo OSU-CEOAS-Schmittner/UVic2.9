@@ -16,13 +16,15 @@
       implicit none
 
       integer istrt, iend, j, js, je, k, i, n, joff, ie, is
-      parameter (istrt=2, iend=imt-1)
 
       include "size.h"
       include "param.h"
       include "pconst.h"
       include "stdunits.h"
       include "mw.h"
+
+      parameter (istrt=2, iend=imt-1)
+
 
 !-----------------------------------------------------------------------
 !     limit the longitude indices based on those from the argument list
@@ -68,9 +70,6 @@
 
       integer istrt, iend, i, k, j, ip, kr, jq, lag, js, je, ip2, n
       integer joff, jrow, jp2, ie, is
-      parameter (istrt=2, iend=imt-1)
-
-      real totvel, upos, uneg, vpos, vneg, wpos, wneg
 
       include "size.h"
       include "param.h"
@@ -78,6 +77,11 @@
       include "stdunits.h"
       include "grdvar.h"
       include "mw.h"
+
+      parameter (istrt=2, iend=imt-1)
+
+      real totvel, upos, uneg, vpos, vneg, wpos, wneg
+
 
 #  if defined O_gent_mcwilliams
       include "isopyc.h"
@@ -263,9 +267,7 @@
       implicit none
 
       integer istrt, iend, j, js, je, k, i, mask, n, ip2, joff, jp2, m
-      integerie, is
-      parameter (istrt=2, iend=imt-1)
-
+      integer ie, is
       real a2nd, b2nd, a4th, b4th
 
       include "size.h"
@@ -273,6 +275,9 @@
       include "pconst.h"
       include "stdunits.h"
       include "mw.h"
+
+      parameter (istrt=2, iend=imt-1)
+
 
 !-----------------------------------------------------------------------
 !     limit the longitude indices based on those from the argument list

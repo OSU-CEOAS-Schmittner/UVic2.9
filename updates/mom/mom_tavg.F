@@ -252,15 +252,15 @@
         elseif (trim(mapt(n)) .eq. 'no3') then
           call defvar ('F_no3', iou,3, it, -c1e4, c1e4, ' ', 'F'
      &,   'surface downward nitrate flux', ' ', 'mol m-2 s-1')
+        elseif (trim(mapt(n)) .eq. 'din15') then
+          call defvar ('F_din15', iou,3, it, -c1e4, c1e4, ' ', 'F'
+     &,   'surface downward nitrate 15 flux', ' ', 'mol m-2 s-1')
         elseif (trim(mapt(n)) .eq. 'dfe') then
           call defvar ('F_dfe', iou,3, it, -c1e4, c1e4, ' ', 'F'
      &,   'surface downward iron flux', ' ', 'mol m-2 s-1')
         elseif (trim(mapt(n)) .eq. 'don') then
           call defvar ('F_don', iou,3, it, -c1e4, c1e4, ' ', 'F'
      &,   'surface downward DON flux', ' ', 'mol m-2 s-1')
-        elseif (trim(mapt(n)) .eq. 'din15') then
-          call defvar ('F_din15', iou,3, it, -c1e4, c1e4, ' ', 'F'
-     &,   'surface downward nitrate 15 flux', ' ', 'mol m-2 s-1')
         elseif (trim(mapt(n)) .eq. 'don15') then
           call defvar ('F_don15', iou,3, it, -c1e4, c1e4, ' ', 'F'
      &,   'surface downward DON 15 flux', ' ', 'mol m-2 s-1')
@@ -278,30 +278,42 @@
      &,   'surface downward CFC12 flux', ' ', 'mol m-2 s-1')
         elseif (trim(mapt(n)) .eq. 'phyt') then
 !         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'zoop') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'diaz') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'detr') then
-!         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'phytn15') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'zoopn15') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'detrn15') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'diazn15') then
 !         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'phytc13') then
 !         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'zoop') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'zoopn15') then
+!         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'zoopc13') then
 !         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'detrc13') then
+        elseif (trim(mapt(n)) .eq. 'diaz') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'diazn15') then
 !         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'diazc13') then
 !         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'detr') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'detrn15') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'detrc13') then
+!         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'detrfe') then
 !         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'cocc') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'coccn15') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'coccc13') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'caco3') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'caco3c13') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'detr_B') then
+!         skip since no surface flux
         else
           if (n .lt. 1000) write(a3,'(i3)') n
           if (n .lt. 100) write(a3,'(i2)') n
@@ -347,8 +359,10 @@
      &, 'sea surface pCO2', ' ', '1')
 # endif
 # if defined O_save_npzd
+#  if !defined O_npzd_caco3
       call defvar ('O_caco3pro', iou, 3, it, c0, c100, ' ', 'F'
      &, 'calcite production', ' ', 'mol C m-2 s-1')
+#  endif
       call defvar ('O_sedrr', iou, 3, it, -c1, c100, ' ', 'F'
      &, 'detrital sediment rain rate', ' ', 'mol N m-2 s-1')
 # endif
@@ -372,11 +386,11 @@
         if (trim(mapt(n)) .eq. 'temp') then
           call defvar ('O_temp', iou, 4, it, -c100, c500, ' ', 'F'
      &,     'ocean potential temperature'
-#  if defined O_units_temperature_Celsius
+# if defined O_units_temperature_Celsius
      &,     'sea_water_potential_temperature', 'C')
-#  else
+# else
      &,     'sea_water_potential_temperature', 'K')
-#  endif
+# endif
         elseif (trim(mapt(n)) .eq. 'salt') then
           call defvar ('O_sal', iou, 4, it, c0, c100, ' ', 'F'
      &,     'ocean salinity', 'sea_water_salinity', '1e-3')
@@ -391,70 +405,70 @@
      &,     'total alkalinity',' ', 'mol m-3')
         elseif (trim(mapt(n)) .eq. 'o2') then
           call defvar ('O_o2', iou, 4, it, -c1, c500, ' ', 'F'
-     &,     'O_o2',' ', 'mol m-3')
+     &,     'dissolved oxygen',' ', 'mol m-3')
         elseif (trim(mapt(n)) .eq. 'po4') then
           call defvar ('O_po4', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'O_po4', ' ', 'mol m-3')
+     &,     'phosphate', ' ', 'mol m-3')
         elseif (trim(mapt(n)) .eq. 'dop') then
           call defvar ('O_dop', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'O_dop', ' ', 'mol m-3')
+     &,     'dissolved organic phosphorous', ' ', 'mol m-3')
         elseif (trim(mapt(n)) .eq. 'phyt') then
           call defvar ('O_phyt', iou, 4, it, -c1, c100, ' ', 'F'
      &,     'phytoplankton', ' ', 'mol N m-3')
-        elseif (trim(mapt(n)) .eq. 'zoop') then
-          call defvar ('O_zoop', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'zooplankton', ' ', 'mol N m-3')
-        elseif (trim(mapt(n)) .eq. 'detr') then
-          call defvar ('O_detr', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'detritus', ' ', 'mol N m-3')
-        elseif (trim(mapt(n)) .eq. 'no3') then
-          call defvar ('O_no3', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'nitrate', ' ', 'mol m-3')
-        elseif (trim(mapt(n)) .eq. 'don') then
-          call defvar ('O_don', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'DON', ' ', 'mol m-3')
-        elseif (trim(mapt(n)) .eq. 'diaz') then
-          call defvar ('O_diaz', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'diazotrophs', ' ', 'mol N m-3')
-        elseif (trim(mapt(n)) .eq. 'din15') then
-          call defvar ('O_din15', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'nitrate 15', ' ', 'mol m-3')
-        elseif (trim(mapt(n)) .eq. 'don15') then
-          call defvar ('O_don15', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'DON15', ' ', 'mol m-3')
-        elseif (trim(mapt(n)) .eq. 'dfe') then
-          call defvar ('O_dfe', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'O_dfe', ' ', 'mol Fe m-3')
-        elseif (trim(mapt(n)) .eq. 'detrfe') then
-          call defvar ('O_detrfe', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'particulate iron', ' ', 'mol Fe m-3')
         elseif (trim(mapt(n)) .eq. 'phytn15') then
           call defvar ('O_phytn15', iou, 4, it, -c1, c100, ' ', 'F'
      &,     'phytoplankton n15', ' ', 'mol N m-3')
+        elseif (trim(mapt(n)) .eq. 'phytc13') then
+          call defvar ('O_phytc13', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'phytoplankton c13', ' ', 'mol C m-3')
+        elseif (trim(mapt(n)) .eq. 'zoop') then
+          call defvar ('O_zoop', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'zooplankton', ' ', 'mol N m-3')
         elseif (trim(mapt(n)) .eq. 'zoopn15') then
           call defvar ('O_zoopn15', iou, 4, it, -c1, c100, ' ', 'F'
      &,     'zooplankton n15', ' ', 'mol N m-3')
+        elseif (trim(mapt(n)) .eq. 'zoopc13') then
+          call defvar ('O_zoopc13', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'zooplankton c13', ' ', 'mol C m-3')
+        elseif (trim(mapt(n)) .eq. 'detr') then
+          call defvar ('O_detr', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'detritus', ' ', 'mol N m-3')
         elseif (trim(mapt(n)) .eq. 'detrn15') then
           call defvar ('O_detrn15', iou, 4, it, -c1, c100, ' ', 'F'
      &,     'detritus n15', ' ', 'mol N m-3')  
+        elseif (trim(mapt(n)) .eq. 'detrc13') then
+          call defvar ('O_detrc13', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'detritus c13', ' ', 'mol C m-3')  
+        elseif (trim(mapt(n)) .eq. 'no3') then
+          call defvar ('O_no3', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'nitrate', ' ', 'mol m-3')
+        elseif (trim(mapt(n)) .eq. 'din15') then
+          call defvar ('O_din15', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'nitrate n15', ' ', 'mol m-3')
+        elseif (trim(mapt(n)) .eq. 'don') then
+          call defvar ('O_don', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'dissolved organic nitrogen', ' ', 'mol m-3')
+        elseif (trim(mapt(n)) .eq. 'don15') then
+          call defvar ('O_don15', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'dissolved organic nitrogen n15', ' ', 'mol m-3')
+        elseif (trim(mapt(n)) .eq. 'doc13') then
+          call defvar ('O_doc13', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'dissolved organic carbon c13', ' ', 'mol m-3') 
+        elseif (trim(mapt(n)) .eq. 'diaz') then
+          call defvar ('O_diaz', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'diazotrophs', ' ', 'mol N m-3')
         elseif (trim(mapt(n)) .eq. 'diazn15') then
           call defvar ('O_diazn15', iou, 4, it, -c1, c100, ' ', 'F'
      &,     'diazotrophs n15', ' ', 'mol N m-3')
-        elseif (trim(mapt(n)) .eq. 'doc13') then
-          call defvar ('O_doc13', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'DOC13', ' ', 'mol m-3') 
-        elseif (trim(mapt(n)) .eq. 'phytc13') then
-          call defvar ('O_phytc13', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'phytoplankton C13', ' ', 'mol C m-3')
-        elseif (trim(mapt(n)) .eq. 'zoopc13') then
-          call defvar ('O_zoopc13', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'zooplankton C13', ' ', 'mol C m-3')
-        elseif (trim(mapt(n)) .eq. 'detrc13') then
-          call defvar ('O_detrc13', iou, 4, it, -c1, c100, ' ', 'F'
-     &,     'detritus C13', ' ', 'mol C m-3')  
         elseif (trim(mapt(n)) .eq. 'diazc13') then
           call defvar ('O_diazc13', iou, 4, it, -c1, c100, ' ', 'F'
      &,     'diazotrophs C13', ' ', 'mol C m-3')
+        elseif (trim(mapt(n)) .eq. 'dfe') then
+          call defvar ('O_dfe', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'dissolved iron', ' ', 'mol Fe m-3')
+        elseif (trim(mapt(n)) .eq. 'detrfe') then
+          call defvar ('O_detrfe', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'particulate iron', ' ', 'mol Fe m-3')
         elseif (trim(mapt(n)) .eq. 'c14') then
           call defvar ('O_c14', iou, 4, it, -c1e3, c1e3, ' ', 'F'
      &,     'carbon 14', ' ', 'mol m-3')
@@ -462,10 +476,28 @@
      &,     'delta carbon 14', ' ', 'permil')
         elseif (trim(mapt(n)) .eq. 'cfc11') then
           call defvar ('O_cfc11', iou, 4, it, -c1, c500, ' ', 'F'
-     &,     'O_cfc11', ' ', 'mol m-3')
+     &,     'chlorofluorocarbon 11', ' ', 'mol m-3')
         elseif (trim(mapt(n)) .eq. 'cfc12') then
           call defvar ('O_cfc12', iou, 4, it, -c1, c500, ' ', 'F'
-     &,     'O_cfc12', ' ', 'mol m-3')
+     &,     'chlorofluorocarbon 12', ' ', 'mol m-3')
+        elseif (trim(mapt(n)) .eq. 'cocc') then
+          call defvar ('O_cocc', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'coccolithophores', ' ', 'mol N m-3')
+        elseif (trim(mapt(n)) .eq. 'coccn15') then
+          call defvar ('O_coccn15', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'coccolithophores n15', ' ', 'mol N15 m-3')
+        elseif (trim(mapt(n)) .eq. 'coccc13') then
+          call defvar ('O_coccc13', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'coccolithophores c13', ' ', 'mol C13 m-3')
+        elseif (trim(mapt(n)) .eq. 'caco3') then
+          call defvar ('O_caco3', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'calcium carbonate (calcite)', ' ', 'mol C m-3')
+        elseif (trim(mapt(n)) .eq. 'caco3c13') then
+          call defvar ('O_caco3c13', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'calcium carbonate c13', ' ', 'mol C m-3')
+        elseif (trim(mapt(n)) .eq. 'detr_B') then
+          call defvar ('O_detr_B', iou, 4, it, -c1, c100, ' ', 'F'
+     &,     'CaCO3 ballasted detritus', ' ', 'mol N m-3')
         else
           if (n .lt. 1000) write(a3,'(i3)') n
           if (n .lt. 100) write(a3,'(i2)') n
@@ -513,9 +545,16 @@
 # if defined O_save_npzd
       call defvar ('O_phytnpp', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'ocean net primary production rate', ' ', 'mol N m-3 s-1')
+#  if defined O_npzd_nitrogen
       call defvar ('O_phytnpp_dop', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'ocean net primary production rate from DOP', ' '
      &, 'mol N m-3 s-1')
+#   if defined O_npzd_caco3
+      call defvar ('O_calnpp_dop', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'ocean net primary production rate from DOP', ' '
+     &, 'mol N m-3 s-1')
+#   endif      
+#  endif
       call defvar ('O_phytgraz', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'grazing rate on P', ' ', 'mol N m-3 s-1')
       call defvar ('O_zoograz', iou, 4, it, -c1, c100, ' ', 'F'
@@ -530,20 +569,40 @@
      &, 'zooplankton mortality rate', ' ', 'mol N m-3 s-1')
       call defvar ('O_excret', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'excretion rate', ' ', 'mol N m-3 s-1')
-# if defined O_npzd_extra_diagnostics
+#  if defined O_npzd_caco3
+      call defvar ('O_coccnpp', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'ocean cocc npp rate', ' ', 'mol N m-3 s-1')
+      call defvar ('O_coccgraz', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'cocc grazing rate', ' ', 'mol N m-3 s-1')
+      call defvar ('O_coccmort', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'cocc mortality rate', ' ', 'mol N m-3 s-1')
+      call defvar ('O_coccrecy', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'cocc microbial fast recycling rate', ' ', 'mol N m-3 s-1')
+      call defvar ('O_caco3pro', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'calcite production',' ', 'mol C m-3 s-1')
+      call defvar ('O_caco3att', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'attached calcite',' ', 'mol C m-3 s-1')
+#  endif
+#  if defined O_kk_ballast
+      call defvar ('O_detgraz_B', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'grazing rate on CaCO3 ballast detritus', ' ', 'mol N m-3 s-1')
+#  endif
+#  if defined O_npzd_extra_diagnostics
       call defvar ('O_avej', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'light-dependant phyt. growth rate', ' ', 'd-1')
-      call defvar ('O_avej_D', iou, 4, it, -c1, c100, ' ', 'F'
-     &, 'light-dependant Diaz growth rate', ' ', 'd-1')
       call defvar ('O_gmax', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'temp-dependant zoo growth rate', ' ', 'd-1')
+#   if defined O_npzd_nitrogen      
       call defvar ('O_no3P', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'no3-dependant phyt. growth rate', ' ', 'd-1')
-      call defvar ('O_po4P', iou, 4, it, -c1, c100, ' ', 'F'
-     &, 'po4-dependant phyt. growth rate', ' ', 'd-1')
+      call defvar ('O_avej_D', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'light-dependant Diaz growth rate', ' ', 'd-1')
       call defvar ('O_po4_D', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'po4-dependant Diaz growth rate', ' ', 'd-1')
-# endif
+#   endif      
+      call defvar ('O_po4P', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'po4-dependant phyt. growth rate', ' ', 'd-1')
+#  endif
 #  if defined O_npzd_nitrogen
       call defvar ('O_diaznpp', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'net primary production diazotrophs', ' ', 'mol N m-3 s-1')
@@ -559,17 +618,19 @@
       call defvar ('O_nfix', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'nitrogen fixation', ' ', 'mol N m-3 s-1')
       it(3) = id_zt
+#   if defined O_npzd_o2      
       call defvar ('O_wcdeni', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'water column denitrification', ' ', 'mol N m-3 s-1')
       call defvar ('O_bdeni', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'benthic denitrification', ' ', 'mol N m-3 s-1')
+#   endif      
 #  endif
 #  if defined O_npzd_iron
       call defvar ('O_detrfeexpo', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'particulate Fe export rate', ' ', 'mol Fe m-3 s-1')
       call defvar ('O_detrferemi', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'Fe remineralization rate', ' ', '-')
-#  if defined O_npzd_iron_diagnostics
+#   if defined O_npzd_iron_diagnostics
       call defvar ('O_feorgads', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'iron organic scavenging rate', ' ', 'mol Fe m-3 s-1')
       call defvar ('O_deffe', iou, 4, it, -c1, c100, ' ', 'F'
@@ -584,8 +645,12 @@
      &, 'mol Fe m-3 s-1')
       call defvar ('O_fecol', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'iron inorganic scavenging rate', ' ', 'mol Fe m-3 s-1')
-# endif
-# endif
+#    if defined O_npzd_caco3
+      call defvar ('O_deffe_C', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'iron deficiency coccs', ' ', '-')
+#    endif      
+#   endif
+#  endif
       it(3) = id_zt
       call defvar ('O_detrremi', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'remineralisation rate', ' ', 'mol N m-3 s-1')
@@ -595,6 +660,20 @@
       it(3) = id_zt
       call defvar ('O_caco3exp', iou, 4, it, -c1, c100, ' ', 'F'
      &, 'calcite export rate', ' ', 'mol C m-3 s-1')
+#  if defined O_kk_ballast
+      it(3) = id_zt
+      call defvar ('O_detrremi_B', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'CaCO3 ballasted remin rate', ' ', 'mol N m-3 s-1')
+      it(3) = id_zt
+      call defvar ('O_detrexp_B', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'CaCO3 ballasted detrital export rate', ' ', 'mol N m-3 s-1')
+#  endif
+#  if defined O_npzd_caco3
+      it(3) = id_zt
+      call defvar ('O_caco3dissl', iou, 4, it, -c1, c100, ' ', 'F'
+     &, 'calcite dissolution rate', ' ', 'mol C m-3 s-1')
+      it(3) = id_zt
+#  endif
 # endif
 
 !-----------------------------------------------------------------------
@@ -622,32 +701,46 @@
 #  if defined O_save_carbon_totals
      &,                        redctn
 #  endif
-     &,                        kpzd, npp, npp_dop, graz, morp, morpt
+     &,                        kpzd, npp, graz, morp, morpt
      &,                        morz, remi
      &,                        excr, expo, expocal, procal, sedrr 
      &,                        graz_Z, graz_Det
+#  if defined O_kk_ballast
+     &,                        expo_B,remi_B,graz_Det_B
+#  endif
 #  if defined O_npzd_nitrogen
-     &,                        npp_D, npp_D_dop, graz_D, morp_D, morpt_D
+     &,                        npp_D, npp_D_dop, graz_D, npp_dop, morp_D
+     &,                        morpt_D
      &,                        nfix, wcdeni, bdeni
+#   if defined O_npzd_caco3
+     &,                        npp_C_dop
+#   endif      
+#  endif
+#  if defined O_npzd_caco3
+     &,                        npp_C, graz_C, morp_C, morpt_C
+     &,                        dissl, expocaco3, calatt
 #  endif
 #  if defined O_npzd_iron
      &,                        expofe, remife
-#  if defined O_npzd_iron_diagnostics
+#     if defined O_npzd_iron_diagnostics
      &,                        feorgads
      &,                        deffe, feprime
      &,                        fesed, bfe, fecol
+#      if defined O_npzd_caco3
+     &,                        deffe_C
+#      endif
+#     endif
 #  endif
-#  endif
-# if defined O_npzd_extra_diagnostics
+#  if defined O_npzd_extra_diagnostics
      &,                        avej, avej_D, gmax, no3P, po4P, po4_D
-# endif
+#  endif
 # endif
 # if defined O_save_convection
      &,                        totalk, vdepth, pe
 # endif
-#if defined O_save_carbon_carbonate_chem
+# if defined O_save_carbon_carbonate_chem
      &,                        sspH, ssCO3, ssOc, ssOa, sspCO2
-#endif
+# endif
 # if defined O_rigid_lid_surface_pressure || defined O_implicit_free_surface
      &,                        ps
 # endif
@@ -723,33 +816,54 @@
       real diff_cbt(ids:ide,jds:jde,km)
 # endif
 # if defined O_save_npzd
-      real npp(ids:ide,jds:jde,kpzd), npp_dop(ids:ide,jds:jde,kpzd)
+      real npp(ids:ide,jds:jde,kpzd)
       real graz_Z(ids:ide,jds:jde,kpzd) , graz(ids:ide,jds:jde,kpzd)
       real graz_Det(ids:ide,jds:jde,kpzd)
       real morp(ids:ide,jds:jde,kpzd), morz(ids:ide,jds:jde,kpzd)
       real excr(ids:ide,jds:jde,kpzd), morpt(ids:ide,jds:jde,kpzd)
       real remi(ids:ide,jds:jde,km), expo(ids:ide,jds:jde,km)
-      real expocal(ids:ide,jds:jde,km), procal(ids:ide,jds:jde)
+      real expocal(ids:ide,jds:jde,km)
       real sedrr(ids:ide,jds:jde)
+#  if defined O_kk_ballast
+      real remi_B(ids:ide,jds:jde,km), expo_B(ids:ide,jds:jde,km)
+      real graz_Det_B(ids:ide,jds:jde,kpzd)
+#  endif
+#  if defined O_npzd_caco3
+      real npp_C(ids:ide,jds:jde,kpzd), graz_C(ids:ide,jds:jde,kpzd)
+      real morp_C(ids:ide,jds:jde,kpzd), morpt_C(ids:ide,jds:jde,kpzd)
+      real dissl(ids:ide,jds:jde,km), expocaco3(ids:ide,jds:jde,km)
+      real calatt(ids:ide,jds:jde,kpzd)
+      real procal(ids:ide,jds:jde,kpzd)
+#  else      
+      real procal(ids:ide,jds:jde)
+#  endif
 #  if defined O_npzd_nitrogen
       real npp_D(ids:ide,jds:jde,kpzd), npp_D_dop(ids:ide,jds:jde,kpzd)
+      real npp_dop(ids:ide,jds:jde,kpzd)
       real morpt_D(ids:ide,jds:jde,kpzd), nfix(ids:ide,jds:jde,kpzd)
       real wcdeni(ids:ide,jds:jde,km), bdeni(ids:ide,jds:jde,km)
       real morp_D(ids:ide,jds:jde,kpzd), graz_D(ids:ide,jds:jde,kpzd)
+#   if defined O_npzd_caco3
+      real npp_C_dop(ids:ide,jds:jde,kpzd)
+#   endif      
 #  endif
 #  if defined O_npzd_iron
       real expofe(ids:ide,jds:jde,kpzd), remife(ids:ide,jds:jde,kpzd)
-#  if defined O_npzd_iron_diagnostics
+#    if defined O_npzd_iron_diagnostics
       real feorgads(ids:ide,jds:jde,kpzd)
       real deffe(ids:ide,jds:jde,kpzd), feprime(ids:ide,jds:jde,kpzd)
       real fesed(ids:ide,jds:jde,kpzd), bfe(ids:ide,jds:jde,kpzd)
       real fecol(ids:ide,jds:jde,kpzd)
+#     if defined O_npzd_caco3
+      real deffe_C(ids:ide,jds:jde,kpzd)
+#     endif      
+#    endif
 #  endif
-# if defined O_npzd_extra_diagnostics
+#  if defined O_npzd_extra_diagnostics
       real avej(ids:ide,jds:jde,kpzd), avej_D(ids:ide,jds:jde,kpzd)
       real gmax(ids:ide,jds:jde,kpzd), no3P(ids:ide,jds:jde,kpzd)
       real po4P(ids:ide,jds:jde,kpzd), po4_D(ids:ide,jds:jde,kpzd)
-# endif
+#  endif
 # endif
 # if defined O_save_convection
       real totalk(ids:ide,jds:jde), vdepth(ids:ide,jds:jde)
@@ -1020,13 +1134,13 @@
         elseif (trim(mapt(n)) .eq. 'po4') then
           call putvaramsk('F_po4', iou, ln, ib, ic, tmpij, tmpijm
      &,     c1e5, c0)
-        elseif (trim(mapt(n)) .eq. 'dop') then
+       elseif (trim(mapt(n)) .eq. 'dop') then
           call putvaramsk('F_dop', iou, ln, ib, ic, tmpij, tmpijm
      &,     c1e5, c0)
         elseif (trim(mapt(n)) .eq. 'no3') then
           call putvaramsk('F_no3', iou, ln, ib, ic, tmpij, tmpijm
      &,     c1e5, c0)
-        elseif (trim(mapt(n)) .eq. 'dfe') then
+       elseif (trim(mapt(n)) .eq. 'dfe') then
           call putvaramsk('F_dfe', iou, ln, ib, ic, tmpij, tmpijm
      &,     c1e5, c0)
         elseif (trim(mapt(n)) .eq. 'don') then
@@ -1052,33 +1166,42 @@
      &,     c100, c0)
         elseif (trim(mapt(n)) .eq. 'phyt') then
 !         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'zoop') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'diaz') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'detr') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'diaz') then
-!         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'phytn15') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'zoopn15') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'detrn15') then
-!         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'diazn15') then
 !         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'phytc13') then
 !         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'zoop') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'zoopn15') then
+!         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'zoopc13') then
 !         skip since so surface flux
-        elseif (trim(mapt(n)) .eq. 'detrc13') then
+        elseif (trim(mapt(n)) .eq. 'diaz') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'diazn15') then
 !         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'diazc13') then
 !         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'detr') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'detrn15') then
+!         skip since so surface flux
+        elseif (trim(mapt(n)) .eq. 'detrc13') then
+!         skip since so surface flux
         elseif (trim(mapt(n)) .eq. 'detrfe') then
 !         skip since so surface flux  
-!
+        elseif (trim(mapt(n)) .eq. 'cocc') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'coccn15') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'coccc13') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'caco3') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'caco3c13') then
+!         skip since no surface flux
+        elseif (trim(mapt(n)) .eq. 'detr_B') then
+!         skip since no surface flux
         else
           if (n .lt. 1000) write(a3, '(i3)') n
           if (n .lt. 100) write(a3, '(i2)') n
@@ -1139,9 +1262,11 @@
 # endif
 # if defined O_save_npzd
       tmpijm(ils:ile,jls:jle) = tm(ils:ile,jls:jle,1)
+#  if !defined O_npzd_caco3
       tmpij(ils:ile,jls:jle) = procal(ils:ile,jls:jle)
       call putvaramsk ('O_caco3pro', iou, ln, ib, ic, tmpij, tmpijm
      &, c100, c0)
+#  endif
       tmpij(ils:ile,jls:jle) = sedrr(ils:ile,jls:jle)
       call putvaramsk ('O_sedrr', iou, ln, ib, ic, tmpij, tmpijm
      &, c1e5, c0)
@@ -1210,16 +1335,60 @@
           toc(ils:ile,jls:jle,kls:kle) = toc(ils:ile,jls:jle,kls:kle)
      &      + tmpijk(ils:ile,jls:jle,kls:kle)*redctn
 # endif
-        elseif (trim(mapt(n)) .eq. 'zoop') then
+        elseif (trim(mapt(n)) .eq. 'phytn15') then
+          call putvaramsk('O_phytn15', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)  
+        elseif (trim(mapt(n)) .eq. 'phytc13') then
+          call putvaramsk('O_phytc13', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1, c0)  
+        elseif (trim(mapt(n)) .eq. 'cocc') then
+          call putvaramsk('O_cocc', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
+# if defined O_save_carbon_totals
+          toc(ils:ile,jls:jle,kls:kle) = toc(ils:ile,jls:jle,kls:kle)
+     &      + tmpijk(ils:ile,jls:jle,kls:kle)*redctn
+# endif
+        elseif (trim(mapt(n)) .eq. 'coccn15') then
+          call putvaramsk('O_coccn15', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
+        elseif (trim(mapt(n)) .eq. 'coccc13') then
+          call putvaramsk('O_coccc13', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1, c0)
+        elseif (trim(mapt(n)) .eq. 'caco3') then
+          call putvaramsk('O_caco3', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
+        elseif (trim(mapt(n)) .eq. 'caco3c13') then
+          call putvaramsk('O_caco3c13', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
+        elseif (trim(mapt(n)) .eq. 'detr_B') then
+          call putvaramsk('O_detr_B', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
+# if defined O_save_carbon_totals
+          toc(ils:ile,jls:jle,kls:kle) = toc(ils:ile,jls:jle,kls:kle)
+     &      + tmpijk(ils:ile,jls:jle,kls:kle)*redctn
+# endif
+       elseif (trim(mapt(n)) .eq. 'zoop') then
           call putvaramsk('O_zoop', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1e3, c0)
 # if defined O_save_carbon_totals
           toc(ils:ile,jls:jle,kls:kle) = toc(ils:ile,jls:jle,kls:kle)
      &      + tmpijk(ils:ile,jls:jle,kls:kle)*redctn
 # endif
+        elseif (trim(mapt(n)) .eq. 'zoopn15') then
+          call putvaramsk('O_zoopn15', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)  
+        elseif (trim(mapt(n)) .eq. 'zoopc13') then
+          call putvaramsk('O_zoopc13', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1, c0)  
         elseif (trim(mapt(n)) .eq. 'detr') then
           call putvaramsk('O_detr', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1e3, c0)
+        elseif (trim(mapt(n)) .eq. 'detrn15') then
+          call putvaramsk('O_detrn15', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)   
+        elseif (trim(mapt(n)) .eq. 'detrc13') then
+          call putvaramsk('O_detrc13', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1, c0)   
 # if defined O_save_carbon_totals
           toc(ils:ile,jls:jle,kls:kle) = toc(ils:ile,jls:jle,kls:kle)
      &      + tmpijk(ils:ile,jls:jle,kls:kle)*redctn
@@ -1227,50 +1396,30 @@
         elseif (trim(mapt(n)) .eq. 'no3') then
           call putvaramsk('O_no3', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1e3, c0)
-# if defined O_npzd_iron
+        elseif (trim(mapt(n)) .eq. 'din15') then
+          call putvaramsk('O_din15', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0) 
         elseif (trim(mapt(n)) .eq. 'dfe') then
           call putvaramsk('O_dfe', iou, ln, ib, ic, tmpijk, tmpijkm  
      &,     c1e3, c0)
         elseif (trim(mapt(n)) .eq. 'detrfe') then
           call putvaramsk('O_detrfe', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1e3, c0)
-# endif
         elseif (trim(mapt(n)) .eq. 'don') then
           call putvaramsk('O_don', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1e3, c0)
-        elseif (trim(mapt(n)) .eq. 'diaz') then
-          call putvaramsk('O_diaz', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1e3, c0)
-        elseif (trim(mapt(n)) .eq. 'din15') then
-          call putvaramsk('O_din15', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1e3, c0) 
         elseif (trim(mapt(n)) .eq. 'don15') then
           call putvaramsk('O_don15', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1e3, c0)
-        elseif (trim(mapt(n)) .eq. 'phytn15') then
-          call putvaramsk('O_phytn15', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1e3, c0)  
-        elseif (trim(mapt(n)) .eq. 'zoopn15') then
-          call putvaramsk('O_zoopn15', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1e3, c0)  
-        elseif (trim(mapt(n)) .eq. 'detrn15') then
-          call putvaramsk('O_detrn15', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1e3, c0)   
-        elseif (trim(mapt(n)) .eq. 'diazn15') then
-          call putvaramsk('O_diazn15', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1e3, c0)
         elseif (trim(mapt(n)) .eq. 'doc13') then
           call putvaramsk('O_doc13', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1, c0)
-        elseif (trim(mapt(n)) .eq. 'phytc13') then
-          call putvaramsk('O_phytc13', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1, c0)  
-        elseif (trim(mapt(n)) .eq. 'zoopc13') then
-          call putvaramsk('O_zoopc13', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1, c0)  
-        elseif (trim(mapt(n)) .eq. 'detrc13') then
-          call putvaramsk('O_detrc13', iou, ln, ib, ic, tmpijk, tmpijkm
-     &,     c1, c0)   
+        elseif (trim(mapt(n)) .eq. 'diaz') then
+          call putvaramsk('O_diaz', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
+        elseif (trim(mapt(n)) .eq. 'diazn15') then
+          call putvaramsk('O_diazn15', iou, ln, ib, ic, tmpijk, tmpijkm
+     &,     c1e3, c0)
         elseif (trim(mapt(n)) .eq. 'diazc13') then
           call putvaramsk('O_diazc13', iou, ln, ib, ic, tmpijk, tmpijkm
      &,     c1, c0)
@@ -1338,7 +1487,7 @@
      &  diff_cbt(ils:ile,jls:jle,kls:kle)
       call putvaramsk ('O_diffZ', iou, ln, ib, ic, tmpijk, tmpijkm
      &, c1e4, c0)
-# endif
+# endif     
 # if defined O_save_npzd
       tmpijlm(ils:ile,jls:jle,lls:lle) = tm(ils:ile,jls:jle,lls:lle)
       ib(3) = lls-lgs+1
@@ -1347,9 +1496,43 @@
       tmpijl(ils:ile,jls:jle,lls:lle) = npp(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_phytnpp', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
+#  if defined O_npzd_caco3
+      tmpijl(ils:ile,jls:jle,lls:lle) = npp_C(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_coccnpp', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+      tmpijl(ils:ile,jls:jle,lls:lle) = graz_C(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_coccgraz', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+      tmpijl(ils:ile,jls:jle,lls:lle) = morp_C(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_coccmort', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+      tmpijl(ils:ile,jls:jle,lls:lle) = morpt_C(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_coccrecy', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+      tmpijl(ils:ile,jls:jle,lls:lle) = procal(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_caco3pro', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+      tmpijl(ils:ile,jls:jle,lls:lle) = calatt(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_caco3att', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+#  endif
+#  if defined O_kk_ballast
+      tmpijl(ils:ile,jls:jle,lls:lle) =
+     & graz_Det_B(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_detgraz_B', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+#  endif
+#  if defined O_npzd_nitrogen
       tmpijl(ils:ile,jls:jle,lls:lle) = npp_dop(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_phytnpp_dop', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
+#   if defined O_npzd_caco3
+      tmpijl(ils:ile,jls:jle,lls:lle) =
+     &                       npp_C_dop(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_calnpp_dop', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+#   endif      
+#  endif
       tmpijl(ils:ile,jls:jle,lls:lle) = graz(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_phytgraz', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
@@ -1372,26 +1555,28 @@
       tmpijl(ils:ile,jls:jle,lls:lle) = excr(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_excret', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
-# if defined O_npzd_extra_diagnostics
+#  if defined O_npzd_extra_diagnostics
       tmpijl(ils:ile,jls:jle,lls:lle) = avej(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_avej', iou, ln, ib, ic, tmpijl, tmpijlm
-     &, c1e3, c0)
-      tmpijl(ils:ile,jls:jle,lls:lle) = avej_D(ils:ile,jls:jle,lls:lle)
-      call putvaramsk ('O_avej_D', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
       tmpijl(ils:ile,jls:jle,lls:lle) = gmax(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_gmax', iou, ln, ib, ic, tmpijl, tmpijlm 
      &, c1e3, c0)
-      tmpijl(ils:ile,jls:jle,lls:lle) = no3P(ils:ile,jls:jle,lls:lle)
-      call putvaramsk ('O_no3P', iou, ln, ib, ic, tmpijl, tmpijlm
-     &, c1e3, c0)
       tmpijl(ils:ile,jls:jle,lls:lle) = po4P(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_po4P', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
+#   if defined O_npzd_nitrogen      
       tmpijl(ils:ile,jls:jle,lls:lle) = po4_D(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_po4_D', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
-# endif
+      tmpijl(ils:ile,jls:jle,lls:lle) = avej_D(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_avej_D', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+      tmpijl(ils:ile,jls:jle,lls:lle) = no3P(ils:ile,jls:jle,lls:lle)
+      call putvaramsk ('O_no3P', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1e3, c0)
+#   endif      
+#  endif
 #  if defined O_npzd_nitrogen
       tmpijl(ils:ile,jls:jle,lls:lle) = npp_D(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_diaznpp', iou, ln, ib, ic, tmpijl, tmpijlm
@@ -1415,11 +1600,30 @@
       ic(3) = kle-kls+1
       ln = ic(1)*ic(2)*ic(3)*ic(4)
       tmpijkm(ils:ile,jls:jle,kls:kle) = tm(ils:ile,jls:jle,kls:kle)
+#   if defined O_npzd_o2      
       tmpijk(ils:ile,jls:jle,kls:kle) = wcdeni(ils:ile,jls:jle,kls:kle)
       call putvaramsk ('O_wcdeni', iou, ln, ib, ic, tmpijk, tmpijkm
      &, c1e3, c0)
       tmpijk(ils:ile,jls:jle,kls:kle) = bdeni(ils:ile,jls:jle,kls:kle)
       call putvaramsk ('O_bdeni', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c1e3, c0)
+#   endif      
+#  endif
+#  if defined O_kk_ballast
+      tmpijk(ils:ile,jls:jle,kls:kle) = remi_B(ils:ile,jls:jle,kls:kle)
+      call putvaramsk ('O_detrremi_B', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c1e3, c0)
+      tmpijk(ils:ile,jls:jle,kls:kle) = expo_B(ils:ile,jls:jle,kls:kle)
+      call putvaramsk ('O_detrexp_B', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c1e3, c0)
+#  endif
+#  if defined O_npzd_caco3
+      tmpijk(ils:ile,jls:jle,kls:kle) = dissl(ils:ile,jls:jle,kls:kle)
+      call putvaramsk ('O_caco3dissl', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c1e3, c0)
+      tmpijk(ils:ile,jls:jle,kls:kle) =
+     &          expocaco3(ils:ile,jls:jle,kls:kle)
+      call putvaramsk ('O_caco3exp', iou, ln, ib, ic, tmpijk, tmpijkm
      &, c1e3, c0)
 #  endif
 #  if defined O_npzd_iron
@@ -1430,7 +1634,7 @@
       tmpijl(ils:ile,jls:jle,lls:lle) = remife(ils:ile,jls:jle,lls:lle)
       call putvaramsk ('O_detrferemi', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0) 
-#  if defined O_npzd_iron_diagnostics 
+#   if defined O_npzd_iron_diagnostics 
       tmpijl(ils:ile,jls:jle,lls:lle) = feorgads(ils:ile,jls:jle
      &, lls:lle)
       call putvaramsk ('O_feorgads', iou, ln, ib, ic, tmpijl, tmpijlm
@@ -1453,7 +1657,13 @@
      &, lls:lle)
       call putvaramsk ('O_fecol', iou, ln, ib, ic, tmpijl, tmpijlm
      &, c1e3, c0)
-#  endif
+#    if defined O_npzd_caco3
+      tmpijl(ils:ile,jls:jle,lls:lle) = deffe_C(ils:ile,jls:jle
+     &, lls:lle)
+      call putvaramsk ('O_deffe_C', iou, ln, ib, ic, tmpijl, tmpijlm
+     &, c1, c0)
+#    endif      
+#   endif
 #  endif
       ib(3) = kls-kgs+1
       ic(3) = kle-kls+1
@@ -1465,9 +1675,11 @@
       tmpijk(ils:ile,jls:jle,kls:kle) = expo(ils:ile,jls:jle,kls:kle)
       call putvaramsk ('O_detrexp', iou, ln, ib, ic, tmpijk, tmpijkm
      &, c1e3, c0)
+#  if !defined O_npzd_caco3      
       tmpijk(ils:ile,jls:jle,kls:kle) = expocal(ils:ile,jls:jle,kls:kle)
       call putvaramsk ('O_caco3exp', iou, ln, ib, ic, tmpijk, tmpijkm
-     &, c1, c0)
+     &     , c1, c0)
+#  endif      
 # endif
 
       deallocate ( tmpij )

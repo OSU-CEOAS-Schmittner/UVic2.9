@@ -542,7 +542,6 @@
           KITER = 1
         endif
 
-# if defined defined O_carbon
 !       diagnose the total land carbon before triffid
         do j=2,jmt-1
           do i=2,imt-1
@@ -556,7 +555,6 @@
             endif
           enddo
         enddo
-# endif
 
         do I=1,KITER
           call TRIFFID (LAND_PTS, LAND_INDEX, FORW, GAMMA, FRAC_VS
@@ -583,7 +581,6 @@
 # else
         RTSB = 1./(DAY_TRIF*SEC_DAY)
 # endif
-# if defined defined O_carbon
         do j=2,jmt-1
           do i=2,imt-1
             L = land_map(i,j)
@@ -598,7 +595,6 @@
             endif
           enddo
         enddo
-# endif
 # if defined O_global_sums
         ntlbc = 0
 # endif

@@ -18,16 +18,16 @@
 
       real uvmag
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "coord.h"
-      include "csbc.h"
-      include "grdvar.h"
-      include "levind.h"
-      include "scalar.h"
-      include "mw.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "coord.h"
+#include "csbc.h"
+#include "grdvar.h"
+#include "levind.h"
+#include "scalar.h"
+#include "mw.h"
 
 !-----------------------------------------------------------------------
 !     bail out if starting row exceeds ending row
@@ -35,12 +35,18 @@
 
       if (js .gt. je) return
 
+#ifndef O_TMM
 !-----------------------------------------------------------------------
 !     limit the longitude indices
 !-----------------------------------------------------------------------
 
       istrt = max(2,is)
       iend  = min(imt-1,ie)
+
+#else
+      istrt = is
+      iend = ie
+#endif ! SPK O_TMM
 
 !----------------------------------------------------------------------
 !       set no flux condition for all tracers at surface & bottom.
@@ -64,12 +70,12 @@
         jrow = j + joff
         do i=istrt,iend
           stf(i,j,itemp) = sbc(i,jrow,ihflx)*tmask(i,1,j)
-          stf(i,j,isalt) = sbc(i,jrow,isflx)*tmask(i,1,j)
+          stf(i,j,isalt) = sbc(i,jrow,isflx)*tmask(i,1,j)         
 # if defined O_gthflx
           btf(i,j,itemp) = -bhf(i,jrow)*tmask(i,1,j)
 # endif
 # if defined O_carbon
-          stf(i,j,idic) = sbc(i,jrow,idicflx)*tmask(i,1,j)
+          stf(i,j,idic) = sbc(i,jrow,idicflx)*tmask(i,1,j)           
 #  if defined O_carbon_13
           stf(i,j,idic13) = sbc(i,jrow,idic13flx)*tmask(i,1,j)
 #  endif
@@ -85,13 +91,20 @@
 # endif
 # if defined O_npzd
           stf(i,j,ipo4) = sbc(i,jrow,ipo4flx)*tmask(i,1,j)
-          stf(i,j,idop) = sbc(i,jrow,idopflx)*tmask(i,1,j)
 #  if !defined O_npzd_no_vflux
           stf(i,j,iphyt) = sbc(i,jrow,iphytflx)*tmask(i,1,j)
           stf(i,j,izoop) = sbc(i,jrow,izoopflx)*tmask(i,1,j)
           stf(i,j,idetr) = sbc(i,jrow,idetrflx)*tmask(i,1,j)
+#   if defined O_kk_ballast
+          stf(i,j,idetr_B) = sbc(i,jrow,idetrflx_B)*tmask(i,1,j)
+#   endif
+#   if defined O_npzd_caco3
+          stf(i,j,icocc) = sbc(i,jrow,icoccflx)*tmask(i,1,j)
+          stf(i,j,icaco3) = sbc(i,jrow,icaco3flx)*tmask(i,1,j)
+#   endif
 #  endif
 #  if defined O_npzd_nitrogen
+          stf(i,j,idop) = sbc(i,jrow,idopflx)*tmask(i,1,j)
           stf(i,j,ino3) = sbc(i,jrow,ino3flx)*tmask(i,1,j)
           stf(i,j,idon) = sbc(i,jrow,idonflx)*tmask(i,1,j)
 #   if !defined O_npzd_no_vflux
@@ -102,6 +115,9 @@
           stf(i,j,idon15) = sbc(i,jrow,idon15flx)*tmask(i,1,j)
 #    if !defined O_npzd_no_vflux
           stf(i,j,iphytn15) = sbc(i,jrow,iphytn15flx)*tmask(i,1,j)
+#     if defined O_npzd_caco3
+          stf(i,j,icoccn15) = sbc(i,jrow,icoccn15flx)*tmask(i,1,j)
+#     endif          
           stf(i,j,izoopn15) = sbc(i,jrow,izoopn15flx)*tmask(i,1,j)
           stf(i,j,idetrn15) = sbc(i,jrow,idetrn15flx)*tmask(i,1,j)
           stf(i,j,idiazn15) = sbc(i,jrow,idiazn15flx)*tmask(i,1,j)
@@ -118,6 +134,10 @@
           stf(i,j,idoc13) = sbc(i,jrow,idoc13flx)*tmask(i,1,j)
 #   if !defined O_npzd_no_vflux
           stf(i,j,iphytc13) = sbc(i,jrow,iphytc13flx)*tmask(i,1,j)
+#    if defined O_npzd_caco3
+         stf(i,j,icoccc13) = sbc(i,jrow,icoccc13flx)*tmask(i,1,j)
+         stf(i,j,icaco3c13) = sbc(i,jrow,icaco3c13flx)*tmask(i,1,j)
+#    endif          
           stf(i,j,izoopc13) = sbc(i,jrow,izoopc13flx)*tmask(i,1,j)
           stf(i,j,idetrc13) = sbc(i,jrow,idetrc13flx)*tmask(i,1,j)
 #    if defined O_npzd_nitrogen
@@ -134,6 +154,8 @@
           smf(i,j,2) = sbc(i,jrow,itauy)*umask(i,1,j)
         enddo
       enddo
+
+#ifndef O_TMM
 
 !----------------------------------------------------------------------
 !       set bottom drag
@@ -178,5 +200,6 @@
 
 #endif
 
+#endif ! SPK no O_TMM
       return
       end

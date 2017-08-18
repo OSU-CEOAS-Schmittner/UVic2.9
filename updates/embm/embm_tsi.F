@@ -253,9 +253,9 @@
 # if defined O_npzd
       call defvar ('O_po4sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface phosphate', ' ','mol m-3')
+#  if defined O_npzd_nitrogen
       call defvar ('O_dopsur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface DOP', ' ','mol m-3')
-#  if defined O_npzd_nitrogen
       call defvar ('O_no3sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface nitrate', ' ','mol m-3')
       call defvar ('O_donsur', iou, 1, id, c0, c100, ' '
@@ -500,8 +500,8 @@
 # endif
 # if defined O_npzd
       call putvars ('O_po4sur', iou, ntrec, sspo4, c1e3, c0)
-      call putvars ('O_dopsur', iou, ntrec, ssdop, c1e3, c0)
 #  if defined O_npzd_nitrogen
+      call putvars ('O_dopsur', iou, ntrec, ssdop, c1e3, c0)
       call putvars ('O_no3sur', iou, ntrec, ssno3, c1e3, c0)
       call putvars ('O_donsur', iou, ntrec, ssdon, c1e3, c0)
 #   if defined O_npzd_nitrogen_15

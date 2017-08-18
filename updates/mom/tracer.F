@@ -1,6 +1,8 @@
-      subroutine tracer (joff, js, je, is, ie)
 
 #if defined O_mom
+
+      subroutine tracer (joff, js, je, is, ie)
+
 !=======================================================================
 !     compute tracers at "tau+1" for rows js through je in the MW.
 
@@ -30,70 +32,69 @@
       real dy_tr, adv_tx, adv_ty, adv_tz, adv_txiso, adv_tyiso
       real adv_tziso, diff_tx, diff_ty, diff_tz, zmax, cont, drho
       real drhom1, wt, ahbi_cstr, ahbi_csu_dyur, gamma, fy, fyz
-      real felimit
-      real fe_dy, fe_conc, fe_x(fe_n), fe_y(fe_n), bctz, felimit_D
+      real fe_dy, fe_conc, fe_x(fe_n), fe_y(fe_n), bctz
 
       real expofe, impofe, feorgads, remife, thetamax, deffe, fecol
-      real thetachl, chl, chl_D, feprime, fesed, bfe, sgb
+      real thetachl, chl, chl_D, feprime, fesed, bfe, sgb, thetamax_C
+      real deffe_C
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "accel.h"
-      include "coord.h"
-      include "cregin.h"
-      include "csbc.h"
-      include "emode.h"
-      include "grdvar.h"
-      include "hmixc.h"
-      include "levind.h"
-      include "mw.h"
-      include "scalar.h"
-      include "switch.h"
-      include "timeavgs.h"
-      include "tmngr.h"
-      include "vmixc.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "accel.h"
+#include "coord.h"
+#include "cregin.h"
+#include "csbc.h"
+#include "emode.h"
+#include "grdvar.h"
+#include "hmixc.h"
+#include "levind.h"
+#include "mw.h"
+#include "scalar.h"
+#include "switch.h"
+#include "timeavgs.h"
+#include "tmngr.h"
+#include "vmixc.h"
 # if defined O_save_convection || defined O_carbon_14
-      include "diaga.h"
+#include "diaga.h"
       real rrc14std
 # endif
 # if defined O_ice
 #  if defined O_ice_cpts
-      include "cpts.h"
+#include "cpts.h"
 #  endif
-      include "ice.h"
+#include "ice.h"
+# endif
+# if defined O_npzd || defined O_carbon_14
+#include "npzd.h"
 # endif
 # if defined O_npzd
       real t_in(km), po4_in(km)
 #  if defined O_npzd_o2
       real o2_in(km)
 #  endif
-#  if defined O_carbon_13
+#  if defined O_carbon_13 || defined O_npzd_caco3
       real s_in(km), dic_in(km), alk_in(km), co2_in, dic13_in(km)
 #  endif
+      real sgb_in(km)
 #  if defined O_npzd_nitrogen
-      real no3_in(km), sgb_in(km)
+      real no3_in(km)
 #   if defined O_npzd_nitrogen_15
       real din15_in(km)
 #   endif
-#  endif
-#  if defined O_npzd_fe_limitation
-      real felimit_in(km), felimit_D_in(km)
-#  endif
+#  endif     
       real expo, tnpzd(km,ntnpzd)
 #  if defined O_embm
-      include "atm.h"
-#   if defined O_carbon_13
-      include "cembm.h"
+#include "atm.h"
+#   if defined O_carbon_13 || defined O_npzd_caco3
+#include "cembm.h"
 #   endif
 #  endif
 # endif
-# if defined O_npzd || O_carbon_14
-      include "npzd.h"
-# endif
+
 # if defined O_carbon_fnpzd
-      include "calendar.h"
+#include "calendar.h"
 # endif
 
       parameter (istrt=2, iend=imt-1)
@@ -105,6 +106,9 @@
 # if defined O_npzd || defined O_carbon_14
       real ai, hi, hs, rctheta, dayfrac, swr, declin
       real src(imt,km,jsmw:jemw,nsrc)
+#  ifdef O_TMM
+      common/mobicomm/src
+#  endif 
 # endif
 # if defined O_carbon_fnpzd
       real tmpijk(imtm2,jmtm2,km), tmpi(imtm2), tmpj(jmtm2)
@@ -112,9 +116,9 @@
       save fnpzd, nfnpzd, mfnpzd, mxfnpzd
 # endif
 # if defined O_isopycmix
-      include "isopyc.h"
+#include "isopyc.h"
 # endif
-      include "fdift.h"
+#include "fdift.h"
 
 # if defined O_carbon_fnpzd
 !-----------------------------------------------------------------------
@@ -190,6 +194,8 @@
         endif
       endif
 # endif
+
+# ifndef O_TMM
 !-----------------------------------------------------------------------
 !     bail out if starting row exceeds ending row
 !-----------------------------------------------------------------------
@@ -209,23 +215,23 @@
 !     build coefficients to minimize advection and diffusion computation
 !-----------------------------------------------------------------------
 
-# if defined O_fourth_order_tracer_advection || defined O_fct || defined O_quicker || defined O_pressure_gradient_average || defined O_biharmonic || defined O_isopycmix
+#  if defined O_fourth_order_tracer_advection || defined O_fct || defined O_quicker || defined O_pressure_gradient_average || defined O_biharmonic || defined O_isopycmix
       limit = min(je+1+joff,jmt) - joff
       do j=js,limit
-# else
+#  else
       do j=js,je
-# endif
+#  endif
         jrow = j + joff
         do i=istrt-1,iend
           cstdxtr(i,j)    = cstr(jrow)*dxtr(i)
           cstdxt2r(i,j)   = cstr(jrow)*dxtr(i)*p5
           cstdxur(i,j)    = cstr(jrow)*dxur(i)
-# if defined O_consthmix && !defined O_bryan_lewis_horizontal && !defined O_biharmonic
+#  if defined O_consthmix && !defined O_bryan_lewis_horizontal && !defined O_biharmonic
           ah_cstdxur(i,j) = diff_cet*cstr(jrow)*dxur(i)
-# endif
+#  endif
         enddo
       enddo
-# if defined O_plume
+#  if defined O_plume
 
 !-----------------------------------------------------------------------
 !     find depth of penetration for the llnl simple plume model
@@ -277,7 +283,10 @@
           endif
         enddo
       enddo
-# endif
+#  endif
+
+# endif ! SPK not O_TMM
+
 # if defined O_npzd
 !-----------------------------------------------------------------------
 !     ocean biogeochemistry and isotopes
@@ -321,52 +330,78 @@
             dayfrac = min( 1., -tan(tlat(i,jrow)/radian)*tan(declin))
             dayfrac = max(1e-12, acos(max(-1., dayfrac))/pi)
 #  if defined O_embm
+#    if defined O_npzd_caco3
+!     KK check this
+            swr = (tap+tap_C)*dnswr(i,jrow)*1e-3*(1. + ai*(exp(-ki
+     &          *(hi + hs)) - 1.))
+#    else
             swr = tap*dnswr(i,jrow)*1e-3*(1. + ai*(exp(-ki*(hi + hs))
      &                                          - 1.))
+#    endif
 #  else
-            swr = tap*200.
+#    if defined O_npzd_caco3
+!     KK check this
+            swr = (tap+tap_C)*200.
+#    else
+            swr = tap*200.            
+#    endif
 #  endif
 
 !        set prognostic variables
-            tnpzd(:,1) = t(i,:,j,ipo4,taum1)
-            tnpzd(:,2) = t(i,:,j,idop,taum1)
-            tnpzd(:,3) = t(i,:,j,iphyt,taum1)
-            tnpzd(:,4) = t(i,:,j,izoop,taum1)
-            tnpzd(:,5) = t(i,:,j,idetr,taum1)
+            tnpzd(:,imobipo4) = t(i,:,j,ipo4,taum1)
+            tnpzd(:,imobiphyt) = t(i,:,j,iphyt,taum1)
+            tnpzd(:,imobizoop) = t(i,:,j,izoop,taum1)
+            tnpzd(:,imobidetr) = t(i,:,j,idetr,taum1)
+#  if defined O_carbon            
+            tnpzd(:,imobidic) = t(i,:,j,idic,taum1)
+#  endif            
 #  if defined O_npzd_nitrogen
-            tnpzd(:,6) = t(i,:,j,idic,taum1)
-            tnpzd(:,7) = t(i,:,j,ino3,taum1)
-            tnpzd(:,8) = t(i,:,j,idon,taum1)
-            tnpzd(:,9) = t(i,:,j,idiaz,taum1)
+            tnpzd(:,imobidop) = t(i,:,j,idop,taum1)            
+            tnpzd(:,imobino3) = t(i,:,j,ino3,taum1)
+            tnpzd(:,imobidon) = t(i,:,j,idon,taum1)
+            tnpzd(:,imobidiaz) = t(i,:,j,idiaz,taum1)
 #   if defined O_npzd_nitrogen_15
-            tnpzd(:,10) = t(i,:,j,idin15,taum1)
-            tnpzd(:,11) = t(i,:,j,idon15,taum1)
-            tnpzd(:,12) = t(i,:,j,iphytn15,taum1)
-            tnpzd(:,13) = t(i,:,j,izoopn15,taum1)
-            tnpzd(:,14) = t(i,:,j,idetrn15,taum1)
-            tnpzd(:,15) = t(i,:,j,idiazn15,taum1)
+            tnpzd(:,imobidin15) = t(i,:,j,idin15,taum1)
+            tnpzd(:,imobidon15) = t(i,:,j,idon15,taum1)
+            tnpzd(:,imobiphytn15) = t(i,:,j,iphytn15,taum1)
+            tnpzd(:,imobizoopn15) = t(i,:,j,izoopn15,taum1)
+            tnpzd(:,imobidetrn15) = t(i,:,j,idetrn15,taum1)
+            tnpzd(:,imobidiazn15) = t(i,:,j,idiazn15,taum1)
+#    if defined O_npzd_caco3
+            tnpzd(:,imobicoccn15) = t(i,:,j,icoccn15,taum1)
+#    endif            
 #   endif
+#  endif
+#  if defined O_npzd_caco3
+            tnpzd(:,imobicocc) = t(i,:,j,icocc,taum1)
+            tnpzd(:,imobicaco3) = t(i,:,j,icaco3,taum1)
+#  endif
+#  if defined O_kk_ballast
+            tnpzd(:,imobidetr_B) = t(i,:,j,idetr_B,taum1) 
 #  endif
 #  if defined O_npzd_iron
-            tnpzd(:,22) = t(i,:,j,idfe,taum1)
-            tnpzd(:,23) = t(i,:,j,idetrfe,taum1)
+            tnpzd(:,imobidfe) = t(i,:,j,idfe,taum1)
+            tnpzd(:,imobidetrfe) = t(i,:,j,idetrfe,taum1)
 #  endif
-
 #  if defined O_carbon_13
-            tnpzd(:,16) = t(i,:,j,idic13,taum1)
-            tnpzd(:,17) = t(i,:,j,idoc13,taum1)
-            tnpzd(:,18) = t(i,:,j,iphytc13,taum1)
-            tnpzd(:,19) = t(i,:,j,izoopc13,taum1)
-            tnpzd(:,20) = t(i,:,j,idetrc13,taum1)
-#   if defined O_npzd_nitrogen
-            tnpzd(:,21) = t(i,:,j,idiazc13,taum1)
-#   endif
+            tnpzd(:,imobidic13) = t(i,:,j,idic13,taum1)
+            tnpzd(:,imobidoc13) = t(i,:,j,idoc13,taum1)
+            tnpzd(:,imobiphytc13) = t(i,:,j,iphytc13,taum1)
+            tnpzd(:,imobizoopc13) = t(i,:,j,izoopc13,taum1)
+            tnpzd(:,imobidetrc13) = t(i,:,j,idetrc13,taum1)
+            tnpzd(:,imobidiazc13) = t(i,:,j,idiazc13,taum1)
+#   if defined O_npzd_caco3
+            tnpzd(:,imobicoccc13) = t(i,:,j,icoccc13,taum1) 
+            tnpzd(:,imobicaco3c13) = t(i,:,j,icaco3c13,taum1) 
+#   endif            
 #  endif
 !        set other input variables
             t_in(:) = t(i,:,j,itemp,taum1) !degree Celsius
             po4_in(:) = t(i,:,j,ipo4,taum1)
+#  if defined O_npzd_o2
             o2_in(:) = t(i,:,j,io2,taum1)*1000. ! uM
-#  if defined O_carbon_13
+#  endif
+#  if defined O_carbon_13 || defined O_npzd_caco3
             s_in(:) = 1.e3*t(i,:,j,isalt,taum1) + 35.0
             dic_in(:) = t(i,:,j,idic,taum1) !mol/m^3
             alk_in(:)  = t(i,:,j,ialk,taum1) !eq/m^3
@@ -375,48 +410,46 @@
 #   else
             co2_in = co2ccn
 #   endif
-            dic13_in(:) = tnpzd(:,16) !mol/m^3
+#   if defined O_carbon_13
+            dic13_in(:) = tnpzd(:,imobidic13) !mol/m^3
+#   endif
 #  endif
 #  if defined O_npzd_nitrogen
-            no3_in(:) = tnpzd(:,7)
+            no3_in(:) = tnpzd(:,imobino3)
 #   if defined O_npzd_nitrogen_15
-            din15_in(:) = tnpzd(:,10)
+            din15_in(:) = tnpzd(:,imobidin15)
 #   endif
+#  endif
             sgb_in(:) = sg_bathy(i,j,:)
-
-#  endif
-#  if defined O_npzd_fe_limitation
-            do k=1,kmt(i,jrow)
-               call fe_limit(i,j,k,felimit_in(k),felimit_D_in(k))
-            enddo
-#  endif
 !  end input
-            call mobi (kmt(i,jrow), c2dtts, rctheta, dayfrac, swr, tnpzd
+            call mobi_driver(
+     &                 kmt(i,jrow), c2dtts, rctheta, dayfrac, swr, tnpzd
      &,                t_in, po4_in
-# if defined O_npzd_o2
+#  if defined O_npzd_o2
      &,                o2_in
-# endif
-# if defined O_carbon_13
-     &,                s_in, dic_in, alk_in, co2_in, dic13_in
-# endif
-# if defined O_npzd_nitrogen
-     &,                no3_in, sgb_in
-#  if defined O_npzd_nitrogen_15
-     &,                din15_in
 #  endif
-# endif
-#  if defined O_npzd_fe_limitation
-     &,                felimit_in, felimit_D_in
-# endif
-# if defined O_sed
+#  if defined O_carbon_13 || defined O_npzd_caco3
+     &,                s_in, dic_in, alk_in, co2_in
+#  endif
+#  if defined O_carbon_13
+     &,                dic13_in
+#  endif
+     &,                sgb_in
+#  if defined O_npzd_nitrogen
+     &,                no3_in
+#   if defined O_npzd_nitrogen_15
+     &,                din15_in
+#   endif
+#  endif
+#  if defined O_sed
      &,                sedcorgflx, sedcalflx)
-# endif
+#  endif
      &,                src(i,:,j,:))
 
-
+!juan added dust iron here instead of in the set source/sinks part:
 #  if defined O_npzd_iron
-!Add Fe from dust:
-                src(i,1,j,isdfe) = src(i,1,j,isdfe) +    ! comes in mol/m2/s gets converted to mmol/m3/s
+! comes in mol/m2/s gets converted to mmol/m3/s
+                src(i,1,j,isdfe) = src(i,1,j,isdfe) +    
      &          sbc(i,j,idfeadep)*1000./(dzt(1)/100.)  !dzt is in cm
 !Add hydrothermal Fe:
                do k=1,kmt(i,j)
@@ -424,8 +457,6 @@
      &          fe_hydr(i,j,k)
                enddo
 #  endif
-
-
 #  if defined O_sed
             if (addflxo .and. eots) then
                sbc(i,jrow,irorg) = sbc(i,jrow,irorg) + sedcorgflx
@@ -439,11 +470,11 @@
 !-----------------------------------------------------------------------
             if (timavgperts .and. .not. euler2) then
              expo = rprca
+#   if !defined O_npzd_caco3
              ta_rprocal(i,jrow) =  ta_rprocal(i,jrow) + rprca
+#   endif
              do k = 1, kmt(i,jrow)
               ta_rnpp(i,k,jrow) = ta_rnpp(i,k,jrow) + rnpp(k)
-              ta_rnpp_dop(i,k,jrow) = ta_rnpp_dop(i,k,jrow) 
-     &             + rnpp_dop(k)
               ta_rgraz(i,k,jrow) = ta_rgraz(i,k,jrow) + rgraz(k)
               ta_rgraz_Z(i,k,jrow) = ta_rgraz_Z(i,k,jrow) + rgraz_Z(k)
               ta_rgraz_Det(i,k,jrow) = ta_rgraz_Det(i,k,jrow)
@@ -453,6 +484,8 @@
               ta_rmorz(i,k,jrow) = ta_rmorz(i,k,jrow) + rmorz(k)
               ta_rexcr(i,k,jrow) = ta_rexcr(i,k,jrow) + rexcr(k)
 #   if defined O_npzd_nitrogen
+              ta_rnpp_dop(i,k,jrow) = ta_rnpp_dop(i,k,jrow) 
+     &             + rnpp_dop(k)              
               ta_rnpp_D(i,k,jrow) = ta_rnpp_D(i,k,jrow) + rnpp_D(k)
               ta_rnpp_D_dop(i,k,jrow) = ta_rnpp_D_dop(i,k,jrow) 
      &             + rnpp_D_dop(k)
@@ -462,10 +495,32 @@
      &                               + rmorpt_D(k)
               ta_rnfix(i,k,jrow) = ta_rnfix(i,k,jrow) + rnfix(k)
               ta_rbdeni(i,k,jrow) = ta_rbdeni(i,k,jrow) + rbdeni(k)
+#    if defined O_npzd_caco3
+              ta_rnpp_C_dop(i,k,jrow) = ta_rnpp_C_dop(i,k,jrow) 
+     &             + rnpp_C_dop(k)   
+#    endif              
 #   endif
-
+#   if defined O_kk_ballast
+                ta_rgraz_Det_B(i,k,jrow) = ta_rgraz_Det_B(i,k,jrow)
+     &                                 + rgraz_Det_B(k)
+#   endif
+#   if defined O_npzd_caco3
+!       print*,'KK tracer', rcalatt(k), rcalpro(k)
+                ta_rcalatt(i,k,jrow) = ta_rcalatt(i,k,jrow)
+     &                               + rcalatt(k)
+                ta_rprocal(i,k,jrow) = ta_rprocal(i,k,jrow)
+     &                               + rcalpro(k)
+                ta_rnpp_C(i,k,jrow) = ta_rnpp_C(i,k,jrow)
+     &                              + rnpp_C(k)
+                ta_rgraz_C(i,k,jrow) = ta_rgraz_C(i,k,jrow)
+     &                               + rgraz_C(k)
+                ta_rmorp_C(i,k,jrow) = ta_rmorp_C(i,k,jrow)
+     &                               + rmorp_C(k)
+                ta_rmorpt_C(i,k,jrow)= ta_rmorpt_C(i,k,jrow)
+     &                               + rmorpt_C(k)
+#   endif
 #   if defined O_npzd_iron
-#   if defined O_npzd_iron_diagnostics
+#    if defined O_npzd_iron_diagnostics
                 ta_rfeorgads(i,k,jrow) = ta_rfeorgads(i,k,jrow)
      &                              + rfeorgads(k)
                 ta_rdeffe(i,k,jrow) = ta_rdeffe(i,k,jrow)
@@ -478,7 +533,11 @@
      &                              + rbfe(k)
                 ta_rfecol(i,k,jrow) = ta_rfecol(i,k,jrow)
      &                              + rfecol(k)
-#   endif
+#     if defined O_npzd_caco3
+                ta_rdeffe_C(i,k,jrow) = ta_rdeffe_C(i,k,jrow)
+     &                              + rdeffe_C(k)
+#     endif                
+#    endif
 #   endif
 #   if defined O_npzd_extra_diagnostics
               ta_ravej(i,k,jrow) = ta_ravej(i,k,jrow) + ravej(k)
@@ -488,6 +547,18 @@
               ta_rpo4P(i,k,jrow) = ta_rpo4P(i,k,jrow) + rpo4P(k)
               ta_rpo4_D(i,k,jrow) = ta_rpo4_D(i,k,jrow) + rpo4_D(k)
 #   endif
+#   if defined O_npzd_caco3
+              ta_rdissl(i,k,jrow) = ta_rdissl(i,k,jrow)
+     &                              + rdissl(k)
+              ta_rexpocaco3(i,k,jrow) =
+     &          ta_rexpocaco3(i,k,jrow) + rexpocaco3(k)
+#   endif
+#   if defined O_kk_ballast
+              ta_rremi_B(i,k,jrow) = ta_rremi_B(i,k,jrow)
+     &                                 + rremi_B(k)
+              ta_rexpo_B(i,k,jrow) = ta_rexpo_B(i,k,jrow)
+     &                                 + rexpo_B(k) !ballast detritus
+#   endif              
               expo = expo*dztr(k)
               ta_rremi(i,k,jrow) = ta_rremi(i,k,jrow) + rremi(k)
               ta_rexpo(i,k,jrow) = ta_rexpo(i,k,jrow) + rexpo(k)
@@ -661,6 +732,7 @@
       enddo
 # endif
 
+#ifndef O_TMM
 !-----------------------------------------------------------------------
 !     solve for one tracer at a time
 !     n = 1 => temperature
@@ -1025,13 +1097,20 @@
 # endif
 # if defined O_npzd
       call asbct (joff, js, je, istrt, iend, isspo4, ipo4)
-      call asbct (joff, js, je, istrt, iend, issdop, idop)
 #  if !defined O_npzd_no_vflux
       call asbct (joff, js, je, istrt, iend, issphyt, iphyt)
       call asbct (joff, js, je, istrt, iend, isszoop, izoop)
       call asbct (joff, js, je, istrt, iend, issdetr, idetr)
+#   if defined O_kk_ballast
+      call asbct (joff, js, je, istrt, iend, issdetr_B, idetr_B)
+#   endif
+#   if defined O_npzd_caco3
+      call asbct (joff, js, je, istrt, iend, isscocc, icocc)
+      call asbct (joff, js, je, istrt, iend, isscaco3, icaco3)
+#   endif
 #  endif
 #  if defined O_npzd_nitrogen
+      call asbct (joff, js, je, istrt, iend, issdop, idop)      
       call asbct (joff, js, je, istrt, iend, issno3, ino3)
       call asbct (joff, js, je, istrt, iend, issdon, idon)
 #   if !defined O_npzd_no_vflux
@@ -1042,6 +1121,9 @@
       call asbct (joff, js, je, istrt, iend, issdon15, idon15)
 #    if !defined O_npzd_no_vflux
       call asbct (joff, js, je, istrt, iend, issphytn15, iphytn15)
+#     if defined O_npzd_caco3
+      call asbct (joff, js, je, istrt, iend, isscoccn15, icoccn15)
+#     endif      
       call asbct (joff, js, je, istrt, iend, isszoopn15, izoopn15)
       call asbct (joff, js, je, istrt, iend, issdetrn15, idetrn15) 
       call asbct (joff, js, je, istrt, iend, issdiazn15, idiazn15)
@@ -1058,15 +1140,17 @@
       call asbct (joff, js, je, istrt, iend, issdoc13, idoc13)
 #   if !defined O_npzd_no_vflux
       call asbct (joff, js, je, istrt, iend, issphytc13, iphytc13)
+#    if defined O_npzd_caco3
+      call asbct (joff, js, je, istrt, iend, isscoccc13, icoccc13)
+      call asbct (joff, js, je, istrt, iend, isscaco3c13, icaco3c13)
+#    endif      
       call asbct (joff, js, je, istrt, iend, isszoopc13, izoopc13)
       call asbct (joff, js, je, istrt, iend, issdetrc13, idetrc13)
-#    if defined O_npzd_nitrogen
       call asbct (joff, js, je, istrt, iend, issdiazc13, idiazc13)
-#    endif
 #   endif
 #  endif
 # endif
-# if defined O_cfcs_data || O_cfcs_data_transient
+# if defined O_cfcs_data || defined O_cfcs_data_transient
       call asbct (joff, js, je, istrt, iend, isscfc11, icfc11)
       call asbct (joff, js, je, istrt, iend, isscfc12, icfc12)
 # endif
@@ -1147,8 +1231,12 @@
       endif
 # endif
 
+#endif ! SPK not O_TMM
+
       return
       end
+
+#ifndef O_TMM
 
       subroutine diagt1 (joff, js, je, is, ie, n, twodt)
 
@@ -1176,30 +1264,33 @@
       real r2dt, cosdyt, fx, darea, boxar, rtwodt, sumdx, delx
       real sumdxr, dxdy, dxdydz
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "accel.h"
-      include "coord.h"
-      include "cregin.h"
-      include "csbc.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "accel.h"
+#include "coord.h"
+#include "cregin.h"
+#include "csbc.h"
 # if defined O_tracer_averages
-      include "ctavg.h"
+#include "ctavg.h"
 # endif
-      include "diag.h"
-      include "diaga.h"
-      include "emode.h"
-      include "grdvar.h"
-      include "hmixc.h"
-      include "levind.h"
-      include "mw.h"
-      include "scalar.h"
-      include "switch.h"
-      include "vmixc.h"
+# if defined O_npzd_caco3
+#include "npzd.h"
+# endif      
+#include "diag.h"
+#include "diaga.h"
+#include "emode.h"
+#include "grdvar.h"
+#include "hmixc.h"
+#include "levind.h"
+#include "mw.h"
+#include "scalar.h"
+#include "switch.h"
+#include "vmixc.h"
 
 # if defined O_meridional_tracer_budget
-      include "ctmb.h"
+#include "ctmb.h"
       real stor(imt,km), div(imt,km), sorc(imt,km), dif(imt,km)
       real t1(imt), t2(imt), t3(imt), t4(imt)
 # endif
@@ -1209,9 +1300,9 @@
       real twodt(km)
 
 # if defined O_isopycmix
-      include "isopyc.h"
+#include "isopyc.h"
 # endif
-      include "fdift.h"
+#include "fdift.h"
 
 # if defined O_save_mixing_coeff
 
@@ -1529,18 +1620,18 @@
 
       real rdt, reltim, period
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "coord.h"
-      include "diaga.h"
-      include "iounit.h"
-      include "mw.h"
-      include "scalar.h"
-      include "switch.h"
-      include "tmngr.h"
-      include "timeavgs.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "coord.h"
+#include "diaga.h"
+#include "iounit.h"
+#include "mw.h"
+#include "scalar.h"
+#include "switch.h"
+#include "tmngr.h"
+#include "timeavgs.h"
 
 # if defined O_save_convection_full
 
@@ -1661,15 +1752,15 @@
 
       real rts
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "csbc.h"
-      include "levind.h"
-      include "mw.h"
-      include "scalar.h"
-      include "switch.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "csbc.h"
+#include "levind.h"
+#include "mw.h"
+#include "scalar.h"
+#include "switch.h"
 
 !     initialize the Atmos S.B.C. at the start of each ocean segment
 !     (do not alter values in land)
@@ -1735,14 +1826,14 @@
 
       real rc2dt
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "levind.h"
-      include "mw.h"
-      include "switch.h"
-      include "vmixc.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "levind.h"
+#include "mw.h"
+#include "switch.h"
+#include "vmixc.h"
 
       real twodt(km)
 
@@ -1838,12 +1929,12 @@
 
       integer j, js, je, jrow, joff, k, i, is, ie
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "csbc.h"
-      include "cshort.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "csbc.h"
+#include "cshort.h"
 
       real source(imt,km,jsmw:jemw)
 
@@ -1859,8 +1950,11 @@
         enddo
       endif
 # endif
-#endif
 
       return
       end
 !
+
+#endif ! SPK not O_TMM
+
+#endif

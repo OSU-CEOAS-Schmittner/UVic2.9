@@ -405,8 +405,23 @@
         call def_tsi_mom (fname)
 #  if defined O_save_carbon_totals
 !       convert from umol cm-3 to Pg (redctn contained 1e-3)
-        tai_cocn = (tai_dic + (tai_phyt + tai_zoop + tai_detr 
-     &       + tai_diaz)*redctn)*tcellv*12.e-21
+        tai_cocn = (tai_dic 
+#   if defined O_npzd
+     &       + (tai_phyt + tai_zoop + tai_detr
+#    if defined O_npzd_nitrogen
+     &       + tai_diaz
+#    endif
+     &       )*redctn
+#   endif
+     &       )*tcellv*12.e-21
+#   if defined O_npzd_caco3
+        tai_cocn = tai_cocn + ((tai_zoop + tai_c)*redctn*capr
+     &             + tai_caco3)*tcellv*12.e-21
+        tai_cocn = tai_cocn + tai_c*redctn*tcellv*12.e-21 ! Andreas: correct?
+#   endif
+#   if defined O_kk_ballast
+        tai_cocn = tai_cocn + tai_d_B*redctn*tcellv*12.e-21
+#   endif        
 !       convert from umol cm-2 s-1 to Pg year-1
         tai_cfa2o = tai_dicflx*tcella(1)*yrlen*daylen*12.e-21
 #   if defined O_sed && !defined O_sed_uncoupled
@@ -464,7 +479,15 @@
      &,                   tai_cfc12flx, tai_otmax, tai_otmin
      &,                   tai_slh, tai_sspH, tai_ssCO3, tai_ssOc
      &,                   tai_ssOa, tai_sspCO2, tai_cocn, tai_cfa2o
-     &,                   ntrec, tai_dfe, tai_ddfe)
+     &,                   ntrec, tai_dfe, tai_ddfe
+#  if defined O_kk_ballast
+     &,                   tai_d_B
+#  endif
+#  if defined O_npzd_caco3
+     &,                   tai_c, tai_coccn15, tai_coccc13, tai_caco3
+     &,                   tai_caco3c13
+#  endif
+     &       )
 
         call ta_mom_tsi (0)
       endif
@@ -1986,11 +2009,13 @@
         tai_din15 = 0.
         tai_don15 = 0.
         tai_phytn15 = 0.
+        tai_coccn15 = 0.        
         tai_zoopn15 = 0.
         tai_detrn15 = 0.
         tai_diazn15 = 0.
         tai_doc13 = 0.
         tai_phytc13 = 0.
+        tai_coccc13 = 0.
         tai_zoopc13 = 0.
         tai_detrc13 = 0.
         tai_diazc13 = 0.
@@ -2002,6 +2027,10 @@
         tai_ssOc = 0.
         tai_ssOa = 0.
         tai_sspCO2 = 0.
+        tai_c = 0.
+        tai_caco3 = 0.
+        tai_caco3c13 = 0.
+        tai_d_B = 0.        
       elseif (m .eq. 1) then
 
 !       accumulate
@@ -2138,11 +2167,18 @@
 # endif
 # if defined O_npzd
         tai_po4 = tai_po4 + tbar(0,ipo4,1)
-        tai_dop = tai_dop + tbar(0,idop,1)
         tai_phyt = tai_phyt + tbar(0,iphyt,1)
         tai_zoop = tai_zoop + tbar(0,izoop,1)
         tai_detr = tai_detr + tbar(0,idetr,1)
+#  if defined O_kk_ballast
+        tai_d_B = tai_d_B + tbar(0,idetr_B,1)
+#  endif
+#  if defined O_npzd_caco3
+        tai_c = tai_c + tbar(0,icocc,1)
+        tai_caco3 = tai_caco3 + tbar(0,icaco3,1)
+#  endif        
 #  if defined O_npzd_nitrogen
+        tai_dop = tai_dop + tbar(0,idop,1)
         tai_no3 = tai_no3 + tbar(0,ino3,1)
         tai_don = tai_don + tbar(0,idon,1)
         tai_diaz = tai_diaz + tbar(0,idiaz,1)
@@ -2150,6 +2186,9 @@
         tai_din15 = tai_din15 + tbar(0,idin15,1)
         tai_don15 = tai_don15 + tbar(0,idon15,1)
         tai_phytn15 = tai_phytn15 + tbar(0,iphytn15,1)
+#    if defined O_npzd_caco3
+        tai_coccn15 = tai_coccn15 + tbar(0,icoccn15,1)
+#    endif        
         tai_zoopn15 = tai_zoopn15 + tbar(0,izoopn15,1)
         tai_detrn15 = tai_detrn15 + tbar(0,idetrn15,1)
         tai_diazn15 = tai_diazn15 + tbar(0,idiazn15,1)
@@ -2162,6 +2201,10 @@
 #  if defined O_carbon_13
         tai_doc13 = tai_doc13 + tbar(0,idoc13,1)
         tai_phytc13 = tai_phytc13 + tbar(0,iphytc13,1)
+#   if defined O_npzd_caco3
+        tai_coccc13 = tai_coccc13 + tbar(0,icoccc13,1)
+        tai_caco3c13 = tai_caco3c13 + tbar(0,icaco3c13,1)
+#   endif        
         tai_zoopc13 = tai_zoopc13 + tbar(0,izoopc13,1)
         tai_detrc13 = tai_detrc13 + tbar(0,idetrc13,1)
 #   if defined O_npzd_nitrogen
@@ -2286,6 +2329,7 @@
         tai_din15 = tai_din15*rntatio
         tai_don15 = tai_don15*rntatio
         tai_phytn15 = tai_phytn15*rntatio
+        tai_coccn15 = tai_coccn15*rntatio
         tai_zoopn15 = tai_zoopn15*rntatio
         tai_detrn15 = tai_detrn15*rntatio
         tai_diazn15 = tai_diazn15*rntatio
@@ -2308,6 +2352,15 @@
         tai_sspCO2 = tai_sspCO2*rntatio
         tai_dfe = tai_dfe*rntatio
         tai_ddfe = tai_ddfe*rntatio
+# if defined O_npzd_caco3
+        tai_c = tai_c*rntatio
+        tai_coccc13 = tai_coccc13*rntatio
+        tai_caco3 = tai_caco3*rntatio
+        tai_caco3c13 = tai_caco3c13*rntatio
+# endif
+# if defined O_kk_ballast
+        tai_d_B = tai_d_B*rntatio
+# endif        
       endif
 
       return

@@ -462,7 +462,6 @@
         do k=1,kpzd
           do i=2,imtav
             ta_rnpp(i,k,jj+1) = rnavgt*ta_rnpp(i,k,jj+1)
-            ta_rnpp_dop(i,k,jj+1) = rnavgt*ta_rnpp_dop(i,k,jj+1)
             ta_rgraz(i,k,jj+1) = rnavgt*ta_rgraz(i,k,jj+1)
             ta_rgraz_Z(i,k,jj+1) = rnavgt*ta_rgraz_Z(i,k,jj+1)
             ta_rgraz_Det(i,k,jj+1) = rnavgt*ta_rgraz_Det(i,k,jj+1)
@@ -471,24 +470,42 @@
             ta_rmorz(i,k,jj+1) = rnavgt*ta_rmorz(i,k,jj+1)
             ta_rexcr(i,k,jj+1) = rnavgt*ta_rexcr(i,k,jj+1)
 #   if defined O_npzd_nitrogen
+            ta_rnpp_dop(i,k,jj+1) = rnavgt*ta_rnpp_dop(i,k,jj+1)            
             ta_rnpp_D(i,k,jj+1) = rnavgt*ta_rnpp_D(i,k,jj+1)
             ta_rnpp_D_dop(i,k,jj+1) = rnavgt*ta_rnpp_D_dop(i,k,jj+1)
             ta_rgraz_D(i,k,jj+1) = rnavgt*ta_rgraz_D(i,k,jj+1)
             ta_rmorp_D(i,k,jj+1) = rnavgt*ta_rmorp_D(i,k,jj+1)
             ta_rmorpt_D(i,k,jj+1) = rnavgt*ta_rmorpt_D(i,k,jj+1)
             ta_rnfix(i,k,jj+1) = rnavgt*ta_rnfix(i,k,jj+1)
+#    if defined O_npzd_caco3
+            ta_rnpp_C_dop(i,k,jj+1) = rnavgt*ta_rnpp_C_dop(i,k,jj+1)  
+#    endif            
+#   endif
+#   if defined O_kk_ballast
+            ta_rgraz_Det_B(i,k,jj+1) = rnavgt*ta_rgraz_Det_B(i,k,jj+1)
+#   endif
+#   if defined O_npzd_caco3
+            ta_rprocal(i,k,jj+1) = rnavgt*ta_rprocal(i,k,jj+1)
+            ta_rcalatt(i,k,jj+1) = rnavgt*ta_rcalatt(i,k,jj+1)
+            ta_rnpp_C(i,k,jj+1) = rnavgt*ta_rnpp_C(i,k,jj+1)
+            ta_rgraz_C(i,k,jj+1) = rnavgt*ta_rgraz_C(i,k,jj+1)
+            ta_rmorp_C(i,k,jj+1) = rnavgt*ta_rmorp_C(i,k,jj+1)
+            ta_rmorpt_C(i,k,jj+1) = rnavgt*ta_rmorpt_C(i,k,jj+1)
 #   endif
 #   if defined O_npzd_iron
             ta_rexpofe(i,k,jj+1) = rnavgt*ta_rexpofe(i,k,jj+1)
             ta_rremife(i,k,jj+1) = rnavgt*ta_rremife(i,k,jj+1)
-#   if defined O_npzd_iron_diagnostics
+#    if defined O_npzd_iron_diagnostics
             ta_rfeorgads(i,k,jj+1) = rnavgt*ta_rfeorgads(i,k,jj+1)
             ta_rdeffe(i,k,jj+1) = rnavgt*ta_rdeffe(i,k,jj+1)
             ta_rfeprime(i,k,jj+1) = rnavgt*ta_rfeprime(i,k,jj+1)
             ta_rfesed(i,k,jj+1) = rnavgt*ta_rfesed(i,k,jj+1)
             ta_rbfe(i,k,jj+1) = rnavgt*ta_rbfe(i,k,jj+1)
             ta_rfecol(i,k,jj+1) = rnavgt*ta_rfecol(i,k,jj+1)
-#   endif
+#     if defined O_npzd_caco3
+            ta_rdeffe_C(i,k,jj+1) = rnavgt*ta_rdeffe_C(i,k,jj+1)
+#     endif            
+#    endif
 #   endif
 #   if defined O_npzd_extra_diagnostics
             ta_ravej(i,k,jj+1) = rnavgt*ta_ravej(i,k,jj+1)
@@ -506,6 +523,14 @@
             ta_rremi(i,k,jj+1) = rnavgt*ta_rremi(i,k,jj+1)
             ta_rexpo(i,k,jj+1) = rnavgt*ta_rexpo(i,k,jj+1)
             ta_rexpocal(i,k,jj+1) = rnavgt*ta_rexpocal(i,k,jj+1)
+#   if defined O_kk_ballast
+            ta_rremi_B(i,k,jj+1) = rnavgt*ta_rremi_B(i,k,jj+1)
+            ta_rexpo_B(i,k,jj+1) = rnavgt*ta_rexpo_B(i,k,jj+1)
+#   endif
+#   if defined O_npzd_caco3
+            ta_rdissl(i,k,jj+1) = rnavgt*ta_rdissl(i,k,jj+1)
+            ta_rexpocaco3(i,k,jj+1) = rnavgt*ta_rexpocaco3(i,k,jj+1)
+#   endif
 #   if defined O_npzd_nitrogen
             ta_rwcdeni(i,k,jj+1) = rnavgt*ta_rwcdeni(i,k,jj+1)
             ta_rbdeni(i,k,jj+1) = rnavgt*ta_rbdeni(i,k,jj+1)
@@ -513,7 +538,9 @@
           enddo
         enddo
         do i=2,imtav
+#  if !defined O_npzd_caco3           
           ta_rprocal(i,jj+1) = rnavgt*ta_rprocal(i,jj+1)
+#  endif
           ta_rsedrr(i,jj+1) = rnavgt*ta_rsedrr(i,jj+1)
         enddo
 #  endif
@@ -607,35 +634,56 @@
 #   if defined O_save_carbon_totals
      &,   redctn
 #   endif
-     &,   kpzd, ta_rnpp(is,1,jj+1), ta_rnpp_dop(is,1,jj+1)
+     &,   kpzd, ta_rnpp(is,1,jj+1)
      &,   ta_rgraz(is,1,jj+1)
      &,   ta_rmorp(is,1,jj+1), ta_rmorpt(is,1,jj+1)
      &,   ta_rmorz(is,1,jj+1), ta_rremi(is,1,jj+1)
      &,   ta_rexcr(is,1,jj+1), ta_rexpo(is,1,jj+1)
-     &,   ta_rexpocal(is,1,jj+1), ta_rprocal(is,jj+1)
+     &,   ta_rexpocal(is,1,jj+1)
+#    if !defined O_npzd_caco3 
+     &,   ta_rprocal(is,jj+1)
+#    else
+     &,   ta_rprocal(is,1,jj+1)        
+#    endif        
      &,   ta_rsedrr(is,jj+1)
      &,   ta_rgraz_Z(is,1,jj+1), ta_rgraz_Det(is,1,jj+1)
+#   if defined O_kk_ballast
+     &,   ta_rexpo_B(is,1,jj+1), ta_rremi_B(is,1,jj+1)
+     &,   ta_rgraz_Det_B(is,1,jj+1)
+#   endif
 #   if defined O_npzd_nitrogen
      &,   ta_rnpp_D(is,1,jj+1), ta_rnpp_D_dop(is,1,jj+1)
-     &,   ta_rgraz_D(is,1,jj+1)
+     &,   ta_rgraz_D(is,1,jj+1), ta_rnpp_dop(is,1,jj+1)
      &,   ta_rmorp_D(is,1,jj+1), ta_rmorpt_D(is,1,jj+1)
      &,   ta_rnfix(is,1,jj+1), ta_rwcdeni(is,1,jj+1)
      &,   ta_rbdeni(is,1,jj+1) 
+#    if defined O_npzd_caco3
+     &,   ta_rnpp_C_dop(is,1,jj+1)
+#    endif        
+#   endif
+#   if defined O_npzd_caco3
+     &,   ta_rnpp_C(is,1,jj+1), ta_rgraz_C(is,1,jj+1)
+     &,   ta_rmorp_C(is,1,jj+1), ta_rmorpt_C(is,1,jj+1)
+     &,   ta_rdissl(is,1,jj+1),   ta_rexpocaco3(is,1,jj+1)
+     &,   ta_rcalatt(is,1,jj+1)
 #   endif
 #   if defined O_npzd_iron
      &,   ta_rexpofe(is,1,jj+1), ta_rremife(is,1,jj+1)
-#   if defined O_npzd_iron_diagnostics
+#    if defined O_npzd_iron_diagnostics
      &,   ta_rfeorgads(is,1,jj+1)
      &,   ta_rdeffe(is,1,jj+1), ta_rfeprime(is,1,jj+1)
      &,   ta_rfesed(is,1,jj+1), ta_rbfe(is,1,jj+1)
      &,   ta_rfecol(is,1,jj+1)
+#     if defined O_npzd_caco3
+     &,   ta_rdeffe_C(is,1,jj+1)
+#     endif
+#    endif
 #   endif
-#   endif
-#  if defined O_npzd_extra_diagnostics
+#   if defined O_npzd_extra_diagnostics
      &,    ta_ravej(is,1,jj+1), ta_ravej_D(is,1,jj+1)
      &,    ta_rgmax(is,1,jj+1), ta_rno3P(is,1,jj+1)
      &,    ta_rpo4P(is,1,jj+1), ta_rpo4_D(is,1,jj+1)
-#  endif 
+#   endif 
 #  endif
 #  if defined O_save_convection
      &,   ta_totalk(is,jj+1), ta_vdepth(is,jj+1), ta_pe(is,jj+1)
@@ -696,7 +744,6 @@
 #  endif
 #  if defined O_save_npzd
       ta_rnpp(:,:,:) = c0
-      ta_rnpp_dop(:,:,:) = c0
       ta_rgraz(:,:,:) = c0
       ta_rgraz_Z(:,:,:) = c0
       ta_rgraz_Det(:,:,:) = c0
@@ -707,9 +754,9 @@
       ta_rremi(:,:,:) = c0
       ta_rexpo(:,:,:) = c0
       ta_rexpocal(:,:,:) = c0
-      ta_rprocal(:,:) = c0
       ta_rsedrr(:,:) = c0
 #   if defined O_npzd_nitrogen
+      ta_rnpp_dop(:,:,:) = c0
       ta_rnpp_D(:,:,:) = c0
       ta_rnpp_D_dop(:,:,:) = c0
       ta_rgraz_D(:,:,:) = c0
@@ -718,18 +765,41 @@
       ta_rwcdeni(:,:,:) = c0
       ta_rbdeni(:,:,:) = c0
       ta_rnfix(:,:,:) = c0
+#    if defined O_npzd_caco3
+      ta_rnpp_C_dop(:,:,:) = c0
+#    endif      
 #   endif
 #   if defined O_npzd_iron
       ta_rexpofe(:,:,:) = c0
       ta_rremife(:,:,:) = c0
-#   if defined O_npzd_iron_diagnostics
+#    if defined O_npzd_iron_diagnostics
       ta_rfeorgads(:,:,:) = c0
       ta_rdeffe(:,:,:) = c0
       ta_rfeprime(:,:,:) = c0
       ta_rfesed(:,:,:) = c0
       ta_rbfe(:,:,:) = c0 
       ta_rfecol(:,:,:) = c0 
+#     if defined O_npzd_caco3
+      ta_rdeffe_C(:,:,:) = c0
+#     endif      
+#    endif
 #   endif
+#   if defined O_kk_ballast
+      ta_rgraz_Det_B(:,:,:) = c0
+      ta_rexpo_B(:,:,:) = c0
+      ta_rremi_B(:,:,:) = c0
+#   endif
+#   if defined O_npzd_caco3
+      ta_rcalatt(:,:,:) = c0
+      ta_rdissl(:,:,:) = c0
+      ta_rexpocaco3(:,:,:) = c0
+      ta_rnpp_C(:,:,:) = c0
+      ta_rgraz_C(:,:,:) = c0
+      ta_rmorp_C(:,:,:) = c0
+      ta_rmorpt_C(:,:,:) = c0
+      ta_rprocal(:,:,:) = c0
+#   else
+      ta_rprocal(:,:) = c0
 #   endif
 #   if defined O_npzd_extra_diagnostics
       ta_ravej(:,:,:) = c0
@@ -832,7 +902,6 @@
 #  endif
 #  if defined O_save_npzd
       ta_rnpp(:,:,:) = c0
-      ta_rnpp_dop(:,:,:) = c0
       ta_rgraz(:,:,:) = c0
       ta_rgraz_Z(:,:,:) = c0
       ta_rgraz_Det(:,:,:) = c0
@@ -843,9 +912,9 @@
       ta_rremi(:,:,:) = c0
       ta_rexpo(:,:,:) = c0
       ta_rexpocal(:,:,:) = c0
-      ta_rprocal(:,:) = c0
       ta_rsedrr(:,:) = c0
 #   if defined O_npzd_nitrogen
+      ta_rnpp_dop(:,:,:) = c0
       ta_rnpp_D(:,:,:) = c0
       ta_rnpp_D_dop(:,:,:) = c0
       ta_rgraz_D(:,:,:) = c0
@@ -854,18 +923,41 @@
       ta_rnfix(:,:,:) = c0
       ta_rwcdeni(:,:,:) = c0
       ta_rbdeni(:,:,:) = c0
+#    if defined O_npzd_caco3
+      ta_rnpp_C_dop(:,:,:) = c0
+#    endif     
 #   endif
 #   if defined O_npzd_iron
       ta_rexpofe(:,:,:) = c0
       ta_rremife(:,:,:) = c0
-#   if defined O_npzd_iron_diagnostics
+#    if defined O_npzd_iron_diagnostics
       ta_rfeorgads(:,:,:) = c0
       ta_rdeffe(:,:,:) = c0
       ta_rfeprime(:,:,:) = c0
       ta_rfesed(:,:,:) = c0
       ta_rbfe(:,:,:) = c0
       ta_rfecol(:,:,:) = c0
+#     if defined O_npzd_caco3
+      ta_rdeffe_C(:,:,:) = c0
+#     endif
+#    endif
 #   endif
+#   if defined O_npzd_caco3
+      ta_rcalatt(:,:,:) = c0
+      ta_rdissl(:,:,:) = c0
+      ta_rexpocaco3(:,:,:) = c0      
+      ta_rnpp_C(:,:,:) = c0
+      ta_rgraz_C(:,:,:) = c0
+      ta_rmorp_C(:,:,:) = c0
+      ta_rmorpt_C(:,:,:) = c0
+      ta_rprocal(:,:,:) = c0
+#   else
+      ta_rprocal(:,:) = c0
+#    if defined O_kk_ballast
+      ta_rgraz_Det_B(:,:,:) = c0
+      ta_rremi_B(:,:,:) = c0
+      ta_rexpo_B(:,:,:) = c0
+#    endif
 #   endif
 #   if defined O_npzd_extra_diagnostics
       ta_ravej(:,:,:) = c0

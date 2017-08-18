@@ -178,13 +178,12 @@
 !-----------------------------------------------------------------------
 ! ESUB       = Sublimation (kg/m2/s).
 ! FSMC       = Moisture availability factor.
-! MAF        = Moisture availability factor PFT/soil dependence
 ! M          = Total soil moisture (kg/m2).
 ! MNEG       = Negative soil moisture (kg/m2).
 
-      real ESUB, FSMC, MAF, M, MNEG
+      real ESUB, FSMC, M, MNEG
 
-      common /land_r/ ESUB(POINTS), FSMC(POINTS), MAF(NTYPE), M(POINTS)
+      common /land_r/ ESUB(POINTS), FSMC(POINTS), M(POINTS)
       common /land_r/ MNEG(POINTS)
 
 !-----------------------------------------------------------------------

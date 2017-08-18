@@ -150,7 +150,7 @@ c      edr(:,:) = 0.
       ic(1) = imt
       ic(2) = jmt
       ic(3) = 1
-      fname = new_file_name ("O_tidenrg_egbert.nc")
+      fname = new_file_name ("O_tidenrg_green.nc")
       inquire (file=trim(fname), exist=exists)
       if (exists) then
         c1e3 = 1.e3
@@ -966,7 +966,7 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
          endif
       enddo
 
-      call mobii 
+      call mobi_init 
 
 # endif
 # if defined O_fwa
@@ -1286,6 +1286,14 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
                 t(i,k,j,n,taup1) = 0.0
               elseif (trim(mapt(n)) .eq. 'cfc12') then
                 t(i,k,j,n,taup1) = 0.0
+              elseif (trim(mapt(n)) .eq. 'cocc') then
+                t(i,k,j,n,taup1) = 0.14*exp((zt(1)-zt(k))/100.e2)
+              elseif (trim(mapt(n)) .eq. 'caco3') then
+                t(i,k,j,n,taup1) = 2.e-6
+# if defined O_kk_ballast
+              elseif (trim(mapt(n)) .eq. 'detr_B') then
+                t(i,k,j,n,taup1) = 1.e-12
+# endif
               else
                 if (k .eq. 1) then
                   t(i,k,j,n,taup1) = c1
@@ -1470,6 +1478,10 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
      &           / (1 + rn15std)
              t(i,k,j,iphytn15,taup1) = rn15std*t(i,k,j,iphyt,taup1)
      &           / (1 + rn15std)
+#  if defined O_npzd_caco3
+            t(i,k,j,icoccn15,taup1) = rn15std*t(i,k,j,icocc,taup1)
+     &           / (1 + rn15std)
+#  endif             
              t(i,k,j,izoopn15,taup1) = rn15std*t(i,k,j,izoop,taup1)
      &           / (1 + rn15std)
              t(i,k,j,idetrn15,taup1) = rn15std*t(i,k,j,idetr,taup1)
@@ -1482,20 +1494,28 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
 # if defined O_carbon_13
         do k=1,km
            do i=1,imt
-!     initialize at delta del13C = 0 permil
+!     initialize at delta del13C = 0.4 permil
              t(i,k,j,idic13,taup1) = t(i,k,j,idic,taup1)*1.0004*rc13std
      &             / (1. + 1.0004*rc13std)
-             t(i,k,j,idoc13,taup1) = t(i,k,j,idon,taup1)*6.625e-3
-     &            *rc13std/(1. + rc13std)
+#  if defined O_npzd
              t(i,k,j,iphytc13,taup1) = t(i,k,j,iphyt,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
+#   if defined O_npzd_caco3
+             t(i,k,j,icoccc13,taup1) = t(i,k,j,icocc,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
+             t(i,k,j,icaco3c13,taup1) = t(i,k,j,icaco3,taup1)
+     &            *rc13std/(1. + rc13std)
+#   endif             
              t(i,k,j,izoopc13,taup1) = t(i,k,j,izoop,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
              t(i,k,j,idetrc13,taup1) = t(i,k,j,idetr,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
-#  if defined O_npzd_nitrogen
+#   if defined O_npzd_nitrogen
+             t(i,k,j,idoc13,taup1) = t(i,k,j,idon,taup1)*6.625e-3
+     &            *rc13std/(1. + rc13std)
              t(i,k,j,idiazc13,taup1) = t(i,k,j,idiaz,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
+#   endif
 #  endif
            enddo
         enddo
@@ -1685,6 +1705,10 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
      &    sbc(1:imt,jrow,issdon15) = t(1:imt,1,j,idon15,taup1)
         if (issphytn15 .ne. 0)
      &    sbc(1:imt,jrow,issphytn15) = t(1:imt,1,j,iphytn15,taup1)
+# if defined O_npzd_caco3
+        if (isscoccn15 .ne. 0)
+     &    sbc(1:imt,jrow,isscoccn15) = t(1:imt,1,j,icoccn15,taup1)
+# endif        
         if (isszoopn15 .ne. 0)
      &    sbc(1:imt,jrow,isszoopn15) = t(1:imt,1,j,izoopn15,taup1)
         if (issdetrn15 .ne. 0)
@@ -1695,6 +1719,12 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
      &    sbc(1:imt,jrow,issdoc13) = t(1:imt,1,j,idoc13,taup1)
         if (issphytc13 .ne. 0)
      &    sbc(1:imt,jrow,issphytc13) = t(1:imt,1,j,iphytc13,taup1)
+# if defined O_npzd_caco3
+        if (isscoccc13 .ne. 0)
+     &    sbc(1:imt,jrow,isscoccc13) = t(1:imt,1,j,icoccc13,taup1)
+        if (isscaco3c13 .ne. 0)
+     &    sbc(1:imt,jrow,isscaco3c13) = t(1:imt,1,j,icaco3c13,taup1)
+# endif        
         if (isszoopc13 .ne. 0)
      &    sbc(1:imt,jrow,isszoopc13) = t(1:imt,1,j,izoopc13,taup1)
         if (issdetrc13 .ne. 0)
@@ -1711,7 +1741,16 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
      &    sbc(1:imt,jrow,issdfe) = t(1:imt,1,j,idfe,taup1)
         if (issdetrfe .ne. 0)
      &    sbc(1:imt,jrow,issdetrfe) = t(1:imt,1,j,idetrfe,taup1)
-
+# if defined O_npzd_caco3
+        if (isscocc .ne. 0)
+     &    sbc(1:imt,jrow,isscocc) = t(1:imt,1,j,icocc,taup1)
+        if (isscaco3 .ne. 0)
+     &    sbc(1:imt,jrow,isscaco3) = t(1:imt,1,j,icaco3,taup1)
+# endif
+# if defined O_kk_ballast
+        if (issdetr_B .ne. 0)
+     &    sbc(1:imt,jrow,issdetr_B) = t(1:imt,1,j,idetr_B,taup1)
+# endif
 # if defined O_gthflx
 !       bottom heat flux
         do i=1,imt
@@ -1812,6 +1851,25 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
         print*, "global average sea surface phytoplankton (mol m-3) = "
      &,   gaost(iphyt)*0.001
       endif
+#  if defined O_npzd_caco3
+      if (icocc .ne. 0 .and. isscocc .ne. 0) then
+        call areaavg (sbc(1,1,isscocc), dmsk, gaost(icocc))
+        print*, "global average sea surface coccs (mol m-3) = "
+     &,   gaost(icocc)*0.001
+      endif
+      if (icaco3 .ne. 0 .and. isscaco3 .ne. 0) then
+        call areaavg (sbc(1,1,isscaco3), dmsk, gaost(icaco3))
+        print*, "global average sea surface calcite (mol C m-3) = "
+     &,   gaost(icaco3)*0.001
+      endif
+#  endif
+#  if defined O_kk_ballast
+      if (idetr_B .ne. 0 .and. issdetr_B .ne. 0) then
+        call areaavg (sbc(1,1,issdetr_B), dmsk, gaost(idetr_B))
+        print*, "globl avg sea surf ballasted detritus (mol m-3) = "
+     &,   gaost(idetr_B)*0.001
+      endif
+#  endif
       if (izoop .ne. 0 .and. isszoop .ne. 0) then
         call areaavg (sbc(1,1,isszoop), dmsk, gaost(izoop))
         print*, "global average sea surface zooplankton (mol m-3) = "
@@ -1856,6 +1914,13 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
         print*, "global average sea surface phytoplankton n15 " 
      &,         "(mol m-3) = ", gaost(iphytn15)*0.001
       endif
+#  if defined O_npzd_caco3
+      if (icoccn15 .ne. 0 .and. isscoccn15 .ne. 0) then
+        call areaavg (sbc(1,1,isscoccn15), dmsk, gaost(icoccn15))
+        print*, "global average sea surface calcifiers n15 " 
+     &,         "(mol m-3) = ", gaost(icoccn15)*0.001
+      endif
+#  endif      
       if (izoopn15 .ne. 0 .and. isszoopn15 .ne. 0) then
         call areaavg (sbc(1,1,isszoopn15), dmsk, gaost(izoopn15))
         print*, "global average sea surface zooplankton n15 (mol m-3) 
@@ -1877,12 +1942,24 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
         print*, "global average sea surface DOC13"
      &,         " (mol m-3) = ", gaost(idoc13)*0.001
       endif
-# if !defined o_npzd_no_vflux
+# if !defined O_npzd_no_vflux
       if (iphytc13 .ne. 0 .and. issphytc13 .ne. 0) then
         call areaavg (sbc(1,1,issphytc13), dmsk, gaost(iphytc13))
         print*, "global average sea surface phytoplankton C13"
      &,         " (mol m-3) = ", gaost(iphytc13)*0.001
       endif
+#  if defined O_npzd_caco3
+      if (icoccc13 .ne. 0 .and. isscoccc13 .ne. 0) then
+        call areaavg (sbc(1,1,isscoccc13), dmsk, gaost(icoccc13))
+        print*, "global average sea surface calcifiers C13"
+     &,         " (mol m-3) = ", gaost(icoccc13)*0.001
+      endif
+      if (icaco3c13 .ne. 0 .and. isscaco3c13 .ne. 0) then
+        call areaavg (sbc(1,1,isscaco3c13), dmsk, gaost(icaco3c13))
+        print*, "global average sea surface CaCO3 C13"
+     &,         " (mol m-3) = ", gaost(icaco3c13)*0.001
+      endif
+#  endif      
       if (izoopc13 .ne. 0 .and. isszoopc13 .ne. 0) then
         call areaavg (sbc(1,1,isszoopc13), dmsk, gaost(izoopc13))
         print*, "global average sea surface zooplankton C13"

@@ -1,3 +1,5 @@
+#ifndef O_TMM
+
       program UVic_ESCM
 
 !=======================================================================
@@ -52,24 +54,24 @@
 
       integer i, j, numots, numats, numseg, n, loop
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "coord.h"
-      include "csbc.h"
-      include "iounit.h"
-      include "emode.h"
-      include "levind.h"
-      include "scalar.h"
-      include "switch.h"
-      include "tmngr.h"
-      include "cembm.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "coord.h"
+#include "csbc.h"
+#include "iounit.h"
+#include "emode.h"
+#include "levind.h"
+#include "scalar.h"
+#include "switch.h"
+#include "tmngr.h"
+#include "cembm.h"
 #if defined O_embm
-      include "atm.h"
+#include "atm.h"
 #endif
 #if defined O_mom
-      include "mw.h"
+#include "mw.h"
 #endif
       print*, '== UNIVERSITY OF VICTORIA EARTH SYSTEM CLIMATE MODEL =='
       print*, '                                            '
@@ -115,7 +117,7 @@
 !-----------------------------------------------------------------------
 
       call topog (kmt, kmu, map, xt, yt, zt, xu, yu, zw, imt, jmt, km
-     &,           sg_bathy)
+     &,           sg_bathy, sg_ocean_mask)
 
       call isleperim (kmt, map, iperm, jperm, iofs, nippts, nisle, imt
      &,               jmt, km, mnisle, maxipp, xu, yu, zw)
@@ -226,11 +228,11 @@
 # endif
 # if defined O_npzd
             if (isspo4 .ne. 0) sbc(i,j,isspo4) = t(i,1,j,ipo4,taup1)
-            if (issdop .ne. 0) sbc(i,j,issdon) = t(i,1,j,idop,taup1)
             if (issphyt .ne. 0) sbc(i,j,issphyt) = t(i,1,j,iphyt,taup1)
             if (isszoop .ne. 0) sbc(i,j,isszoop) = t(i,1,j,izoop,taup1)
             if (issdetr .ne. 0) sbc(i,j,issdetr) = t(i,1,j,idetr,taup1)
 #  if defined O_npzd_nitrogen
+            if (issdop .ne. 0) sbc(i,j,issdon) = t(i,1,j,idop,taup1)            
             if (issno3 .ne. 0) sbc(i,j,issno3) = t(i,1,j,ino3,taup1)
             if (issdon .ne. 0) sbc(i,j,issdon) = t(i,1,j,idon,taup1)
             if (issdiaz .ne. 0) sbc(i,j,issdiaz) = t(i,1,j,idiaz,taup1)
@@ -241,6 +243,10 @@
      &           = t(i,1,j,idon15,taup1)
             if (issphytn15 .ne. 0) sbc(i,j,issphytn15) 
      &           = t(i,1,j,iphytn15,taup1)
+#    if defined O_npzd_caco3
+            if (isscoccn15 .ne. 0) sbc(i,j,isscoccn15) 
+     &           = t(i,1,j,icoccn15,taup1)            
+#    endif            
             if (isszoopn15 .ne. 0) sbc(i,j,isszoopn15) 
      &           = t(i,1,j,izoopn15,taup1)
             if (issdetrn15 .ne. 0) sbc(i,j,issdetrn15) 
@@ -249,20 +255,34 @@
      &           = t(i,1,j,idiazn15,taup1)
 #   endif
 #  endif
+#  if defined O_npzd_caco3
+            if (isscocc .ne. 0) sbc(i,j,isscocc) = t(i,1,j,icocc,taup1)
+            if (isscaco3.ne.0) sbc(i,j,isscaco3) = t(i,1,j,icaco3,taup1)
+#  endif
+#  if defined O_kk_ballast
+            if (issdetr_B .ne. 0) sbc(i,j,issdetr_B)
+     &                            = t(i,1,j,idetr_B,taup1)
+#  endif            
 #  if defined O_npzd_iron
        if (issdfe .ne. 0) sbc(i,j,issdfe) = t(i,1,j,idfe,taup1)
        if (issdetrfe .ne. 0) sbc(i,j,issdetrfe) = t(i,1,j,idetrfe,taup1)
 #  endif
 #  if defined O_carbon_13
-            if (issdoc13 .ne. 0) sbc(i,j,issdoc13) = 
-     &           t(i,1,j,idoc13,taup1)
             if (issphytc13 .ne. 0) sbc(i,j,issphytc13) = 
      &           t(i,1,j,iphytc13,taup1)
+#   if defined O_npzd_caco3
+            if (isscoccc13 .ne. 0) sbc(i,j,isscoccc13) = 
+     &           t(i,1,j,icoccc13,taup1)
+            if (isscaco3c13 .ne. 0) sbc(i,j,isscaco3c13) = 
+     &           t(i,1,j,icaco3c13,taup1)
+#   endif            
             if (isszoopc13 .ne. 0) sbc(i,j,isszoopc13) = 
      &           t(i,1,j,izoopc13,taup1)
             if (issdetrc13 .ne. 0) sbc(i,j,issdetrc13) = 
      &           t(i,1,j,idetrc13,taup1)
 #   if defined O_npzd_nitrogen
+            if (issdoc13 .ne. 0) sbc(i,j,issdoc13) = 
+     &           t(i,1,j,idoc13,taup1)
             if (issdiazc13 .ne. 0) sbc(i,j,issdiazc13) = 
      &           t(i,1,j,idiazc13,taup1)
 #   endif
@@ -314,7 +334,11 @@
      &           call getst (j, sbc(1,1,issdon15), idon15)
             if (issphytn15 .ne. 0) 
      &           call getst (j, sbc(1,1,issphytn15), iphytn15)
-            if (isszoopn15 .ne. 0) 
+            if (isszoopn15 .ne. 0)
+#    if defined O_npzd_caco3
+            if (isscoccn15 .ne. 0)             
+     &           call getst (j, sbc(1,1,isscoccn15), icoccn15) 
+#    endif            
      &           call getst (j, sbc(1,1,isszoopn15), izoopn15)
             if (issdetrn15 .ne. 0) 
      &           call getst (j, sbc(1,1,issdetrn15), idetrn15)
@@ -322,20 +346,34 @@
      &           call getst (j, sbc(1,1,issdiazn15), idiazn15)
 #   endif
 #  endif
+#  if defined O_npzd_caco3
+            if (isscocc .ne. 0) call getst (j, sbc(1,1,isscocc), icocc)
+            if (isscaco3 .ne. 0) call getst (j, sbc(1,1,isscaco3)
+     &,          icaco3)
+#  endif
+#  if defined O_kk_ballast
+            if (issdetr_B.ne.0) call getst(j,sbc(1,1,issdetr_B),idetr_B)
+#  endif            
 #  if defined O_npzd_iron
        if (issdfe .ne. 0) call getst (j, sbc(1,1,issdfe), idfe)
        if (issdetrfe .ne. 0) call getst (j, sbc(1,1,issdetrfe), idetrfe)
 #  endif
 #  if defined O_carbon_13
-            if (issdoc13 .ne. 0) call getst (j, sbc(1,1,issdoc13)
-     &,       idoc13)
             if (issphytc13 .ne. 0) call getst (j, sbc(1,1,issphytc13)
      &,       iphytc13)
+#    if defined O_npzd_caco3
+            if (isscoccc13 .ne. 0) call getst (j, sbc(1,1,isscoccc13)
+     &,       icoccc13)
+            if (isscaco3c13 .ne. 0) call getst (j, sbc(1,1,isscaco3c13)
+     &,       icaco3c13)
+#    endif            
             if (isszoopc13 .ne. 0) call getst (j, sbc(1,1,isszoopc13)
      &,       izoopc13)
             if (issdetrc13 .ne. 0) call getst (j, sbc(1,1,issdetrc13)
      &,       idetrc13)
 #   if defined O_npzd_nitrogen
+            if (issdoc13 .ne. 0) call getst (j, sbc(1,1,issdoc13)
+     &,       idoc13)
             if (issdiazc13 .ne. 0) call getst (j, sbc(1,1,issdiazc13)
      &,       idiazc13)
 #   endif
@@ -491,6 +529,9 @@
       stop
       end
 
+#endif ! O_TMM
+
+#ifndef O_TMM
       subroutine chkcpl
 
       implicit none
@@ -501,21 +542,21 @@
 
       real critv, tmp, t1, r1, r2, r3, r4, r5, r6
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "csbc.h"
-      include "cembm.h"
-      include "calendar.h"
-      include "switch.h"
-      include "tmngr.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "csbc.h"
+#include "cembm.h"
+#include "calendar.h"
+#include "switch.h"
+#include "tmngr.h"
 
-#if defined O_sealev_salinity && O_mom
-      include "mw.h"
-      include "iounit.h"
-      include "levind.h"
-      include "grdvar.h"
+#if defined O_sealev_salinity && defined O_mom
+#include "mw.h"
+#include "iounit.h"
+#include "levind.h"
+#include "grdvar.h"
 
 !-----------------------------------------------------------------------
 !     adjust salinity for changes in sea level
@@ -900,6 +941,8 @@
       return
       end
 
+#endif ! O_TMM
+
       subroutine set (index, num, name, text, inc)
 
 !-----------------------------------------------------------------------
@@ -911,10 +954,10 @@
       name = text
       index = num
       inc = index + 1
-
+      print*,name,'=',index
       return
       end
-
+#ifndef O_TMM
 #if defined O_mom
       subroutine getst (jrow, ocnout, ntabc)
 
@@ -926,13 +969,13 @@
 
       integer i, jrow, ntabc
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "iounit.h"
-      include "mw.h"
-      include "tmngr.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "iounit.h"
+#include "mw.h"
+#include "tmngr.h"
 
       real ocnout(imt,jmt)
 
@@ -946,6 +989,8 @@
       end
 #endif
 
+#endif ! O_TMM
+
       subroutine sbc_init
 
 !-----------------------------------------------------------------------
@@ -956,11 +1001,11 @@
 
       integer m
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "csbc.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "csbc.h"
 
       sbc(:,:,:) = 0.0
       mapsbc(:) = " "
@@ -1000,6 +1045,12 @@
       idopflx = 0
       issphyt = 0
       iphytflx = 0
+      isscocc = 0
+      icoccflx = 0
+      icaco3flx = 0
+      isscaco3 = 0
+      issdetr_B = 0
+      idetrflx_B = 0
       isszoop = 0
       izoopflx = 0
       issdetr = 0
@@ -1021,6 +1072,8 @@
       idon15flx = 0
       issphytn15 = 0
       iphytn15flx = 0
+      isscoccn15 = 0
+      icoccn15flx = 0      
       isszoopn15 = 0
       izoopn15flx = 0
       issdetrn15 = 0
@@ -1031,6 +1084,10 @@
       idoc13flx = 0
       issphytc13 = 0
       iphytc13flx = 0
+      isscoccc13 = 0
+      icoccc13flx = 0            
+      isscaco3c13 = 0
+      icaco3c13flx = 0            
       isszoopc13 = 0
       izoopc13flx = 0
       issdetrc13 = 0
@@ -1135,8 +1192,6 @@
 #if defined O_npzd
       call set (isspo4, m, mapsbc(m), 'sspo4', m)
       call set (ipo4flx, m, mapsbc(m), 'po4flx', m)
-      call set (issdop, m, mapsbc(m), 'ssdop', m)
-      call set (idopflx, m, mapsbc(m), 'dopflx', m)
 # if !defined O_npzd_no_vflux
       call set (issphyt, m, mapsbc(m), 'ssphyt', m)
       call set (iphytflx, m, mapsbc(m), 'phytflx', m)
@@ -1144,6 +1199,16 @@
       call set (izoopflx, m, mapsbc(m), 'zoopflx', m)
       call set (issdetr, m, mapsbc(m), 'ssdetr', m)
       call set (idetrflx, m, mapsbc(m), 'detrflx', m)
+#  if defined O_kk_ballast
+      call set (issdetr_B, m, mapsbc(m), 'ssdetr_B', m)
+      call set (idetrflx_B, m, mapsbc(m), 'detrflx_B', m)
+#  endif
+#  if defined O_npzd_caco3
+      call set (isscaco3, m, mapsbc(m), 'sscaco3', m)
+      call set (icaco3flx, m, mapsbc(m), 'caco3flx', m)
+      call set (isscocc, m, mapsbc(m), 'sscocc', m)
+      call set (icoccflx, m, mapsbc(m), 'coccflx', m)
+#  endif
 # endif
 # if defined O_npzd_iron
       call set (issdfe, m, mapsbc(m), 'ssdfe', m)
@@ -1155,6 +1220,8 @@
 #  endif
 # endif
 # if defined O_npzd_nitrogen
+      call set (issdop, m, mapsbc(m), 'ssdop', m)
+      call set (idopflx, m, mapsbc(m), 'dopflx', m)
       call set (issno3, m, mapsbc(m), 'ssno3', m)
       call set (ino3flx, m, mapsbc(m), 'no3flx', m)
       call set (issdon, m, mapsbc(m), 'ssdon', m)
@@ -1171,6 +1238,10 @@
 #   if !defined O_npzd_no_vflux
       call set (issphytn15, m, mapsbc(m), 'ssphytn15', m)
       call set (iphytn15flx, m, mapsbc(m), 'phytn15flx', m)
+#    if defined O_npzd_caco3
+      call set (isscoccn15, m, mapsbc(m), 'sscoccn15', m)
+      call set (icoccn15flx, m, mapsbc(m), 'coccn15flx', m)
+#    endif      
       call set (isszoopn15, m, mapsbc(m), 'sszoopn15', m)
       call set (izoopn15flx, m, mapsbc(m), 'zoopn15flx', m)
       call set (issdetrn15, m, mapsbc(m), 'ssdetrn15', m)
@@ -1179,20 +1250,26 @@
       call set (idiazn15flx, m, mapsbc(m), 'diazn15flx', m)
 #   endif
 #  endif
-#  if defined O_carbon_13
-      call set (issdoc13, m, mapsbc(m), 'ssdoc13', m)
-      call set (idoc13flx, m, mapsbc(m), 'doc13flx', m)
-#   if !defined O_npzd_no_vflux
+# endif
+# if defined O_carbon_13
+#  if !defined O_npzd_no_vflux
       call set (issphytc13, m, mapsbc(m), 'ssphytc13', m)
       call set (iphytc13flx, m, mapsbc(m), 'phytc13flx', m)
+#    if defined O_npzd_caco3
+      call set (isscoccc13, m, mapsbc(m), 'sscoccc13', m)
+      call set (icoccc13flx, m, mapsbc(m), 'coccc13flx', m)
+      call set (isscaco3c13, m, mapsbc(m), 'sscaco3c13', m)
+      call set (icaco3c13flx, m, mapsbc(m), 'caco3c13flx', m)
+#    endif 
       call set (isszoopc13, m, mapsbc(m), 'sszoopc13', m)
       call set (izoopc13flx, m, mapsbc(m), 'zoopc13flx', m)
       call set (issdetrc13, m, mapsbc(m), 'ssdetrc13', m)
       call set (idetrc13flx, m, mapsbc(m), 'detrc13flx', m)
-#    if defined O_npzd_nitrogen
+#   if defined O_npzd_nitrogen
+      call set (issdoc13, m, mapsbc(m), 'ssdoc13', m)
+      call set (idoc13flx, m, mapsbc(m), 'doc13flx', m)
       call set (issdiaz, m, mapsbc(m), 'ssdiazc13', m)
       call set (idiazflx, m, mapsbc(m), 'diazc13flx', m)
-#    endif
 #   endif
 #  endif
 # endif
@@ -1264,13 +1341,13 @@
 
       integer m
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "atm.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "atm.h"
 #if defined O_mom
-      include "mw.h"
+#include "mw.h"
 
 !-----------------------------------------------------------------------
 !     Initialize ocean tracer names
@@ -1294,14 +1371,20 @@
       ino3 = 0
       idon = 0
       idiaz = 0
+      icocc = 0
+      icaco3 = 0
+      idetr_B = 0     
       idin15 = 0
       idon15 = 0
       iphytn15 = 0
+      icoccn15 = 0
       izoopn15 = 0
       idetrn15 = 0
       idiazn15 = 0
       idoc13 = 0
       iphytc13 = 0
+      icoccc13 = 0
+      icaco3c13 = 0
       izoopc13 = 0
       idetrc13 = 0
       idiazc13 = 0
@@ -1324,19 +1407,26 @@
       call set (icfc11, m, mapt(m), 'cfc11', m)
       call set (icfc12, m, mapt(m), 'cfc12', m)
 # endif
-# if defined O_npzd_o2
-      call set (io2, m, mapt(m), 'o2', m)
-# endif
 # if defined O_npzd_alk
       call set (ialk, m, mapt(m), 'alk', m)
 # endif
+# if defined O_npzd_o2
+      call set (io2, m, mapt(m), 'o2', m)
+# endif
 # if defined O_npzd
       call set (ipo4, m, mapt(m), 'po4', m)
-      call set (idop, m, mapt(m), 'dop', m)
       call set (iphyt, m, mapt(m), 'phyt', m)
       call set (izoop, m, mapt(m), 'zoop', m)
       call set (idetr, m, mapt(m), 'detr', m)
+#  if defined O_npzd_caco3
+      call set (icocc, m, mapt(m), 'cocc', m)
+      call set (icaco3, m, mapt(m), 'caco3', m)
+#  endif     
+#  if defined O_kk_ballast
+      call set (idetr_B, m, mapt(m), 'detr_B', m)
+#  endif       
 #  if defined O_npzd_nitrogen
+      call set (idop, m, mapt(m), 'dop', m)
       call set (ino3, m, mapt(m), 'no3', m)
       call set (idon, m, mapt(m), 'don', m)
       call set (idiaz, m, mapt(m), 'diaz', m)
@@ -1344,24 +1434,31 @@
       call set (idin15, m, mapt(m), 'din15', m)
       call set (idon15, m, mapt(m), 'don15', m)
       call set (iphytn15, m, mapt(m), 'phytn15', m)
+#    if defined O_npzd_caco3
+      call set (icoccn15, m, mapt(m), 'coccn15', m)
+#    endif      
       call set (izoopn15, m, mapt(m), 'zoopn15', m)
       call set (idetrn15, m, mapt(m), 'detrn15', m)
       call set (idiazn15, m, mapt(m), 'diazn15', m)
 #   endif
 #  endif
-#  if defined O_carbon_13
-      call set (idoc13, m, mapt(m), 'doc13', m)
-      call set (iphytc13, m, mapt(m), 'phytc13', m)
-      call set (izoopc13, m, mapt(m), 'zoopc13', m)
-      call set (idetrc13, m, mapt(m), 'detrc13', m)
-#   if defined O_npzd_nitrogen
-      call set (idiazc13, m, mapt(m), 'diazc13', m)
-#   endif
 #  if defined O_npzd_iron
       call set (idfe, m, mapt(m), 'dfe', m)
       call set (idetrfe, m, mapt(m), 'detrfe', m)
 #  endif
-#  endif
+#  if defined O_carbon_13
+      call set (iphytc13, m, mapt(m), 'phytc13', m)
+#   if defined O_npzd_caco3
+      call set (icoccc13, m, mapt(m), 'coccc13', m)
+      call set (icaco3c13, m, mapt(m), 'caco3c13', m)
+#   endif      
+      call set (izoopc13, m, mapt(m), 'zoopc13', m)
+      call set (idetrc13, m, mapt(m), 'detrc13', m)
+#   if defined O_npzd_nitrogen
+      call set (idoc13, m, mapt(m), 'doc13', m)
+      call set (idiazc13, m, mapt(m), 'diazc13', m)
+#   endif
+#  endif     
 # endif
       if ( m-1 .gt. nt) then
         print*, '==> Error: increase nt for tracers in size.h'
@@ -1369,7 +1466,7 @@
       endif
 
 !-----------------------------------------------------------------------
-!     Initialize ocean tracer sourcr names, must have equivalent tracer
+!     Initialize ocean tracer source names, must have equivalent tracer
 !-----------------------------------------------------------------------
 
       mapst(:) = " "
@@ -1389,25 +1486,41 @@
       itrc(idic13) = m-1
 #   endif
 #  endif
+#  if defined O_npzd_alk
+      call set (isalk, m, mapst(m), 'salk', m)
+      itrc(ialk) = m-1
+#  endif      
 #  if defined O_npzd_o2
       call set (iso2, m, mapst(m), 'so2', m)
       itrc(io2) = m-1
 #  endif
-#  if defined O_npzd_alk
-      call set (isalk, m, mapst(m), 'salk', m)
-      itrc(ialk) = m-1
-#  endif
       call set (ispo4, m, mapst(m), 'spo4', m)
       itrc(ipo4) = m-1
-      call set (isdop, m, mapst(m), 'sdop', m)
-      itrc(idop) = m-1
       call set (isphyt, m, mapst(m), 'sphyt', m)
       itrc(iphyt) = m-1
       call set (iszoop, m, mapst(m), 'szoop', m)
       itrc(izoop) = m-1
       call set (isdetr, m, mapst(m), 'sdetr', m)
       itrc(idetr) = m-1
+#  if defined O_npzd_iron
+      call set (isdfe, m, mapst(m), 'sdfe', m)
+      itrc(idfe) = m-1
+      call set (isdetrfe, m, mapst(m), 'sdetrfe', m)
+      itrc(idetrfe) = m-1
+#  endif
+#  if defined O_kk_ballast
+      call set (isdetr_B, m, mapst(m), 'sdetr_B', m)
+      itrc(idetr_B) = m-1
+#  endif      
+#  if defined O_npzd_caco3
+      call set (iscaco3, m, mapst(m), 'scaco3', m)
+      itrc(icaco3) = m-1
+      call set (iscocc, m, mapst(m), 'scocc', m)
+      itrc(icocc) = m-1
+#  endif      
 #  if defined O_npzd_nitrogen
+      call set (isdop, m, mapst(m), 'sdop', m)
+      itrc(idop) = m-1
       call set (isno3, m, mapst(m), 'sno3', m)
       itrc(ino3) = m-1
       call set (isdon, m, mapst(m), 'sdon', m)
@@ -1421,6 +1534,10 @@
       itrc(idon15) = m-1
       call set (isphytn15, m, mapst(m), 'sphytn15', m)
       itrc(iphytn15) = m-1
+#    if defined O_npzd_caco3
+      call set (iscoccn15, m, mapst(m), 'scoccn15', m)
+      itrc(icoccn15) = m-1
+#    endif      
       call set (iszoopn15, m, mapst(m), 'szoopn15', m)
       itrc(izoopn15) = m-1
       call set (isdetrn15, m, mapst(m), 'sdetrn15', m)
@@ -1429,22 +1546,22 @@
       itrc(idiazn15) = m-1
 #   endif
 #  endif
-#  if defined O_npzd_iron
-      call set (isdfe, m, mapst(m), 'sdfe', m)
-      itrc(idfe) = m-1
-      call set (isdetrfe, m, mapst(m), 'sdetrfe', m)
-      itrc(idetrfe) = m-1
-#  endif
 #  if defined O_carbon_13
-      call set (isdoc13, m, mapst(m), 'sdoc13', m) 
-      itrc(idoc13) = m-1
       call set (isphytc13, m, mapst(m), 'sphytc13', m) 
       itrc(iphytc13) = m-1
+#   if defined O_npzd_caco3
+      call set (iscoccc13, m, mapst(m), 'scoccc13', m) 
+      itrc(icoccc13) = m-1
+      call set (iscaco3c13, m, mapst(m), 'scaco3c13', m) 
+      itrc(icaco3c13) = m-1
+#   endif      
       call set (iszoopc13, m, mapst(m), 'szoopc13', m) 
       itrc(izoopc13) = m-1
       call set (isdetrc13, m, mapst(m), 'sdetrc13', m) 
       itrc(idetrc13) = m-1
 #   if defined O_npzd_nitrogen
+      call set (isdoc13, m, mapst(m), 'sdoc13', m) 
+      itrc(idoc13) = m-1
       call set (isdiazc13, m, mapst(m), 'sdiazc13', m) 
       itrc(idiazc13) = m-1
 #   endif
@@ -1482,6 +1599,7 @@
       return
       end
 
+C#ifndef O_TMM
       subroutine read_namelist
 
 !-----------------------------------------------------------------------
@@ -1510,35 +1628,35 @@
       real athkdf
 #endif
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "accel.h"
-      include "calendar.h"
-      include "cembm.h"
-      include "coord.h"
-      include "cnep.h"
-      include "csbc.h"
-      include "cprnts.h"
-      include "diag.h"
-      include "emode.h"
-      include "fwa.h"
-      include "hmixc.h"
-      include "insolation.h"
-      include "iounit.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "accel.h"
+#include "calendar.h"
+#include "cembm.h"
+#include "coord.h"
+#include "cnep.h"
+#include "csbc.h"
+#include "cprnts.h"
+#include "diag.h"
+#include "emode.h"
+#include "fwa.h"
+#include "hmixc.h"
+#include "insolation.h"
+#include "iounit.h"
 #if defined O_mom && defined O_isopycmix
-      include "isopyc.h"
+#include "isopyc.h"
 #endif
-      include "mtlm.h"
-      include "npzd.h"
-      include "scalar.h"
-      include "sed.h"
-      include "stab.h"
-      include "switch.h"
-      include "tmngr.h"
-      include "veg.h"
-      include "vmixc.h"
+#include "mtlm.h"
+#include "npzd.h"
+#include "scalar.h"
+#include "sed.h"
+#include "stab.h"
+#include "switch.h"
+#include "tmngr.h"
+#include "veg.h"
+#include "vmixc.h"
 
 !-----------------------------------------------------------------------
 !     read all model namelist variables
@@ -1946,7 +2064,8 @@
       call getunit (ioun, 'control.in', 'f s r')
       read  (ioun, contrl, end=101)
 101   continue
-      runstep = float(int(runstep))
+c     Mar 16, 2016 Andreas commented out due to warning
+c      runstep = float(int(runstep))
       write (stdout, contrl)
       call relunit (ioun)
 
@@ -2187,3 +2306,5 @@
 
       return
       end
+
+C#endif ! O_TMM

@@ -1246,9 +1246,9 @@
 # if defined O_npzd
         call areaavg (sbc(1,1,isspo4), dmsk, tmp)
         tai_sspo4 = tai_sspo4 + tmp
+#  if defined O_npzd_nitrogen
         call areaavg (sbc(1,1,issdop), dmsk, tmp)
         tai_ssdop = tai_ssdop + tmp
-#  if defined O_npzd_nitrogen
         call areaavg (sbc(1,1,issno3), dmsk, tmp)
         tai_ssno3 = tai_ssno3 + tmp
         call areaavg (sbc(1,1,issdon), dmsk, tmp)

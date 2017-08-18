@@ -582,18 +582,18 @@
       do i=30,83
          do j=44,47
             do k=4,km
-               addisop(i,k,j) = 0.5e8*j - 2.2e9
+               addisop(i,k,j) = 1.25e8*j - 5.5e9
 c               print*,"j=",j,", addisop=",addisop(i,k,j)
             enddo
          enddo
          do j=48,53
             do k=4,km
-               addisop(i,k,j) = 2.0e8
+               addisop(i,k,j) = 5.0e8
             enddo
          enddo
          do j=54,57
             do k=4,km
-               addisop(i,k,j) = -0.5e8*j + 2.85e9
+               addisop(i,k,j) = -1.25e8*j + 7.125e9
 c               print*,"j=",j,", addisop=",addisop(i,k,j)
             enddo
          enddo
@@ -745,7 +745,7 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
 
       integer i, k, j, ip, kr, jq, js, je, jrow, joff, ie, is
 
-      real sc, dzt4r, ai0, sumz, syn, sumx, ck
+      real sc, dzt4r, ai0, sumz, syn, sumx
 
       include "size.h"
       include "param.h"
@@ -848,7 +848,7 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
 
       integer i, k, j, ip, kr, jq, js, je, jrow, joff, ie, is
 
-      real sc, kp1, ai0, sumx, sxb, sumy, facty, syb, ck
+      real sc, kp1, ai0, sumx, sxb, sumy, facty, syb
 
       include "size.h"
       include "param.h"
@@ -1092,7 +1092,6 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
             enddo
             flux_y = csu_dzt4r*sumz
 #  if defined O_full_tensor
-            ck = addisop(i,jrow,k)
             Ai0 = (ahisop+addisop(i,jrow,k))*p5*(fisop(i,jrow,k)
      &           + fisop(i,jrow+1,k))
             sumx = c0

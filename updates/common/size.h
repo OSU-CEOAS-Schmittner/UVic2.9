@@ -23,78 +23,105 @@
 
       integer imt, jmt, km, nt, nsrc, kpzd, nat, jmz, jmzm1, mnisle
       integer maxipp, jmw, jsmw, jemw
-
+#ifndef O_TMM
       parameter (imt=  102, jmt=  102, km= 19)
-      parameter (nt=2
+#else
+      parameter (imt=  1, jmt=  1, km= 15)
+#endif
+      parameter (nt=2 ! temp, salt
 #if defined O_carbon
-     $             +1
+     $             +1 ! dic
 # if defined O_carbon_13
-     $             +1
+     $             +1 ! dic13
 # endif
 # if defined O_carbon_14
-     $             +1
+     $             +1 ! dic14
 # endif
 #endif
 #if defined O_cfcs_data || defined O_cfcs_data_transient
-     $             +2
+     $             +2 !
 #endif
 #if defined O_npzd_alk
-     $             +1
+     $             +1 ! alk
 #endif
 #if defined O_npzd_o2
-     $             +1
+     $             +1 ! 
 #endif
 #if defined O_npzd
-     $             +5
+     $             +4 ! po4, phyt, zoop, detr
+# if defined O_npzd_caco3
+     $             +2 ! cocc, caco3
+#  if defined O_kk_ballast
+     $             +1 !
+#  endif
+# endif
 # if defined O_npzd_nitrogen
-     $             +3
+     $             +4 ! no3, diaz, dop, don
 #  if defined O_npzd_nitrogen_15
-     $             +6
+     $             +6 ! din15, phytn15, zoopn15, detrn15, diazn15, don15
+#   if defined O_npzd_caco3
+     $             +1 ! coccn15
+#   endif		 
 #  endif
 # endif
 # if defined O_carbon_13
-     $             +4
+     $             +3 ! phytc13, zoopc13, detrc13
+#  if defined O_npzd_caco3
+     $             +2 ! coccc13, caco3c13
+#  endif		 
 #  if defined O_npzd_nitrogen
-     $             +1
+     $             +2 ! diazc13, doc13
 #  endif
 # endif
 # if defined O_npzd_iron
-     $               +2 
+     $               +2 ! dfe, detrfe
 # endif
 #endif
      $               )
       parameter (nsrc=0
 #if defined O_carbon
-     $               +1
+     $               +1 ! dic
 # if defined O_carbon_13
-     $               +1
+     $               +1 ! dic13
 # endif
 # if defined O_carbon_14
-     $               +1
+     $               +1 ! dic14
 # endif
 #endif
 #if defined O_npzd_alk
-     $               +1
+     $               +1 ! alk
 #endif
 #if defined O_npzd_o2
-     $               +1
+     $               +1 ! o2
 #endif
 #if defined O_npzd
-     $               +5
+     $               +4 ! po4, phyt, zoop, detr
+# if defined O_kk_ballast
+     $               +1 
+# endif
+# if defined O_npzd_caco3
+     $               +2 ! cocc, caco3
+# endif
 # if defined O_npzd_nitrogen
-     $               +3
+     $               +4 ! no3, diaz, dop, don
 #  if defined O_npzd_nitrogen_15
-     $               +6
+     $               +6 ! din15, phytn15, zoopn15, detrn15, diazn15, don15
+#   if defined O_npzd_caco3
+     $               +1 ! coccn15
+#   endif		 
 #  endif
 # endif
 # if defined O_carbon_13
-     $               +4
+     $               +3 ! phytc13, zoopc13, detrc13
+#  if defined O_npzd_caco3
+     $               +2 ! coccc13, caco3c13
+#  endif
 #  if defined O_npzd_nitrogen
-     $               +1
+     $               +2 ! diazc13, doc13
 #  endif
 # endif
 # if defined O_npzd_iron
-     $               +2 
+     $               +2 ! dfe, detrfe
 # endif
 #endif
      $                 )
@@ -136,9 +163,11 @@
 
 !     jsmw   = 1st calculated row within the MW
 !     jemw   = last calculated row within the MW
-
+#ifndef O_TMM
       parameter (jsmw=2, jemw=jmw-1)
-
+#else
+      parameter (jsmw=1, jemw=1)
+#endif
 ! Moses-Triffid land model
 
 ! POINTS = Maximum number of points in grid.
