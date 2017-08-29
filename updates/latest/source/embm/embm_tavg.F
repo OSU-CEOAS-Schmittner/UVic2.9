@@ -295,10 +295,10 @@
           if (n .lt. 100) write(a3, '(i2)') n
           if (n .lt. 10) write(a3, '(i1)') n
           call defvar ('A_wind'//trim(a3)//'X', iou ,3, it, -c1e6, c1e6
-     &,     ' ', 'F', 'eastward wind for tracer '//trim(a3), ' '
+     &,     ' ', 'F', 'eastward wind for tracer '//trim(a3)
      &,     'eastward_wind_for_tracer_'//trim(a3), 'unknown')
           call defvar ('A_wind'//trim(a3)//'Y', iou ,3, it, -c1e6, c1e6
-     &,     ' ', 'F', 'northward wind for tracer '//trim(a3), ' '
+     &,     ' ', 'F', 'northward wind for tracer '//trim(a3)
      &,     'northward_wind_for_tracer_'//trim(a3), 'unknown')
         endif
       enddo
@@ -362,10 +362,10 @@
           if (n .lt. 100) write(a3, '(i2)') n
           if (n .lt. 10) write(a3, '(i1)') n
           call defvar ('A_diff'//trim(a3)//'X', iou ,3, it, -c1e6, c1e6
-     &,     ' ', 'F', 'eastward diffusion for tracer '//trim(a3), ' '
+     &,     ' ', 'F', 'eastward diffusion for tracer '//trim(a3)
      &,     'eastward_diffusion_for_tracer_'//trim(a3), 'unknown')
           call defvar ('A_diff'//trim(a3)//'Y', iou ,3, it, -c1e6, c1e6
-     &,     ' ', 'F', 'northward diffusion for tracer '//trim(a3), ' '
+     &,     ' ', 'F', 'northward diffusion for tracer '//trim(a3)
      &,     'northward_diffusion_for_tracer_'//trim(a3), 'unknown')
         endif
       enddo

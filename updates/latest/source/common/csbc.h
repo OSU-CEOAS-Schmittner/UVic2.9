@@ -147,76 +147,75 @@
 !     dtoic       = total system carbon lost minus carbon gained
 
       integer numsbc
-      parameter (numsbc = 14
+      parameter (numsbc = 14 ! taux, tauy, ws, a_calb, s_calb, hflx, sflx, sst, sss, ro, wx_q, wy_q, wx_t, wy_t
 #if defined O_embm_awind
-     &                  + 1
+     &                  + 1 ! wa
 #endif
 #if defined O_carbon_co2_2d
-     &                  + 2
+     &                  + 2 ! wx_c, wy_c
 #endif
 #if defined O_shortwave
-     &                  + 1
+     &                  + 1 ! psw
 #endif
 #if defined O_ice_evp
-     &                  + 4
+     &                  + 4 ! su, sv, gu, gv
 #endif
 #if defined O_carbon
-     &                  + 2
+     &                  + 2 ! ssdic, dicflx
 # if defined O_carbon_13
-     &                  + 2		 
+     &                  + 2 ! ssdic13, dic13flx
 # endif
 # if defined O_carbon_14
-     &                  + 2
+     &                  + 2 ! ssc14, c14flx
 # endif
 #endif
 #if defined O_npzd_alk
-     &                  + 2
+     &                  + 2 ! ssalk, alkflx
 #endif
 #if defined O_npzd_o2
-     &                  + 2
+     &                  + 2 ! sso2, o2flx
 #endif
 #if defined O_npzd
-     &                  + 2
+     &                  + 2 ! sspo4, po4flx
 # if !defined O_npzd_no_vflux
-     &                  + 6
+     &                  + 6 ! ssphyt, phytflx, sszoop, zoopflx, ssdetr, detrflx
 #  if defined O_kk_ballast
-     &                  + 2
+     &                  + 2 ! ssdetr_B, detrflx_B
 #  endif
 #  if defined O_npzd_caco3
-     &                  + 4
+     &                  + 4 ! sscaco3, caco3flx, sscocc, coccflx
 #  endif
 # endif
 # if defined O_npzd_iron
-     &                  + 3
+     &                  + 3 ! ssdfe, dfeflx, dfeadep
 #  if !defined O_npzd_no_vflux
-     &                  + 2
+     &                  + 2 ! ssdetrfe, detrfeflx
 #  endif
 # endif
 # if defined O_npzd_nitrogen
-     &                  + 6
+     &                  + 6 ! ssdop, dopflx, ssno3, no3flx, ssdon, donflx
 #  if !defined O_npzd_no_vflux
-     &                  + 2
+     &                  + 2 ! ssdiaz, diazflx
 #  endif
 #  if defined O_npzd_nitrogen_15
-     &                  + 4
+     &                  + 4 ! ssdin15, din15flx, ssdon15, don15flx
 #   if !defined O_npzd_no_vflux
-     &                  + 8
+     &                  + 8 ! ssphytn15, phytn15flx, sszoopn15, zoopn15flx, ssddetrn15, detrn15flx, ssdiazn15, diazn15flx 
 #    if defined O_npzd_caco3
-     &                  + 2
+     &                  + 2 ! sscoccn15, coccn15flx
 #    endif		 
 #   endif
 #  endif
 # endif
 #endif
 #if defined O_carbon_13
-     &                  + 2
 # if !defined O_npzd_no_vflux
-     &                  + 6
+     &                  + 6 ! ssphytc13, phytc13flx, sszoopc13, zoopc13flx, ssdetrc13, detrc13flx
 #  if defined O_npzd_caco3
-     &                  + 4
+     &                  + 4 ! sscoccc13, coccc13flx, sscaco3c13, caco3c13flx 
 #  endif
 #  if defined O_npzd_nitrogen
-     &                  + 2
+     &                  + 4 ! ssdoc13, doc13flx, ssdiazc13, diazc13flx
 #  endif
 # endif
 #endif

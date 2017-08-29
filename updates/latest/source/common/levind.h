@@ -7,8 +7,7 @@
 !     kmu = number of vertical boxes over "u,v" points
 
       integer kmt, kmu
-      real sg_bathy, sg_ocean_mask
+      real sg_bathy
 
       common /levind/ kmt(imt,jmt), kmu(imt,jmt)
       common /levind/ sg_bathy(imt,jmt,km)
-      common /levind/ sg_ocean_mask(imt,jmt)

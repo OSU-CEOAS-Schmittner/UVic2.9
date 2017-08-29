@@ -90,6 +90,12 @@
       common /const/ ksi, ff
       common /species/ bt, st, ft, sit, pt, dic, ta
 
+! Hardwire constants (Andreas Schmittner Oct 3, 2013)
+      phhi = 6.
+      phlo = 10.
+      sit_in = 7.6875e-03       !mol/m^3
+      pt_in = 0.5125e-3         !mol/m^3
+
 !     ---------------------------------------------------------------------
 !     Change units from the input of mol/m^3 -> mol/kg:
 !     (1 mol/m^3)  x (1 m^3/1024.5 kg)
@@ -323,12 +329,6 @@
 ! setting of xacc will result in co2star accurate to 3 significant figures
 ! (xx.y). Making xacc bigger will result in faster convergence also, but this
 ! is not recommended (xacc of 10**-9 drops precision to 2 significant figures).
-
-! Hardwire constants (Andreas Schmittner Oct 3, 2013)
-      phhi = 6.
-      phlo = 10.
-      sit_in = 7.6875e-03       !mol/m^3
-      pt_in = 0.5125e-3         !mol/m^3
 
 ! Parentheses added around negative exponents (Keith Lindsay)
 

@@ -31,13 +31,22 @@
      &,                 wd0, par, dtnpzd, redctn, ki, redptn, capr
      &,                 dcaco3, nupt0, redotn, jdiar, kzoo, geZ
      &,                 zprefP, zprefZ, zprefDet, zprefDiaz, kfe, kfe_D
-     &,                 kfemin, kfemax, kfemin_C, kfemax_C, kfeorg
+# if defined O_npzd_iron
+     &,                 kfemin, kfemax
+#  if defined O_npzd_caco3
+     &,                 kfemin_C, kfemax_C
+#  endif
+     &,                 kfeorg
+# endif
      &,                 nupt0_D, sgbdfac, diazntp, nup_D, dfr, dfrt
      &,                 nudon0, nudop0, eps_assim, eps_excr, eps_nfix
      &,                 eps_wcdeni, eps_bdeni0, eps_recy, hdop
      &,                 mw, mwz, mw_c
      &,                 abio_C, k1n_C, nuct0,nuc, alpha_C
-     &,                 zprefC, bapr
+     &,                 zprefC
+# if defined O_kk_ballast
+     &,                 bapr
+# endif
      &,                 wc0, kcal, dissk0, kc_c
 !     set defaults for namelist npzd
 
@@ -84,7 +93,9 @@
       k1n_C = 0.4  ! Half sat const for N uptake (coccolithophores) [mmol/m^3]
       nuc = 0.03  ! Specific mortality rate (coccolithophores) [1/day]
       nuct0 = 0.015  ! Specific mortality rate (coccolithophores) [1/day]
+# if defined O_kk_ballast
       bapr = 0.05 ! detritus to carbonate ratio [mg POC/mg PIC]
+# endif
       kc_c = 0.047  ! Light atten. by calcite [1/(m*mmol/m^3)]
       wc0 = 35. ! constant calcite sinking speed [m/day]
 !      Gehlen et al 2007 use a surface sink speed of 50 m/day inc w/ depth
@@ -233,7 +244,7 @@ c     juan: Levin's value was 0.1e-3
          rkwz(k) = 1./(kw*dzt(k))
       enddo
       ztt(1)=0.0
-      do k=1,km
+      do k=1,km-1
          ztt(k+1)=(-1)*zw(k)
       enddo
 
@@ -309,7 +320,6 @@ c     juan: Levin's value was 0.1e-3
       ic(2) = jmtm2
       ic(3) = 19
 
-
       fname = new_file_name ("O_fe_hydr.nc")
       inquire (file=trim(fname), exist=exists)
       if (exists) then
@@ -319,7 +329,6 @@ c     juan: Levin's value was 0.1e-3
      &,                 ib, ic, tmpijkm, c1e3, c0)
          fe_hydr(2:imtm1,2:jmtm1,:) = tmpijkm(1:imtm2
      &,                                            1:jmtm2,:)
-
             do k=1,19
                do j=1,jmt
                   fe_hydr(1,j,k) = fe_hydr(imtm1,j,k)
@@ -419,7 +428,6 @@ c     juan: Levin's value was 0.1e-3
       return
       end
 
-
       subroutine mobi_driver(
      &                 kmx, twodt, rctheta, dayfrac, swr, tnpzd
      &,                t_in, po4_in
@@ -496,12 +504,12 @@ c     juan: Levin's value was 0.1e-3
 # if defined O_carbon_13 || defined O_npzd_caco3
       real s_in(km), dic_in(km), alk_in(km), co2_in, dic13_in(km)
       real rc13impo, rc13expo, ac13_DIC_aq
-      real ac13_aq_POC, ac13b, prca13, rdic13, rtdic13
+      real ac13_aq_POC, ac13b, prca13, rdic13, rtdic13(km)
       real pH, co2star, dco2star, pCO2, dpco2, CO3
       real Omega_c, Omega_a, pCO2_old, pCO2_new
       real atmpres, depth
 # if defined O_npzd_caco3
-      real rcaco3c13impo, rcaco3c13expo, rtcaco3c13
+      real rcaco3c13impo, rcaco3c13expo, rtcaco3c13(km)
 # endif
 # endif
       real sgb_in(km)
@@ -557,6 +565,70 @@ c     juan: Levin's value was 0.1e-3
       expocaco3 = 0.0
       dissk1 = 0.0
 # endif
+      src(:,:) = 0.0
+      snpzd(:) = 0.0
+      rcalpro(:) = 0.0
+# if defined O_npzd_caco3
+      rcalatt(:) = 0.0
+      rdissl(:) = 0.0
+      rexpocaco3(:) = 0.0
+# endif
+# if defined O_save_npzd
+      rexpo(:) = 0.0
+      rgraz(:) = 0.0
+      rgraz_Det(:) = 0.0
+      rgraz_Z(:) = 0.0
+      rmorp(:) = 0.0
+      rmorz(:) = 0.0
+      rnpp(:) = 0.0
+      rmorpt(:) = 0.0
+      rremi(:) = 0.0
+      rexcr(:) = 0.0
+#  if defined O_npzd_nitrogen
+      rnpp_dop(:) = 0.0
+      rnpp_D(:) = 0.0
+      rnpp_D_dop(:) = 0.0
+      rgraz_D(:) = 0.0
+      rmorp_D(:) = 0.0
+      rmorpt_D(:) = 0.0
+      rnfix(:) = 0.0
+#   if defined O_npzd_caco3
+      rnpp_C_dop(:) = 0.0
+#   endif
+#  endif
+#  if defined O_kk_ballast
+      rexpo_B(:) = 0.0          !ballast detritus
+      rgraz_Det_B(:) = 0.0
+      rremi_B(:) = 0.0
+#  endif
+#  if defined O_npzd_caco3
+      rnpp_C(:) = 0.0
+      rgraz_C(:) = 0.0
+      rmorp_C(:) = 0.0
+      rmorpt_C(:) = 0.0
+#  endif
+#  if defined O_npzd_iron
+      rexpofe(:) = 0.0
+      rremife(:) = 0.0
+#   if defined O_npzd_iron_diagnostics
+      rfeorgads(:) = 0.0
+      rdeffe(:) = 0.0
+      rfeprime(:) = 0.0
+      rfecol(:) = 0.0
+#    if defined O_npzd_caco3
+      rdeffe_C(:) = 0.0
+#    endif         
+#   endif
+#  endif
+#  if defined O_npzd_extra_diagnostics
+      ravej(:) = 0.0
+      ravej_D(:) = 0.0
+      rgmax(:) = 0.0
+      rno3P(:) = 0.0
+      rpo4P(:) = 0.0
+      rpo4_D(:) = 0.0
+#  endif
+# endif
 
 !1111 start of main k-loop
       do k=1,kmx
@@ -578,9 +650,9 @@ c     juan: Levin's value was 0.1e-3
          ac13_aq_POC = -0.017*log10(min(max(co2star*1000.,2.),74.))
      &                 +1.0034
          ac13b = ac13_aq_POC/ac13_DIC_aq
-         rc13impo = rc13expo
+         rc13impo = rc13expo*dztr(k)
 #   if defined O_npzd_caco3         
-         rcaco3c13impo = rcaco3c13expo
+         rcaco3c13impo = rcaco3c13expo*dztr(k)
 #   endif
 #  endif
 #  if defined O_npzd_caco3         
@@ -645,6 +717,9 @@ c         dissk1 = min(1.,max(0.,dissk0)) ! Andreas
      &,                 snpzd, expo
 # if defined O_carbon
      &,                 calpro
+#  if defined O_npzd_caco3
+     &,                 dissl, calatt
+#  endif
 # endif
 # if defined O_save_npzd
      &,                 npp, morpt, remi, excr, graz, morp, morz
@@ -658,7 +733,7 @@ c         dissk1 = min(1.,max(0.,dissk0)) ! Andreas
 #  endif
 #  if defined O_npzd_caco3
      &,                 npp_C, morpt_C, graz_C
-     &,                 morp_C, dissl, calatt
+     &,                 morp_C
 #  endif        
 #  if defined O_npzd_extra_diagnostics
      &,                 avej, avej_D, gmax, no3P
@@ -711,10 +786,11 @@ c     juan: use o2_in(k) instead of t(i,k,j,io2,taum1)
          rcaco3c13expo = rcaco3c13expo*rnbio
 #  endif
 # endif
-# if defined O_npzd_caco3
          rcalpro(k) = calpro*rnbio
+# if defined O_npzd_caco3
          rcalatt(k) = calatt*rnbio
-         rdissl(k) = dissl*rdtts
+         rdissl(k) = dissl*rnbio ! AS changed Aug 17, 2017
+         rexpocaco3(k) = expocaco3
 # endif
 # if defined O_save_npzd
          rexpo(k) = expo
@@ -745,7 +821,6 @@ c     juan: use o2_in(k) instead of t(i,k,j,io2,taum1)
          rremi_B(k) = remi_B*rnbio
 #  endif
 #  if defined O_npzd_caco3
-         rexpocaco3(k) = expocaco3
          rnpp_C(k) = npp_C*rnbio
          rgraz_C(k) = graz_C*rnbio
          rmorp_C(k) = morp_C*rnbio
@@ -859,7 +934,9 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
          snpzd(imobidfe) = snpzd(imobidfe) + expofe*sgb_in(k)*o2flag
          bfe = bfe + expofe*sgb_in(k)*o2flag
          expofe = expofe - sgb_in(k)*expofe*o2flag
+#  if defined O_save_npzd
          rremife(k) = rremife(k) + bfe
+#  endif
 #  if defined O_npzd_iron_diagnostics
          rfesed=fesed
          rbfe=bfe 
@@ -871,7 +948,8 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 # endif
 # if defined O_carbon_13
          snpzd(imobidic13) = snpzd(imobidic13) 
-     &                     + rc13expo*sgb_in(k)*expo*redctn
+     &                     + rc13expo*sgb_in(k)*redctn
+         rc13expo = rc13expo - sgb_in(k)*rc13expo
 # endif
          expo = expo - sgb_in(k)*expo
 # if defined O_save_npzd
@@ -951,21 +1029,21 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
          src(k,isdic) = snpzd(imobidic) - dprca             
 #  endif         
 #  if defined O_carbon_13
-         rtdic13 = max(dic13_in(k),trcmin*rc13std/(1+rc13std))
+         rtdic13(k) = max(dic13_in(k),trcmin*rc13std/(1+rc13std))
      &             / max(dic_in(k),trcmin)
-         rtdic13 = min(rtdic13, 2.*rc13std/(1+rc13std))
-         rtdic13 = max(rtdic13, 0.5*rc13std/(1+rc13std))
+         rtdic13(k) = min(rtdic13(k), 2.*rc13std/(1+rc13std))
+         rtdic13(k) = max(rtdic13(k), 0.5*rc13std/(1+rc13std))
 
-         prca13 = prca13 + dprca*dzt(k)*rtdic13
+         prca13 = prca13 + dprca*dzt(k)*rtdic13(k)
 #   if defined O_npzd_caco3          
-         rtcaco3c13 = max(tnpzd(k,imobicaco3c13)
+         rtcaco3c13(k) = max(tnpzd(k,imobicaco3c13)
      &                     ,trcmin*rc13std/(1+rc13std))
-     &             / max(tnpzd(k,imobicaco3c13),trcmin)
-         rtcaco3c13 = min(rtcaco3c13, 2.*rc13std/(1+rc13std))
-         rtcaco3c13 = max(rtcaco3c13, 0.5*rc13std/(1+rc13std))
+     &             / max(tnpzd(k,imobicaco3),trcmin)
+         rtcaco3c13(k) = min(rtcaco3c13(k), 2.*rc13std/(1+rc13std))
+         rtcaco3c13(k) = max(rtcaco3c13(k), 0.5*rc13std/(1+rc13std))
 #   endif
 #   if !defined O_npzd_caco3          
-         src(k,isdic13) = src(k,isdic13) - rtdic13*dprca
+         src(k,isdic13) = src(k,isdic13) - rtdic13(k)*dprca
 #   endif
 #  endif
 # endif       
@@ -977,6 +1055,12 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 # endif
 !        calculate total export to get total import for next layer
          expo = expo*dzt(k)
+# if defined O_carbon_13
+         rc13expo = rc13expo*dzt(k)
+#  if defined O_npzd_caco3
+         rcaco3c13expo = rcaco3c13expo*dzt(k)
+#  endif         
+# endif         
 # if defined O_kk_ballast
          expo_B = expo_B*dzt(k)
 # endif         
@@ -1070,9 +1154,9 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 #  if defined O_carbon_13
 #   if defined O_npzd_caco3
          src(k,isdic13) = src(k,isdic13)
-     &        + rdissl(k)*1.e-3*rtcaco3c13 ! AS
-     &        - rcalpro(k)*1.e-3*rtdic13
-     &        - rcalatt(k)*1.e-3*rtdic13
+     &        + rdissl(k)*1.e-3*rtcaco3c13(k) ! AS
+     &        - rcalpro(k)*1.e-3*rtdic13(k)
+     &        - rcalatt(k)*1.e-3*rtdic13(k)
 #   else              
          src(k,isdic13) = src(k,isdic13) + prca13*rcak(k)
 #   endif
@@ -1107,10 +1191,10 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 #  if defined O_carbon_13
 #   if defined O_npzd_caco3
       src(kmx,isdic13) = src(kmx,isdic13)
-     &                 + rdissl(kmx)*1.e-3*rtcaco3c13
-     &                 - rcalpro(kmx)*1.e-3*rtdic13
-     &                 - rcalatt(kmx)*1.e-3*rtdic13
-     &                 + rexpocaco3(kmx)*1.e-3*rtdic13       
+     &                 + rdissl(kmx)*1.e-3*rtcaco3c13(kmx)
+     &                 - rcalpro(kmx)*1.e-3*rtdic13(kmx)
+     &                 - rcalatt(kmx)*1.e-3*rtdic13(kmx)
+     &                 + rexpocaco3(kmx)*1.e-3*rtcaco3c13(kmx)       
 #   else  
       src(kmx,isdic13) = src(kmx,isdic13) + prca13*rcab(kmx)
 #   endif
@@ -1145,6 +1229,9 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
      &,                    bioout, expoout
 # if defined O_carbon
      &,                    calproout
+#  if defined O_npzd_caco3
+     &,                    disslout, calattout
+#  endif      
 # endif      
 # if defined O_save_npzd
      &,                    nppout, morptout, remiout, excrout, grazout
@@ -1158,7 +1245,7 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 #  endif
 #  if defined O_npzd_caco3
      &,                    npp_Cout, morpt_Cout,graz_Cout
-     &,                    morp_Cout, disslout, calattout
+     &,                    morp_Cout
 #  endif
 #  if defined O_npzd_extra_diagnostics
      &,                    avej_out, avej_D_out, gmax_out, no3P_out
@@ -1680,6 +1767,9 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 # endif
 # if defined O_carbon_13
       rc13expoout = 0.0
+#  if defined O_npzd_caco3
+      rcaco3c13expoout = 0.0
+#  endif
 # endif
       calproout = 0.0
 # if defined O_npzd_caco3
@@ -2448,14 +2538,6 @@ c     Andreas put dissl in bracket
 
         biophytc13 = biophytc13 + dtbio*redctn*(fcnpp*npp 
      &       - rtphytc13*morp - rtphytc13*graz - rtphytc13*morpt)
-
-#   if defined O_npzd_caco3
-        biococcc13 = biococcc13 + dtbio*redctn*(fcnpp*npp_C 
-     &       - rtcoccc13*morp_C - rtcoccc13*graz_C - rtcoccc13*morpt_C)
-        biocaco3c13 = biocaco3c13 + dtbio*(rtdic13*calpro
-     &       - rtcaco3c13*dissl - rtcaco3c13*expocaco3 
-     &                + rcaco3c13impo*impocaco3)
-#   endif
         
         biozoopc13 = biozoopc13 + dtbio*redctn*(rtphytc13*dig_P 
 #   if defined O_npzd_caco3
@@ -2470,7 +2552,7 @@ c     Andreas put dissl in bracket
 #   endif        
      &       + rtphytc13*sf_P + rtzoopc13*sf_Z + rtdetrc13*sf_Det 
      &       + rtzoopc13*morz - rtdetrc13*remi 
-     &       - rtdetrc13*graz_Det - rtdetrc13*expo + rc13impo*impo 
+     &       - rtdetrc13*graz_Det - rtdetrc13*expo + rc13impo 
      &       + rtdiazc13*morp_D*(redntp/diazntp))
        
         biodiazc13 = biodiazc13 + dtbio*redctn*(fcnpp*npp_D 
@@ -2485,11 +2567,6 @@ c     Andreas put dissl in bracket
 
         biophytc13 = biophytc13 + dtbio*redctn*(fcnpp*npp 
      &       - rtphytc13*(morp + graz + morpt))
-
-#   if defined O_npzd_caco3
-        biococcc13 = biococcc13 + dtbio*redctn*(fcnpp*npp_C 
-     &       - rtcoccc13*(morp_C + graz_C + morpt_C))
-#   endif
         
         biozoopc13 = biozoopc13 + dtbio*redctn*(rtphytc13*dig_P 
 #   if defined O_npzd_caco3
@@ -2506,12 +2583,19 @@ c     Andreas put dissl in bracket
 #   endif        
      &       + rtphytc13*sf_P + rtzoopc13*sf_Z + rtdetrc13*sf_Det 
      &       + rtzoopc13*morz - rtdetrc13*remi 
-     &       - rtdetrc13*graz_Det - rtdetrc13*expo + rc13impo*impo 
+     &       - rtdetrc13*graz_Det - rtdetrc13*expo + rc13impo 
 #   if defined O_npzd_caco3
      &       + rtcoccc13*morp_C + rtcoccc13*sf_C
 #   endif        
      &       )
 
+#  endif
+#  if defined O_npzd_caco3
+        biococcc13 = biococcc13 + dtbio*redctn*(fcnpp*npp_C 
+     &       - rtcoccc13*(morp_C + graz_C + morpt_C))
+        biocaco3c13 = biocaco3c13 + dtbio*(rtdic13*calpro
+     &       - rtcaco3c13*dissl - rtcaco3c13*expocaco3 
+     &                + rcaco3c13impo)
 #  endif
 # endif
         expoout = expoout + expo
@@ -2519,12 +2603,17 @@ c     Andreas put dissl in bracket
         rn15expoout = rn15expoout + rtdetrn15
 # endif
 # if defined O_carbon_13
-        rc13expoout = rc13expoout + rtdetrc13
+        rc13expoout = rc13expoout + rtdetrc13*expo
 #  if defined O_npzd_caco3
-        rcaco3c13expoout = rcaco3c13expoout + rtcaco3c13
+        rcaco3c13expoout = rcaco3c13expoout + rtcaco3c13*expocaco3
 #  endif
 # endif
         calproout = calproout + calpro
+# if defined O_npzd_caco3
+        calattout = calattout + calatt
+        disslout = disslout + dissl
+        expocaco3out = expocaco3out + expocaco3
+# endif
 # if defined O_npzd_nitrogen
         nfixout = nfixout + npp_D - no3upt_D
 # endif
@@ -2559,9 +2648,6 @@ c     Andreas put dissl in bracket
         graz_Det_out_B = graz_Det_out_B + graz_Det_B
 #  endif
 #  if defined O_npzd_caco3
-        calattout = calattout + calatt
-        disslout = disslout + dissl
-        expocaco3out = expocaco3out + expocaco3
         npp_Cout = npp_Cout + npp_C
         graz_Cout = graz_Cout + graz_C
         morp_Cout = morp_Cout + morp_C
@@ -2642,6 +2728,8 @@ c     Andreas put dissl in bracket
 #  if defined O_npzd_caco3
         if (coccc13flag .eq. 1)
      &       coccc13flag = 0.5 + sign(0.5,biococcc13 - trcmin)
+        if (caco3c13flag .eq. 1)
+     &       caco3c13flag = 0.5 + sign(0.5,biocaco3c13 - trcmin)
 #  endif        
         if (zoopc13flag .eq. 1)
      &       zoopc13flag = 0.5 + sign(0.5,biozoopc13 - trcmin)

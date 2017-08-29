@@ -501,40 +501,40 @@
 #    endif              
 #   endif
 #   if defined O_kk_ballast
-                ta_rgraz_Det_B(i,k,jrow) = ta_rgraz_Det_B(i,k,jrow)
+              ta_rgraz_Det_B(i,k,jrow) = ta_rgraz_Det_B(i,k,jrow)
      &                                 + rgraz_Det_B(k)
 #   endif
 #   if defined O_npzd_caco3
 !       print*,'KK tracer', rcalatt(k), rcalpro(k)
-                ta_rcalatt(i,k,jrow) = ta_rcalatt(i,k,jrow)
+              ta_rcalatt(i,k,jrow) = ta_rcalatt(i,k,jrow)
      &                               + rcalatt(k)
-                ta_rprocal(i,k,jrow) = ta_rprocal(i,k,jrow)
+              ta_rprocal(i,k,jrow) = ta_rprocal(i,k,jrow)
      &                               + rcalpro(k)
-                ta_rnpp_C(i,k,jrow) = ta_rnpp_C(i,k,jrow)
+              ta_rnpp_C(i,k,jrow) = ta_rnpp_C(i,k,jrow)
      &                              + rnpp_C(k)
-                ta_rgraz_C(i,k,jrow) = ta_rgraz_C(i,k,jrow)
+              ta_rgraz_C(i,k,jrow) = ta_rgraz_C(i,k,jrow)
      &                               + rgraz_C(k)
-                ta_rmorp_C(i,k,jrow) = ta_rmorp_C(i,k,jrow)
+              ta_rmorp_C(i,k,jrow) = ta_rmorp_C(i,k,jrow)
      &                               + rmorp_C(k)
-                ta_rmorpt_C(i,k,jrow)= ta_rmorpt_C(i,k,jrow)
+              ta_rmorpt_C(i,k,jrow)= ta_rmorpt_C(i,k,jrow)
      &                               + rmorpt_C(k)
 #   endif
 #   if defined O_npzd_iron
 #    if defined O_npzd_iron_diagnostics
-                ta_rfeorgads(i,k,jrow) = ta_rfeorgads(i,k,jrow)
+              ta_rfeorgads(i,k,jrow) = ta_rfeorgads(i,k,jrow)
      &                              + rfeorgads(k)
-                ta_rdeffe(i,k,jrow) = ta_rdeffe(i,k,jrow)
+              ta_rdeffe(i,k,jrow) = ta_rdeffe(i,k,jrow)
      &                              + rdeffe(k)
-                ta_rfeprime(i,k,jrow) = ta_rfeprime(i,k,jrow)
+              ta_rfeprime(i,k,jrow) = ta_rfeprime(i,k,jrow)
      &                              + rfeprime(k)
-                ta_rfesed(i,k,jrow) = ta_rfesed(i,k,jrow)
+              ta_rfesed(i,k,jrow) = ta_rfesed(i,k,jrow)
      &                              + rfesed(k)
-                ta_rbfe(i,k,jrow) = ta_rbfe(i,k,jrow)
+              ta_rbfe(i,k,jrow) = ta_rbfe(i,k,jrow)
      &                              + rbfe(k)
-                ta_rfecol(i,k,jrow) = ta_rfecol(i,k,jrow)
+              ta_rfecol(i,k,jrow) = ta_rfecol(i,k,jrow)
      &                              + rfecol(k)
 #     if defined O_npzd_caco3
-                ta_rdeffe_C(i,k,jrow) = ta_rdeffe_C(i,k,jrow)
+              ta_rdeffe_C(i,k,jrow) = ta_rdeffe_C(i,k,jrow)
      &                              + rdeffe_C(k)
 #     endif                
 #    endif
@@ -915,6 +915,8 @@
             enddo
           enddo
         endif
+c        print*,'src(alk)'
+c,src(50,5,50,itrc(ipo4))
 #  endif
 #  if defined O_shortwave
 
