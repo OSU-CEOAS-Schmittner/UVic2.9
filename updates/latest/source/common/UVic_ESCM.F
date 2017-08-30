@@ -117,7 +117,7 @@
 !-----------------------------------------------------------------------
 
       call topog (kmt, kmu, map, xt, yt, zt, xu, yu, zw, imt, jmt, km
-     &,           sg_bathy, sg_ocean_mask)
+     &,           sg_bathy)
 
       call isleperim (kmt, map, iperm, jperm, iofs, nippts, nisle, imt
      &,               jmt, km, mnisle, maxipp, xu, yu, zw)
@@ -1268,8 +1268,8 @@
 #   if defined O_npzd_nitrogen
       call set (issdoc13, m, mapsbc(m), 'ssdoc13', m)
       call set (idoc13flx, m, mapsbc(m), 'doc13flx', m)
-      call set (issdiaz, m, mapsbc(m), 'ssdiazc13', m)
-      call set (idiazflx, m, mapsbc(m), 'diazc13flx', m)
+      call set (issdiazc13, m, mapsbc(m), 'ssdiazc13', m)
+      call set (idiazc13flx, m, mapsbc(m), 'diazc13flx', m)
 #   endif
 #  endif
 # endif
@@ -1323,6 +1323,7 @@
 # endif
 #endif
 
+      print*, 'm-1=', m-1, 'numsbc=', numsbc
       if ( m-1 .gt. numsbc) then
         print*, '==> Error: increase numsbc in csbc.h to ', m-1
         stop '=>UVic_ESCM'
