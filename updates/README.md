@@ -1,6 +1,6 @@
 # updates
 Jun 19, 2019: Andreas added updates 04-06 and copied 06 to latest
-The 06 updates were created by Samar Khatiwala who added modifications from Juan Muglia and sends these notes:
+The 06 updates were created by Samar Khatiwala who added modifications to the light limitation from Juan Muglia and sends these notes:
 I’m attaching the latest version of MOBI that I hope we can all use from now on. This is created as a new updates 06 that includes 
 everything from 05 + Juan’s latest npzd_src.F + my modifications. The latter includes the TMM interface, hooks to extract TMs, a 
 bug fix in setmom.F, and a new subroutine mom/set_sbc.F to set boundary conditions. As I said in a previous email this avoids 
