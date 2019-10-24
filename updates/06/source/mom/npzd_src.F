@@ -1,5 +1,6 @@
 
       subroutine mobi_init
+c forking test
 #if defined O_mom && defined O_npzd 
 !     initialize MOBI parameters
       implicit none
