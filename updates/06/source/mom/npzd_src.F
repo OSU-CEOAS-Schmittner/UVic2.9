@@ -1,6 +1,6 @@
 
       subroutine mobi_init
-c a branch test
+c conflict resolved
 #if defined O_mom && defined O_npzd 
 !     initialize MOBI parameters
       implicit none
