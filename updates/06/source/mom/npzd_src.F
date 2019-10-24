@@ -1,6 +1,5 @@
 
       subroutine mobi_init
-c conflict resolved
 #if defined O_mom && defined O_npzd 
 !     initialize MOBI parameters
       implicit none
