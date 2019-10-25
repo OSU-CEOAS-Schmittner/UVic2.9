@@ -1472,7 +1472,7 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
       deffe_C=bioin(imobidfe)/(kfevar_C+bioin(imobidfe))
       thetamax_C=thetamaxlo+(thetamaxhi-thetamaxlo)*deffe_C
       alpha_C=alphamin+(alphamax-alphamin)*deffe_C
-      gl_C=gl*thetamax_C*alpha_O
+      gl_C=gl*thetamax_C*alpha_C
 #  endif
 #  if defined O_npzd_nitrogen
       deffe_D=bioin(imobidfe)/(kfe_D+bioin(imobidfe))
