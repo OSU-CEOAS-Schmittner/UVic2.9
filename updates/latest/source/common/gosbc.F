@@ -59,11 +59,18 @@
 # endif
 
 #ifndef O_TMM
-
       isp1 = is + 1
       iem1 = ie - 1
       jsp1 = js + 1
       jem1 = je - 1
+#else
+      isp1 = is
+      iem1 = ie
+      jsp1 = js
+      jem1 = je
+#endif
+
+#ifndef O_TMM
 
 # if defined O_mom && defined O_embm
       f1 = 1./atatm
@@ -232,14 +239,24 @@
       sbc(:,:,iro) = sbc(:,:,iro)*f1a
 # endif
       call setbcx (sbc(1,1,iro), imt, jmt)
+#endif ! O_TMM
 
 # if defined O_embm
+#ifndef O_TMM
 !-----------------------------------------------------------------------
 !     zero diagnostic for river discharge and call river model
 !-----------------------------------------------------------------------
       disch(:,:) = 0.
       call rivmodel
-
+      globaldisch = 0.
+      do j=jsp1,jem1
+        do i=isp1,iem1
+          if (kmt(i,j) .ne. 0.) then
+            globaldisch = globaldisch + disch(i,j)*dxt(i)*dyt(j)*cst(j)
+          endif
+        enddo
+      enddo
+#endif
 #  if defined O_sed && !defined O_sed_uncoupled
 !-----------------------------------------------------------------------
 !     apply CaCO3 weathering flux proportional to discharge
@@ -250,25 +267,17 @@
 #   if defined O_save_carbon_totals
       dicwflx =  weathflx
 #   endif
-      tmp = 0.
-      do j=2,jmtm1
-        do i=2,imtm1
-          if (kmt(i,j) .ne. 0.) then
-            tmp = tmp + disch(i,j)*dxt(i)*dyt(j)*cst(j)
-          endif
-        enddo
-      enddo
-      tmp = weathflx/tmp
-      do j=2,jmtm1
+      tmp = weathflx/globaldisch
+      do j=jsp1,jem1
 #   if defined O_global_sums || defined O_save_carbon_totals
         fgs = dyt(j)*cst(j)*segtim/secday
 #   endif
-        do i=2,imtm1
+        do i=isp1,iem1
           if (kmt(i,j) .ne. 0.) then
 #   if defined O_carbon
             sbc(i,j,idicflx) = sbc(i,j,idicflx) + disch(i,j)*tmp
 #    if defined O_carbon_13
-              sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + dic13ocn*tmp
+            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + dic13ocn*tmp
 #    endif
 #   if defined O_npzd_alk
             sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + disch(i,j)*2.*tmp
@@ -287,6 +296,7 @@
 
 #  endif
 # endif
+#ifndef O_TMM
 # if defined O_sealev_data_transient && defined O_sealev_salinity
 !-----------------------------------------------------------------------
 !     add in flux from sea level change
