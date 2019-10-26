@@ -528,6 +528,8 @@ c     juan: Levin's value was 0.1e-3
 # endif   
 # if defined O_sed
       real sedcorgflx, sedcalflx
+      sedcalflx = 0.0
+      sedcorgflx = 0.0
 # endif
 
       expo = 0.0
@@ -859,9 +861,9 @@ c     juan: use o2_in(k) instead of t(i,k,j,io2,taum1)
 !             calculate calcite at the bottom and dissolve
 !---------------------------------------------------------------------
 #  if defined O_sed
-                if (addflxo .and. eots)
-     &           sbc(i,jrow,ircal) = sbc(i,jrow,ircal)
-     &           + expocaco3*twodt(1)*dzt(k)*1.e-3 !mol C
+c                if (addflxo .and. eots)
+c     &           sbc(i,jrow,ircal) = sbc(i,jrow,ircal)
+c     &           + expocaco3*twodt(1)*dzt(k)*1.e-3 !mol C
 #  endif
 # endif
 
@@ -869,15 +871,6 @@ c     juan: use o2_in(k) instead of t(i,k,j,io2,taum1)
 !             calculate detritus at the bottom and remineralize
 !-----------------------------------------------------------------------
 
-# if defined O_sed
-         if (k .eq. kmx) then
-#  if defined O_kk_ballast                   
-            sedcorgflx = sedcorgflx + (expo+expo_B)*redctn*twodt*dzt(k)
-#  else
-            sedcorgflx = sedcorgflx + expo*redctn*twodt*dzt(k)
-#  endif
-         endif
-# endif
 # if defined O_kk_ballast
          sedrr = sgb_in(k)*(expo+expo_B)*dzt(k)
 # else               
@@ -1081,6 +1074,13 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 # if defined O_save_npzd
       rprca = prca
 # endif
+# if defined O_sed
+      sedcorgflx = sedrr*redctn*twodt
+#   if defined O_npzd_caco3
+      sedcalflx = expocaco3*1.e-3*twodt
+#   endif
+#  endif
+# endif
 
 # if defined O_npzd_o2
 !2222 start of second k-loop
@@ -1169,21 +1169,17 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 #  endif
 # endif
 # if defined O_npzd_alk
-#   if defined O_npzd_caco3
+#  if defined O_npzd_caco3
          src(k,isalk) = src(k,isalk)
      &        + 2.*rdissl(k)*1.e-3
      &        - 2.*rcalpro(k)*1.e-3
      &        - 2.*rcalatt(k)*1.e-3
-#   else
+#  else
          src(k,isalk) = src(k,isalk) + 2.*prca*rcak(k)
-#   endif
+#  endif
 # endif
       enddo
 !3333 end of third k-loop
-# if defined O_sed
-      sedcalflx = sedcalflx + (prca*rcab(kmx)
-     &     - prca*rcak(kmx))*twodt*dzt(kmx)
-# endif
 # if defined O_carbon
 #  if defined O_npzd_caco3
       src(kmx,isdic) = src(kmx,isdic)
@@ -1192,6 +1188,10 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
      &     - rcalatt(kmx)*1.e-3
      &     + rexpocaco3(kmx)*1.e-3
 #  else
+#   if defined O_sed
+      sedcalflx = (prca*rcab(kmx)
+     &     - prca*rcak(kmx))*twodt*dzt(kmx)
+#   endif
       src(kmx,isdic) = src(kmx,isdic) + prca*rcab(kmx)
 #  endif
 #  if defined O_carbon_13
