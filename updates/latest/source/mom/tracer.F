@@ -119,6 +119,9 @@
 #  ifdef O_TMM
       common/mobicomm/src
 #  endif 
+#  if defined O_sed
+      real sedcorgflx, sedcalflx
+#  endif
 # endif
 # if defined O_carbon_fnpzd
       real tmpijk(imtm2,jmtm2,km), tmpi(imtm2), tmpj(jmtm2)
@@ -441,7 +444,7 @@
 #   endif
 #  endif
 #  if defined O_sed
-     &,                sedcorgflx, sedcalflx)
+     &,                sedcorgflx, sedcalflx
 #  endif
      &,                src(i,:,j,:))
 
@@ -1132,27 +1135,28 @@ c,src(50,5,50,itrc(ipo4))
 !-----------------------------------------------------------------------
 
       if (addflxo .and. eots) then
-        if (joff .eq. 0) atsed = atsed + twodt(1)
+C SPK: this used to be twodt(1) but in offline mode this is not set anywhere
+        if (joff .eq. 0) atsed = atsed + c2dtts
         do j=js,je
           jrow = j + joff
           do i=is,ie
             if (kmt(i,jrow) .gt. 0) then
               k = kmt(i,jrow)
               sbc(i,jrow,ibtemp) = sbc(i,jrow,ibtemp)
-     &                           + t(i,k,j,itemp,taup1)*twodt(1)
+     &                           + t(i,k,j,itemp,taup1)*c2dtts
               sbc(i,jrow,ibsalt) = sbc(i,jrow,ibsalt)
-     &                           + t(i,k,j,isalt,taup1)*twodt(1)
+     &                           + t(i,k,j,isalt,taup1)*c2dtts
 #  if defined O_carbon
               sbc(i,jrow,ibdic) = sbc(i,jrow,ibdic)
-     &                          + t(i,k,j,idic,taup1)*twodt(1)
+     &                          + t(i,k,j,idic,taup1)*c2dtts
 #  endif
 #  if defined O_npzd_alk
               sbc(i,jrow,ibalk) = sbc(i,jrow,ibalk)
-     &                          + t(i,k,j,ialk,taup1)*twodt(1)
+     &                          + t(i,k,j,ialk,taup1)*c2dtts
 #  endif
 #  if defined O_npzd_o2
               sbc(i,jrow,ibo2) = sbc(i,jrow,ibo2)
-     &                         + t(i,k,j,io2,taup1)*twodt(1)
+     &                         + t(i,k,j,io2,taup1)*c2dtts
 #  endif
             endif
           enddo
