@@ -29,6 +29,7 @@
 !     precip      = precipitation (g cm-2 s-1)
 !     evap        = evaporation (g cm-2 s-1)
 !     disch       = discharge from continents (g cm-2 s-1)
+!     globaldisch = global discharge (g s-1)
 !     vflux       = normalized virtual flux
 !   land model
 !     soilm       = soil moisture, as depth in bucket (g cm -2)
@@ -70,6 +71,7 @@
 
       real at, elev, flux, rh, tmsk, umsk, dn, de, fcor, solins, dnswr
       real uplwr, upsens, upltnt, outlwr, precip, evap, disch, vflux
+      real globaldisch
       real soilm, runoff, surf, rtbar, atbar, tbar, awx, awy, apress
       real sulph, co2dist, elev_sealev, flxadj, track_co2, track_sat
 
@@ -85,6 +87,7 @@
       common /embm_r/ upltnt(imt,jmt), outlwr(imt,jmt), precip(imt,jmt)
       common /embm_r/ evap(imt,jmt), disch(imt,jmt), vflux(imt,jmt)
       common /embm_r/ soilm(imt,jmt,2), runoff(imt,jmt)
+      common /embm_r/ globaldisch
       common /embm_r/ surf(imt,jmt)
 #if defined O_embm_awind || defined O_embm_adiff
       common /embm_r/ rtbar(imt,jmt), atbar(imt,jmt), tbar(imt,jmt)
