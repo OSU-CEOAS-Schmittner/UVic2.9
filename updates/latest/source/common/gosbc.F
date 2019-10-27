@@ -277,7 +277,9 @@
 #   if defined O_carbon
             sbc(i,j,idicflx) = sbc(i,j,idicflx) + disch(i,j)*tmp
 #    if defined O_carbon_13
-            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + dic13ocn*tmp
+c       Andreas: needs to be changed
+c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + dic13ocn*tmp
+c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
 #    endif
 #   if defined O_npzd_alk
             sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + disch(i,j)*2.*tmp
