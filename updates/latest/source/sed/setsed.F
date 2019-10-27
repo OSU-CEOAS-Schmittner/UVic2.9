@@ -17,18 +17,18 @@
 
       real expb, db, difo2, difc(3)
 
-      include "size.h"
-      include "param.h"
-      include "pconst.h"
-      include "stdunits.h"
-      include "calendar.h"
-      include "csbc.h"
-      include "coord.h"
-      include "grdvar.h"
-      include "levind.h"
-      include "sed.h"
-      include "switch.h"
-      include "tmngr.h"
+#include "size.h"
+#include "param.h"
+#include "pconst.h"
+#include "stdunits.h"
+#include "calendar.h"
+#include "csbc.h"
+#include "coord.h"
+#include "grdvar.h"
+#include "levind.h"
+#include "sed.h"
+#include "switch.h"
+#include "tmngr.h"
 
       dtsed = dtsedyr*yrlen*daylen
       nsedacc = max(nsedacc, 1)
@@ -70,15 +70,20 @@
       rain_cal_p(:) = 0.
       sedsa = 0.
       carblith = 0.
+#ifndef O_TMM
       do j=2,jmtm1
         do i=2,imtm1
+#else
+      do j=js,je
+        do i=is,ie
+#endif        
           if (kmt(i,j) .ge. kmin) then
             ipsed = ipsed + 1
             map_sed(i,j) = ipsed
             imap(ipsed) = i
             jmap(ipsed) = j
             water_z_p(ipsed) = zw(kmt(i,j))*0.01
-	    sedsa = sedsa + dxt(i)*dyt(j)*cst(j)
+ 	    sedsa = sedsa + dxt(i)*dyt(j)*cst(j)
           endif
         enddo
       enddo
@@ -147,6 +152,7 @@
       sbc(:,:,ibo2) = 0.
 # endif
 
+#ifndef O_TMM
       if (.not. init) then
         fname = new_file_name ("restart_sed.nc")
         inquire (file=trim(fname), exist=exists)
@@ -157,6 +163,8 @@
         if (exists) call sed_rest_in (fname, is, ie, js, je)
 # endif
       endif
+#endif ! !O_TMM
+      
 # if !defined O_sed_weath_diag
 
 !-----------------------------------------------------------------------
