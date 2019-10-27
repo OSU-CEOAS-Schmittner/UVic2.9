@@ -2147,7 +2147,7 @@
 #  if defined O_sed && !defined O_sed_uncoupled
         tai_dicwflx = tai_dicwflx + dicwflx
 #   if defined O_carbon_13
-        tai_dic13wflx = tai_dic13wflx + dic13wflx
+        tai_dic13wflx = tai_dic13wflx ! + dic13wflx
 #   endif
 #  endif
 #  if defined O_carbon_14
