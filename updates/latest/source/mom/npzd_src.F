@@ -2558,6 +2558,7 @@ c     Andreas put dissl in bracket
      &       + rtcoccc13*(1.-dfr)*morp_C + rtcoccc13*sf_C
 #   endif        
      &       + rtphytc13*sf_P + rtzoopc13*sf_Z + rtdetrc13*sf_Det 
+     &       + rtdiazc13*sf_D
      &       + rtzoopc13*morz - rtdetrc13*remi 
      &       - rtdetrc13*graz_Det - rtdetrc13*expo + rc13impo 
      &       + rtdiazc13*morp_D*(redntp/diazntp))
@@ -2589,6 +2590,7 @@ c     Andreas put dissl in bracket
      &         rtphytc13*morp 
 #   endif        
      &       + rtphytc13*sf_P + rtzoopc13*sf_Z + rtdetrc13*sf_Det 
+     &       + rtdiazc13*sf_D
      &       + rtzoopc13*morz - rtdetrc13*remi 
      &       - rtdetrc13*graz_Det - rtdetrc13*expo + rc13impo 
 #   if defined O_npzd_caco3
