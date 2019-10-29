@@ -1318,7 +1318,8 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 !     Nickelsen et al. 2015, Geosc. Model Dev. 8, 1357-1381, doi:10.5194/gmd-8-1357-2015
 !
 !     Juan Muglia has modified the subgrid-scale scheme used for benthic denitrification
-!     and iron release from sediments. He has also included geothermal sources of iron.
+!     and iron release from sediments. He has also included geothermal sources of iron:
+!     Muglia et al. 2017, doi:10.1002/2016PA003077.
 !
 !     Note that nutrient (N) represents phosphate
 !
