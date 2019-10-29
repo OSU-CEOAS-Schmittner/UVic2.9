@@ -1,3 +1,4 @@
+
       subroutine isopi (error, am, ah)
 
 #if defined O_mom
@@ -11,11 +12,10 @@
 
 !      -Disopycmix -Dgent_mcwilliams gives the isopycnal mixing tensor
 !       plus the advective velocity parameterization of Gent_McWilliams
-
 !     input:
 !       error  = logical to signal problems
 !       am     = background mixing coeff for momentum
-!       ah     = horizontal mixing coeff for tracers
+!       ah     = horizontaal mixing coeff for tracers
 !       slmx   = max slope of isopycnals
 !       ahisop = isopycnal tracer diffusivity(cm**2/sec)
 !       athkdf = isopycnal thickness diffusivity (cm**2/sec)
@@ -27,12 +27,9 @@
       implicit none
 
       character(120) :: fname, new_file_name
-
       integer i, k, j, ip, kr, jq, io, i_delta, j_delta, k_delta, jrow
       integer iou, n, ib(10), ic(10)
-
-      logical exists, inqvardef, error
-
+      logical exists, inqvardef, error, debug
       real slmx, s_dm, ah, am, ft, delta1, delta2
 
       include "size.h"
@@ -52,7 +49,8 @@
 
       real tmpijk(imtm2,jmtm2,km)
 
-      namelist /isopyc/ slmx, ahisop, athkdf, del_dm, s_dm
+c      namelist /isopyc/ slmx, ahisop, athkdf, del_dm, s_dm, 
+c     &                  c_eden, gamma_eden
 
       write (stdout,'(/,20x,a,/,20x,a,/)')
      & 'I S O P Y C M I X    I N I T I A L I Z A T I O N'
@@ -69,37 +67,36 @@
 
 !     maximum isopycnal slope
 
-      slmx  = 1.0/100.0
+      slmx  = 0.01
 
 !     isopycnal diffusion coefficient
 
-      ahisop = 1.e7
+      ahisop = 1.2e7
 
 !     isopycnal thickness diffusion coefficient
 
-      athkdf = 1.0e7
+      athkdf = 8.e6
 
 !     transition for scaling diffusion coefficient
 
-      del_dm = 4.0/1000.0
+      del_dm = .4e-02
 
 !     half width scaling for diffusion coefficient
 
-      s_dm = 1.0/1000.0
+      s_dm = .1e-2
 
 !-----------------------------------------------------------------------
 !     provide for namelist over-ride of above settings + documentation
 !-----------------------------------------------------------------------
 
-      call getunit (io, 'control.in'
-     &,               'formatted sequential rewind')
-      read (io,isopyc,end=100)
-100   continue
-      write (stdout,isopyc)
-      call relunit (io)
+c      call getunit (io, 'control.in'
+c     &,               'formatted sequential rewind')
+c      read (io,isopyc,end=100)
+c100   continue
+c      write (stdout,isopyc)
+c      call relunit (io)
 
 !     set reciprocal of maximum isopycnal slope and scaling half width
-
       slmxr = c1/slmx
       s_dmr = c1/s_dm
 
@@ -143,10 +140,10 @@
 
       write(stdout,9102) ahisop, athkdf, ah, am
 
-9102  format(/' ahisop = ',e12.6,' along isopyncal tracer mixing '
-     &,  '(cm**2/sec) '/' athkdf = ',e12.6,' isopycnal thickness '
-     &,'diffusion (cm**2/sec) '/' ah = ',e12.6,' cm**2/sec for '
-     &,' am = ',e12.6,' cm**2/sec for horizontal mixing of momentum'/)
+9102  format(/' ahisop = ',e12.5,' along isopyncal tracer mixing '
+     &,  '(cm**2/sec) '/' athkdf = ',e12.5,' isopycnal thickness '
+     &,'diffusion (cm**2/sec) '/' ah = ',e12.5,' cm**2/sec for '
+     &,' am = ',e12.5,' cm**2/sec for horizontal mixing of momentum'/)
       ft = c1/(4.0*ahisop*dtts)
       delta_iso = dxt(1)*cst(jmt/2)*dzt(1)*ft
       i_delta = 1
@@ -221,7 +218,7 @@
       enddo
 
       write (stdout,'(a)') ' Acceleration with depth "dtxsqr(k)"='
-      write (stdout,'(5(1x,e12.6))') (dtxsqr(k),k=1,km)
+      write (stdout,'(5(1x,e12.5))') (dtxsqr(k),k=1,km)
 
 !-----------------------------------------------------------------------
 !     read ocean diffusion factor
@@ -243,6 +240,24 @@
           call getvara ('O_diffac', iou, imtm2*jmtm2*km, ib, ic, tmpijk
      &,     c1, c0)
           fisop(2:imtm1,2:jmtm1,1:km) = tmpijk(1:imtm2,1:jmtm2,1:km)
+#  if defined O_anisotropic_zonal_mixing
+c         Andreas read this in since it is constant in time
+!-----------------------------------------------------------------------
+!     include anisotropic zonal equatorial isopycnal mixing scheme
+!     see Getzlaff and Dietze, 2013, GRL for more information
+!     smooth values linearly between 5-10 deg N/S to default values
+!----------------------------------------------------------------------
+          write(*,*) "reading equ zonal isopycnal diffusivity: ",fname
+          call getvara ('O_ISOP', iou, imtm2*jmtm2*km, ib, ic, tmpijk
+     &,     c1, c0)
+          do j=1,jmtm2
+             do i=1,imtm2
+                do k=1,km
+                   addisop(i+1,k,j+1) = tmpijk(i,j,k)*1e4
+                enddo
+             enddo
+          enddo
+#  endif
         endif
       endif
 
@@ -571,107 +586,21 @@
 !     the full tensor, it is re-scaled if outside the stable range.
 !-----------------------------------------------------------------------
 
-      addisop(1:imtm1,js:je,1:km) = 0;
-#   if defined O_anisotropic_zonal_mixing
-!-----------------------------------------------------------------------
-!     include anisotropic zonal equatorial isopycnal mixing scheme
-!     see Getzlaff and Dietze, 2013, GRL for more information
-!     smooth values linearly between 5-10 deg N/S to default values
-!----------------------------------------------------------------------
-!     Pacific
-      do i=30,83
-         do j=44,47
-            do k=4,km
-               addisop(i,k,j) = 1.25e8*j - 5.5e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-         do j=48,53
-            do k=4,km
-               addisop(i,k,j) = 5.0e8
-            enddo
-         enddo
-         do j=54,57
-            do k=4,km
-               addisop(i,k,j) = -1.25e8*j + 7.125e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-      enddo     
-
-! Indic
-      
-      do i=5,29
-         do j=44,47
-            do k=4,km
-               addisop(i,k,j) = 1.25e8*j - 5.5e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-         do j=48,53
-            do k=4,km
-               addisop(i,k,j) = 5.0e8
-            enddo
-         enddo
-         do j=54,57
-            do k=4,km
-               addisop(i,k,j) = -1.25e8*j + 7.125e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-      enddo   
-
-! Atlantic
-
-      do i=1,5
-         do j=44,47
-            do k=4,km
-               addisop(i,k,j) = 5.e7*j - 2.2e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-         do j=48,53
-            do k=4,km
-               addisop(i,k,j) = 2.0e8
-            enddo
-         enddo
-         do j=54,57
-            do k=4,km
-               addisop(i,k,j) = -5.e7*j + 2.85e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-      enddo     
-
-      do i=84,imtm1
-         do j=44,47
-            do k=4,km
-               addisop(i,k,j) = 5.e7*j - 2.2e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-         do j=48,53
-            do k=4,km
-               addisop(i,k,j) = 2.0e8
-            enddo
-         enddo
-         do j=54,57
-            do k=4,km
-               addisop(i,k,j) = -5.e7*j + 2.85e9
-c               print*,"j=",j,", addisop=",addisop(i,k,j)
-            enddo
-         enddo
-      enddo     
-#  endif
-
       do j=js,je
         jrow = j + joff
         do k=1,km
           sc = c1/(slmxr*dtxsqr(k))
           dzt4r = p5*dzt2r(k)
           do i=2,imtm1
-            Ai0 =(ahisop+addisop(i,k,jrow))*p5*(fisop(i,jrow,k)
-     &           +fisop(i+1,jrow,k))
+            Ai0 = .5 * (fisop(i,jrow,k) + fisop(i+1,jrow,k)) * 
+#  if defined O_KGMvar
+     & .5 * (ahisop_var(i,k,jrow,niso) + ahisop_var(i+1,k,jrow,niso)) + 
+#  else
+     &   ahisop +
+#  endif
+     &   addisop(i,k,jrow) 
+
+            
 #  if defined O_full_tensor
             sumz = c0
             do kr=0,1
@@ -771,9 +700,13 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
           sc = c1/(slmxr*dtxsqr(k))
           dzt4r = p5*dzt2r(k)
           do i=2,imtm1
-
-!            print*, "ADDISO", ck
-            Ai0 = ahisop*p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k))
+            Ai0 = p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k)) * 
+#  if defined O_KGMvar
+     &            p5*(ahisop_var(i,k,jrow,niso) + 
+     &                ahisop_var(i,k,jrow+1,niso))
+#  else
+     &            ahisop
+#  endif
 
 #  if defined O_full_tensor
             sumz = c0
@@ -873,11 +806,15 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
           sc = c1/(slmxr*dtxsqr(k))
           kp1   = min(k+1,km)
           do i=2,imtm1
-            Ai0 = ahisop*p5*(fisop(i,jrow,k+1) + fisop(i,jrow,k))
+            Ai0 = p5*(fisop(i,jrow,k+1) + fisop(i,jrow,k)) * 
+#  if defined O_KGMvar
+     &        p5*(ahisop_var(i,k,jrow,niso)+ahisop_var(i,k+1,jrow,niso))
+#  else
+     &        ahisop
+#  endif
 #  if defined O_full_tensor
 
 !           eastward slopes at the base of T cells
-
             sumx = c0
             do ip=0,1
               do kr=0,1
@@ -1038,10 +975,10 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
             flux_x = dzt4r*sumz
 #  if defined O_full_tensor
 #   if defined O_anisotropic_zonal_mixing 
-            ck = addisop(i,jrow,k)
+            ck = addisop(i,k,jrow)
             print*, "ADDISO", ck
 #   endif
-            Ai0 = (ahisop+addisop(i,jrow,k))*p5*(fisop(i,jrow,k)
+            Ai0 = (ahisop+addisop(i,k,jrow))*p5*(fisop(i,jrow,k)
      &           + fisop(i+1,jrow,k))
             sumy = c0
             do jq=0,1
@@ -1092,7 +1029,7 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
             enddo
             flux_y = csu_dzt4r*sumz
 #  if defined O_full_tensor
-            Ai0 = (ahisop+addisop(i,jrow,k))*p5*(fisop(i,jrow,k)
+            Ai0 = (ahisop+addisop(i,k,jrow))*p5*(fisop(i,jrow,k)
      &           + fisop(i,jrow+1,k))
             sumx = c0
             do ip=0,1
@@ -1231,6 +1168,15 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
 
       real top_bc(km), bot_bc(km)
 
+#   if defined O_KGMvar
+      real sigma, max_cori
+      Lm         = 50.e5
+      eddy_min   = 3.0e6
+      eddy_max   = 3.0e7
+      coef       = 980./1.025
+      pii        = 4.0 * atan(1.0)
+#   endif
+
       do k=1,km
         top_bc(k) = c1
         bot_bc(k) = c1
@@ -1238,11 +1184,200 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
       top_bc(1)  = c0
       bot_bc(km) = c0
 
+      do j=js,je
+        jrow = j + joff
+        do i=1,imtm1
+          at =    p5 * (alphai(i,1,j) + alphai(i,1,j+1))
+          bt =    p5 * (betai(i,1,j) + betai(i,1,j+1))
+          drodytn(i,1,jrow) = at * ddyt(i,1,j,1)
+     &                      + bt * ddyt(i,1,j,2)
+          drodztn(i,1,jrow) = at * (ddzt(i,1,j,1) + ddzt(i,1,j+1,1))*p5
+     &                      + bt * (ddzt(i,1,j,2) + ddzt(i,1,j+1,2))*p5
+!         -- zonal --
+          at =     p5 * (alphai(i,1,j) + alphai(i+1,1,j))
+          bt =     p5 * (betai(i,1,j) + betai(i+1,1,j))
+          drodxte(i,1,jrow) = at * ddxt(i,1,j,1)
+     &                      + bt * ddxt(i,1,j,2) 
+          drodzte(i,1,jrow) = at * (ddzt(i,1,j,1) + ddzt(i+1,1,j,1))*p5
+     &                      + bt * (ddzt(i,1,j,2) + ddzt(i+1,1,j,2))*p5
+          do k=1,km
+            km1 = max(k-1,1)
+            kp1 = min(k+1,km)
+!     compute the meridional slopes of isopycnals at the north and top
+!     or bottom faces of the "T" grid
+            ab =     (alphai(i,k,j) + alphai(i,k,j+1) + alphai(i,kp1,j)
+     &              + alphai(i,kp1,j+1)) * 0.25
+            bb =     (betai(i,k,j) + betai(i,k,j+1) + betai(i,kp1,j)
+     &              + betai(i,kp1,j+1)) * 0.25
+            drodybn(i,k,jrow) = ab*p5*(ddyt(i,k,j,1) + ddyt(i,kp1,j,1))
+     &                        + bb*p5*(ddyt(i,k,j,2) + ddyt(i,kp1,j,2))
+            drodzbn(i,k,jrow) = ab*p5*(ddzt(i,k,j,1) + ddzt(i,k,j+1,1))
+     &                        + bb*p5*(ddzt(i,k,j,2) + ddzt(i,k,j+1,2))
+
+            ! Copy data to top face of present cell from bottom faces of
+            ! cell above
+            if (k.gt.1) then
+              drodytn(i,k,jrow) = drodybn(i,km1,jrow)
+              drodztn(i,k,jrow) = drodzbn(i,km1,jrow)
+            endif
+            
+!     compute the zonal slopes of isopycnals at the east and top
+!     or bottom faces of the "T" grid
+            ab =     (alphai(i,k,j) + alphai(i+1,k,j) + alphai(i,kp1,j)
+     &              + alphai(i+1,kp1,j)) * 0.25
+            bb =     (betai(i,k,j) + betai(i+1,k,j) + betai(i,kp1,j)
+     &              + betai(i+1,kp1,j)) * 0.25
+            drodxbe(i,k,jrow) =  ab*p5*(ddxt(i,k,j,1) + ddxt(i,kp1,j,1))
+     &                         + bb*p5*(ddxt(i,k,j,2) + ddxt(i,kp1,j,2))
+            drodzbe(i,k,jrow) =  ab*p5*(ddzt(i,k,j,1) + ddzt(i+1,k,j,1))
+     &                         + bb*p5*(ddzt(i,k,j,2) + ddzt(i+1,k,j,2))
+     
+            if (k.gt.1) then
+              drodxte(i,k,jrow) = drodxbe(i,km1,jrow)
+              drodzte(i,k,jrow) = drodzbe(i,km1,jrow)
+            endif
+            
+          enddo  ! k
+        enddo    ! i
+      enddo      ! j
+
+#   if defined O_KGMvar
 !-----------------------------------------------------------------------
-!     compute the meridional component of the isopycnal mixing velocity
-!     at the center of the northern face of the "T" cells.
+! Compute the 3 dimensional isopycnal diffiusivity coefficient K_GM
+! as outlined in Oleg, Eden, et. al. See documentation for more detail.
+! *ToDo: add more
 !-----------------------------------------------------------------------
 
+      do j=js,je
+        jrow = j + joff
+        do i=2,imtm1
+          Lr(i,jrow)    = 0. 
+          LRhi(i,:,jrow)  = 0.
+          sigma_ave     = 0.
+          stratif_int   = 0.
+          sum_zz        = 0.
+          beta          = (cori(i,j+1,1) - cori(i,j-1,1)) /
+     &                    (2.0 * dyt(j))
+
+!         Only integrate baroclinicty below the mixed layer (it will be 
+!         huge in the mixed layer, giving huge K_gm in shallow seas).
+!         Also, can integrate downwards to about 2000m, not further, to
+!         emphasize the mid-depth water where we have more faith in the
+!         stratification. (To emphasize the first baroclinic mode??)
+!          do k=5,min(kmt(i,jrow)-1,20)
+          do k=1,kmt(i,jrow)  ! change hard value to a calculated
+           ! stratif_int = vertical integral of stratification, on T
+           !   cells
+            stratif_int = stratif_int + dzw(k) *
+     &                    sqrt(coef * p5 * abs(drodzb(i,k,jrow,0)
+     &                                       + drodzb(i,k,jrow,1)))
+          enddo
+          do k=1,kmt(i,jrow)
+            kgm(i,k,jrow,niso) = eddy_min
+            ahisop_var(i,k,jrow,niso) = eddy_min
+
+            km1 = max(k-1,1)
+            countx = 2
+            county = 2
+            if (drodxte(i  ,k,jrow) .eq. 0) countx = countx - 1
+            if (drodxte(i-1,k,jrow) .eq. 0) countx = countx - 1
+            if (drodytn(i,k,jrow  ) .eq. 0) county = county - 1
+            if (drodytn(i,k,jrow-1) .eq. 0) county = county - 1
+            
+            grd_rho_x = drodxte(i,k,jrow) + drodxte(i-1,k,jrow)
+            grd_rho_y = drodytn(i,k,jrow) + drodytn(i,k,jrow-1)
+            if (countx.eq.0 .and. county.eq.0) then
+              abs_grd_rho2 = 0.
+            elseif (countx.eq.0) then
+              abs_grd_rho2 = (grd_rho_y / county) ** 2
+            elseif (county.eq.0) then
+              abs_grd_rho2 = (grd_rho_x / countx) ** 2
+            else
+              abs_grd_rho2 = (grd_rho_x / countx) ** 2
+     &                     + (grd_rho_y / county) ** 2
+            endif
+            
+            ! Vertical gradient of density at the top face of "T" cells.
+            abs_drho_dz = p5 * abs(drodzb(i,km1,jrow,0) +
+     &                             drodzb(i,km1,jrow,1))
+            
+            ! Limit N2 > 1.e-8 / coef
+            abs_drho_dz = max(1.e-8/coef, abs_drho_dz)
+
+            max_cori = max(abs(cori(i,j,1)),
+     &                 (2.*beta*stratif_int/pii)**(1/2))             
+
+            sigma     = sqrt(abs_grd_rho2) /
+     &                       sqrt((abs_drho_dz/coef) +
+     &                            (gamma_eden * abs_grd_rho2 / 
+     &                             max_cori**2))
+           
+            sigma_ave     = sigma_ave + dzw(km1) * sigma
+            sum_zz = sum_zz + dzw(km1)
+           
+c            kgm(i,k,jrow,niso) = sigma
+
+c            ! Local Rhine's Scale
+c            LRhi(i,k,jrow) = sigma / beta
+            LRhi(i,k,jrow) = 50.e5 ! 50 km
+
+          enddo ! k
+
+          ! Now get the average
+          if (sum_zz.ne.0.) then
+            sigma_ave = sigma_ave / sum_zz
+          endif
+          kgm(i,:,jrow,niso) = sigma_ave
+
+          ! Rhine's Scale. Averaged over depth
+c          LRhi(i,jrow) = sigma_ave / beta
+
+          ! Retrieve a minimum of Rossby Radius. See Eden 2009.
+          Lr1 = stratif_int
+     &                   / (pii * p5 * abs(cori(i,j,1) + cori(i,j-1,1)))
+          Lr2 = sqrt(stratif_int / (2. * pii * beta))
+          Lr(i,jrow) = min(Lr1, Lr2)
+c          Lr(i,jrow) = 50.e5
+        enddo  ! i
+      enddo ! j=js,je
+      
+      ! Finally, derive Kgm using minimum of Rhine's scale and Rossby
+      ! Radius as described in Eden 2009.
+      do j=js,je
+        jrow = j + joff
+        do i=2,imtm1
+c            if (Lr(i,jrow).lt.LRhi(i,jrow)) then
+c              kgm(i,:,jrow,niso) = kgm(i,:,jrow,niso) * Lr(i,jrow)**2
+c            else
+c              kgm(i,:,jrow,niso) = kgm(i,:,jrow,niso) * LRhi(i,jrow)**2
+c            endif
+            kgm(i,:,jrow,niso) = c_eden*kgm(i,:,jrow,niso)
+     &                           * Lr(i,jrow)*LRhi(i,:,jrow)
+c     &                           * min(Lr(i,jrow),LRhi(i,:,jrow))**2
+c     &                           * Lr(i,jrow)**2
+            kgm(i,:,jrow,niso) = min(max(kgm(i,:,jrow,niso),eddy_min), 
+     &                                                      eddy_max)
+        enddo
+      enddo 
+      
+c      ahisop_var(:,:,:,niso) = kgm(:,:,:,niso) * ( 3.0 / 2.0 )
+      ahisop_var(:,:,:,niso) = ahisop
+c      kgm(:,:,:,niso) = athkdf
+
+c      print *, 'ahiso', ahisop_var(50,2,50,niso)
+
+      do j=1,niso  ! steal index j
+        call setbcx (kgm(1,1,1,j), imt, jmt)
+        call setbcx (ahisop_var(1,1,1,j), imt, jmt)
+      enddo
+      call setbcx (Lr(1,1), imt, jmt)
+      call setbcx (LRhi(1,1,1), imt, jmt)
+#   endif  ! O_KGMvar
+
+!-----------------------------------------------------------------------
+!     compute the meridional component of the isopycnal mixing velocity
+!     at the center of the northern face of the "T" grid cell.
+!-----------------------------------------------------------------------
       do j=js,je
         jrow = j + joff
         do k=1,km
@@ -1251,25 +1386,20 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
           km1 = max(k-1,1)
           kp1 = min(k+1,km)
           do i=1,imt
-            Ath0 = athkdf*p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k))
 
-            at =     (alphai(i,k,j) + alphai(i,k,j+1) + alphai(i,km1,j)
-     &              + alphai(i,km1,j+1))
-            bt =     (betai(i,k,j) + betai(i,k,j+1) + betai(i,km1,j)
-     &              + betai(i,km1,j+1))
-            stn = -(at*(ddyt(i,k,j,1) + ddyt(i,km1,j,1))
-     &               + bt*(ddyt(i,k,j,2) + ddyt(i,km1,j,2))) /
-     &                (at*(ddzt(i,km1,j,1) + ddzt(i,km1,j+1,1))
-     &               + bt*(ddzt(i,km1,j,2) + ddzt(i,km1,j+1,2))+epsln)
-
-            ab =     (alphai(i,k,j) + alphai(i,k,j+1) + alphai(i,kp1,j)
-     &              + alphai(i,kp1,j+1))
-            bb =     (betai(i,k,j) + betai(i,k,j+1) + betai(i,kp1,j)
-     &              + betai(i,kp1,j+1))
-            sbn = -(ab*(ddyt(i,k,j,1) + ddyt(i,kp1,j,1))
-     &               + bb*(ddyt(i,k,j,2) + ddyt(i,kp1,j,2))) /
-     &                (ab*(ddzt(i,k,j,1) + ddzt(i,k,j+1,1))
-     &               + bb*(ddzt(i,k,j,2) + ddzt(i,k,j+1,2))+epsln)
+#   if defined O_KGMvar
+            ! Select y component of kgm if it exists (if O_KGM_aniso)
+            Ath0 = p5 * (kgm(i,k,jrow,niso) + kgm(i,k,jrow+1,niso)) * 
+     &             p5 * (fisop(i,jrow,k) + fisop(i,jrow+1,k))          
+c            Ath0 = athkdf*p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k)) 
+#   else
+            Ath0 = athkdf*p5*(fisop(i,jrow,k) + fisop(i,jrow+1,k)) 
+#   endif
+c            print *,'Ath0',i,k,jrow, Ath0
+            ! 0.125*epsln is done to match the original stn etc. code.
+            ! (I divided my drod*'s before calculating slopes stn etc.)
+            stn = - drodytn(i,k,jrow) / (drodztn(i,k,jrow) +0.125*epsln)
+            sbn = - drodybn(i,k,jrow) / (drodzbn(i,k,jrow) +0.125*epsln)
             absstn = abs(stn)
             abssbn = abs(sbn)
 #   if defined O_dm_taper
@@ -1278,6 +1408,7 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
             ath_b = Ath0*tmask(i,kp1,j)*tmask(i,kp1,j+1)
      &             *p5*(c1-tanh((abssbn-del_dm)*s_dmr))
 #   else
+            ! Gerdes et al 1991 taper. cf. MITGCM manual sec 6.4.1.5
             if (absstn .gt. sc) then
               ath_t = Ath0*tmask(i,k,j)*tmask(i,k,j+1)
      &              *(sc/(absstn + epsln))**2
@@ -1301,7 +1432,6 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
 !     compute the zonal component of the isopycnal mixing velocity
 !     at the center of the eastern face of the "T" grid cell.
 !-----------------------------------------------------------------------
-
       jstrt = max(js,jsmw)
       do j=jstrt,je
         jrow = j + joff
@@ -1310,26 +1440,19 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
           km1 = max(k-1,1)
           kp1 = min(k+1,km)
           do i=1,imtm1
-            Ath0 = athkdf*p5*(fisop(i,jrow,k) + fisop(i+1,jrow,k))
 
-            at =     (alphai(i,k,j) + alphai(i+1,k,j) + alphai(i,km1,j)
-     &              + alphai(i+1,km1,j))
-            bt =     (betai(i,k,j) + betai(i+1,k,j) + betai(i,km1,j)
-     &              + betai(i+1,km1,j))
-            ste =-(at*(ddxt(i,k,j,1) + ddxt(i,km1,j,1))
-     &           + bt*(ddxt(i,k,j,2) + ddxt(i,km1,j,2)))
-     &          / (at*(ddzt(i,km1,j,1) + ddzt(i+1,km1,j,1))
-     &           + bt*(ddzt(i,km1,j,2) + ddzt(i+1,km1,j,2))+epsln)
+#   if defined O_KGMvar
 
-            ab =     (alphai(i,k,j) + alphai(i+1,k,j) + alphai(i,kp1,j)
-     &              + alphai(i+1,kp1,j))
-            bb =     (betai(i,k,j) + betai(i+1,k,j) + betai(i,kp1,j)
-     &              + betai(i+1,kp1,j))
-            sbe =-(ab*(ddxt(i,k,j,1) + ddxt(i,kp1,j,1))
-     &           + bb*(ddxt(i,k,j,2) + ddxt(i,kp1,j,2))) /
-     &            (ab*(ddzt(i,k,j,1) + ddzt(i+1,k,j,1))
-     &           + bb*(ddzt(i,k,j,2) + ddzt(i+1,k,j,2))+epsln)
-
+            Ath0 = p5 * (kgm(i,k,jrow,niso) + kgm(i+1,k,jrow,niso)) *
+     &             p5 * (fisop(i,jrow,k) + fisop(i+1,jrow,k))
+c            Ath0 = athkdf*p5*(fisop(i,jrow,k) + fisop(i+1,jrow,k)) 
+#   else
+            Ath0 = athkdf*p5*(fisop(i,jrow,k) + fisop(i+1,jrow,k)) 
+#   endif
+            ! 0.125*epsln is done to match the original stn etc. code.
+            ! (I divided my drod*'s before calculating slopes stn etc.)
+            ste = - drodxte(i,k,jrow) / (drodzte(i,k,jrow) +0.125*epsln)
+            sbe = - drodxbe(i,k,jrow) / (drodzbe(i,k,jrow) +0.125*epsln)
             absste = abs(ste)
             abssbe = abs(sbe)
 #   if defined O_dm_taper
@@ -1337,7 +1460,8 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
      &             *p5*(c1-tanh((absste-del_dm)*s_dmr))
             ath_b = Ath0*tmask(i,kp1,j)*tmask(i+1,kp1,j)
      &             *p5*(c1-tanh((abssbe-del_dm)*s_dmr))
-#   else
+#   else   
+            ! Gerdes et al 1991 taper. cf. MITGCM manual sec 6.4.1.5
             if (absste .gt. sc) then
               ath_t = Ath0*tmask(i,k,j)*tmask(i+1,k,j)
      &              *(sc/(absste + epsln))**2
@@ -1426,12 +1550,27 @@ c               print*,"j=",j,", addisop=",addisop(i,k,j)
      &                              adv_vbtiso(i,k,j)
             enddo
           enddo
+#    if defined O_KGMvar
+          do k=1,km
+             do i=1,imt
+                ta_LRhi(i,k,jrow) = ta_LRhi(i,k,jrow) + LRhi(i,k,jrow)
+                ta_kgm(i,k,jrow,niso) = ta_kgm(i,k,jrow,niso) + 
+     &                                  kgm(i,k,jrow,niso)
+                ta_isop(i,k,jrow,niso) = ta_isop(i,k,jrow,niso) + 
+     &                                   ahisop_var(i,k,jrow,niso)
+             enddo
+          enddo
+          do i=1, imt
+             ta_Lr(i,jrow) = ta_Lr(i,jrow) + Lr(i,jrow)
+          enddo
+#    endif
         enddo
       endif
-#   endif
+#   endif     
 #  endif
 # endif
 #endif
-
+  
       return
       end
+

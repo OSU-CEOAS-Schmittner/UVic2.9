@@ -370,6 +370,10 @@
       call defvar ('O_zpipe', iou, 3, it, -c1, c1e6, ' ', 'F'
      &, 'pipe depth', ' ', 'm')
 # endif
+# if defined O_KGMvar
+      call defvar('O_Lr', iou, 3, it, 300, 3000, ' ', 'F'
+     &, 'Rossby Radius', ' ', 'm') 
+# endif
 
 !-----------------------------------------------------------------------
 !     define time dependent 4d data (x,y,z,t)
@@ -532,11 +536,22 @@
       call defvar ('O_gmvelZ', iou, 4, iu, -c100, c100, ' ', 'F'
      &, 'upward GM velocity', ' ', 'm s-1')
 # endif
+
 # if defined O_save_kv
       iu(3) = id_zw
       call defvar ('O_diffZ', iou, 4, iu, c0, c1, ' ', 'F'
      &, 'diapycnal diffusivity', ' ', 'm2 s-1')
 # endif
+
+# if defined O_KGMvar
+      call defvar('O_KGM', iou, 4, it, 300, 3000, ' ', 'F'
+     &, 'GM coefficient', ' ', 'm2 s-1')
+      call defvar('O_ISOP', iou, 4, it, 300, 3000, ' ', 'F'
+     &, 'Isopycnal Diffusivity', ' ', 'm2 s-1')
+      call defvar('O_LRhi', iou, 4, it, 300, 3000, ' ', 'F'
+     &, 'Rhines Scale', ' ', 'm')
+# endif
+
 # if defined O_save_npzd
       it(3) = id_zl
 # else
@@ -697,6 +712,11 @@
 # if defined O_save_kv
      &,                        diff_cbt
 # endif
+
+# if defined O_KGMvar
+     &,                        kgm, ahisop_var, Lr, LRhi
+# endif
+
 # if defined O_save_npzd
 #  if defined O_save_carbon_totals
      &,                        redctn
@@ -814,6 +834,12 @@
 # endif
 # if defined O_save_kv
       real diff_cbt(ids:ide,jds:jde,km)
+# endif
+# if defined O_KGMvar
+      real kgm(ids:ide,jds:jde,km)
+      real ahisop_var(ids:ide,jds:jde,km)
+      real Lr(ids:ide,jds:jde)
+      real LRhi(ids:ide,jds:jde,km)
 # endif
 # if defined O_save_npzd
       real npp(ids:ide,jds:jde,kpzd)
@@ -1277,6 +1303,11 @@
       call putvaramsk ('O_zpipe', iou, ln, ib, ic, tmpij, tmpijm
      &, c100, c0)      
 # endif
+# if defined O_KGMvar
+      tmpij(ils:ile,jls:jle) = Lr(ils:ile,jls:jle)
+      call putvaramsk('O_Lr', iou, ln, ib, ic, tmpij, tmpijm
+     &, c100, c0)
+# endif
 
 !-----------------------------------------------------------------------
 !     write 4d data (x,y,z,t)
@@ -1488,6 +1519,18 @@
       call putvaramsk ('O_diffZ', iou, ln, ib, ic, tmpijk, tmpijkm
      &, c1e4, c0)
 # endif     
+# if defined O_KGMvar
+      tmpijk(ils:ile,jls:jle,kls:kle) = kgm(ils:ile,jls:jle,kls:kle)
+      call putvaramsk('O_KGM', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c1e4, c0)
+      tmpijk(ils:ile,jls:jle,kls:kle) =
+     &  ahisop_var(ils:ile,jls:jle,kls:kle)
+      call putvaramsk('O_ISOP', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c1e4, c0)
+      tmpijk(ils:ile,jls:jle,kls:kle) = LRhi(ils:ile,jls:jle,kls:kle)
+      call putvaramsk('O_LRhi', iou, ln, ib, ic, tmpijk, tmpijkm
+     &, c100, c0)
+# endif
 # if defined O_save_npzd
       tmpijlm(ils:ile,jls:jle,lls:lle) = tm(ils:ile,jls:jle,lls:lle)
       ib(3) = lls-lgs+1
