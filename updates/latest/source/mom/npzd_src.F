@@ -501,7 +501,7 @@ c     juan: Levin's value was 0.1e-3
 # endif
       real calpro
 # if defined O_npzd_caco3
-      real biococc,jmax_C,u_C,avej_C,gd_C,npp_C, morp_C,morpt_C
+      real biococc,jmax_C,u_C,gd_C,npp_C, morp_C,morpt_C
       real nuct, g_C, graz_C, ing_C, felimit_C, gl_C, npp_C_dop
       real dissl, caco3in, sil_in, atmpres1, pHlo1, pHhi1, pH1, p_in
       real co2star1, dco2star1, pCO21, dpco21, CO31, omegaca, omegaar
