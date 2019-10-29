@@ -20,6 +20,13 @@
       real ta_diff_cbt
       common /ta_kv/ ta_diff_cbt(imt,km,jmt)
 #endif
+#if defined O_KGMvar
+      real ta_kgm, ta_isop, ta_Lr, ta_LRhi
+      common /ta_gm_r/ ta_kgm(imt,km,jmt,1)
+      common /ta_gm_r/ ta_isop(imt,km,jmt,1)
+      common /ta_gm_r/ ta_Lr(imt,jmt)
+      common /ta_gm_r/ ta_LRhi(imt,km,jmt)
+#endif
 #if defined O_save_npzd
       real ta_rnpp, ta_rgraz, ta_rmorp, ta_rmorpt, ta_rmorz, ta_rexcr
       real ta_rremi, ta_rexpo, ta_rnpp_D, ta_rgraz_D, ta_rmorpt_D

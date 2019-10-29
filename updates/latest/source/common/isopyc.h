@@ -4,6 +4,7 @@
 !     isopycnal diffusion variables:
 
 !     ahisop = isopycnal tracer mixing coefficient (cm**2/sec)
+!     beta   = df/dy where f is related to coriolis force
 !     drodx  = d(rho)/dx local to east face of T cell
 !     drody  = d(rho)/dy local to north face of T cell
 !     drodz  = d(rho)/dz local to bottom face of T cell
@@ -16,8 +17,8 @@
 !     slmxr  = reciprocal of maximum allowable slope of isopycnals for
 !              small angle approximation
 
-      real alphai, betai
-      common /cisop_r/ alphai(imt,km,jmw), betai(imt,km,jmw)
+      real alphai, betai, beta
+      common /cisop_r/ alphai(imt,km,jmw), betai(imt,km,jmw), beta
 
       real addisop
       real ddxt, ddyt, ddzt, Ai_ez, Ai_nz, Ai_bx, Ai_by, K11, K22, K33
@@ -37,6 +38,7 @@
       common /cisop_r/ K11(imt,km,jsmw:jemw)
       common /cisop_r/ K22(imt,km,1:jemw)
       common /cisop_r/ K33(imt,km,jsmw:jemw)
+!     Changing fisop here... hopefully not a mistakE!
       common /cisop_r/ ahisop, fisop(imt,jmt,km), slmxr
       common /cisop_r/ addisop(imt,km,jsmw:jemw)
 # if defined O_dm_taper
@@ -63,6 +65,53 @@
       common /cisop_r/ adv_vbtiso(imt,0:km,jsmw:jemw)
       common /cisop_r/ adv_fbiso(imt,0:km,jsmw:jemw)
 # endif
+
+!     Define variables related to calculating K_gm mesoscale eddy 
+!     diffiusivity as outlined in Gent an McWilliams Paper (1989). 
+
+      real drodxte, drodxbe
+      real drodytn, drodybn
+      real drodzte, drodzbe
+      real drodztn, drodzbn
+      
+      integer countx, county
+      real abs_grd_rho2, grd_rho_x, grd_rho_y, abs_drho_dz
+      
+      common /cisop_r/ drodxte(imt,km,jmt), drodxbe(imt,km,jmt)
+      common /cisop_r/ drodytn(imt,km,jmt), drodybn(imt,km,jmt)
+      common /cisop_r/ drodzte(imt,km,jmt), drodzbe(imt,km,jmt)
+      common /cisop_r/ drodztn(imt,km,jmt), drodzbn(imt,km,jmt)
+
+# if defined O_KGMvar
+      !     Oleg and Geoff
+      !     niso = number of indices in kgm. =2 for anisotropic GM coeff
+
+      integer niso
+      parameter (niso = 1)
+
+!     Further refinement from Eden 2009. 
+!     LRhi       = Rhines scale. Defined as sigma/beta. Where sigma is 
+!                  the Eady Growth rate of baroclinic instability
+!     Lr         = 1st baroclinic Rossby Radius
+!     Lr1        = 1st baroclinic Rossby Radius - placeholder
+!     Lr2        = 1st baroclinic Rossby Radius - placeholder
+!     c_eden     = Tuning parameter to ensure some O_KGM bounds from Eden 2009
+!     gamma_eden = Tuning parameter used in sigma calculation from Eden 2009
+!     kgm        = Thickness diffisivity constant
+!     ahisop_var = Isopycnal diffusivity constant which derives from Kgm 
+!     sigma_ave  = The average of Eady growth rate
+      real Lm, Lr, Lr1, Lr2, LRhi, kgm
+      real ahisop_var, gridsum_area
+      real c_eden, coef, gamma_eden, pii
+      real ahisop_ave, kgm_ave, sigma_ave
+      real stratif_int, sum_zz
+      real eddy_min, eddy_max
+
+      common /kgm3d_r/ kgm(imt,km,jmt,niso), ahisop_var(imt,km,jmt,niso)
+      common /kgm3d_r/ Lr(imt,jmt), LRhi(imt,km,jmt)
+      common /cisop_r/ c_eden, gamma_eden
+
+# endif  
 
       real drodxe, drodze, drodyn, drodzn, drodxb, drodyb, drodzb
       real drodye, drodxn

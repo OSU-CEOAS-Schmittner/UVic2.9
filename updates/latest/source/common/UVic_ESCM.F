@@ -1566,6 +1566,9 @@
       namelist /blmix/  Ahv, Ahh
       namelist /hlmix/  hl_depth, hl_back, hl_max
       namelist /isopyc/ slmx, ahisop, athkdf, del_dm, s_dm
+# if defined O_KGMvar
+     &,                 c_eden, gamma_eden
+# endif
       namelist /ppmix/  wndmix, fricmx, diff_cbt_back, visc_cbu_back
      &,                 visc_cbu_limit, diff_cbt_limit
       namelist /smagnl/ diff_c_back
@@ -1821,7 +1824,10 @@
       athkdf = 1.0e7      ! isopycnal thickness diffusion coefficient
       del_dm = 4.0/1000.0 ! transition for scaling diffusion coefficient
       s_dm = 1.0/1000.0   ! half width scaling for diffusion coefficient
-
+# if defined O_KGMvar
+      c_eden = 1.2
+      gamma_eden = 200.0
+# endif 
 !     set defaults for namelist ppmix
       wndmix    = 10.0
       fricmx    = 50.0

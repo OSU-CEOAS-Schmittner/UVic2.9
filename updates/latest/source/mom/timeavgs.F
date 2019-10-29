@@ -462,6 +462,18 @@
           enddo
         enddo
 #  endif
+#  if defined O_KGMvar
+        do k=1,km
+          do i=2,imtav
+            ta_kgm(i,k,jj+1,:) = rnavgt*ta_kgm(i,k,jj+1,:)
+            ta_isop(i,k,jj+1,:) = rnavgt*ta_isop(i,k,jj+1,:)
+            ta_LRhi(i,k,jj+1) = rnavgt * ta_LRhi(i,k,jj+1)
+          enddo
+        enddo
+        do i=1,imtav
+          ta_Lr(i,jj+1) = rnavgt * ta_Lr(i,jj+1)
+        enddo
+#  endif
 #  if defined O_save_npzd
 
         do k=1,kpzd
@@ -635,6 +647,12 @@
 #  if defined O_save_kv
      &,   ta_diff_cbt(is,1,jj+1)
 #  endif
+#  if defined O_KGMvar
+     &,   ta_kgm(is,1,jj+1,1)
+     &,   ta_isop(is,1,jj+1,1)
+     &,   ta_Lr(is,jj+1)
+     &,   ta_LRhi(is,1,jj+1)
+#  endif
 #  if defined O_save_npzd
 #   if defined O_save_carbon_totals
      &,   redctn
@@ -746,6 +764,12 @@
 #  endif
 #  if defined O_save_kv
       ta_diff_cbt(:,:,:) = c0
+#  endif
+#  if defined O_KGMvar
+      ta_kgm(:,:,:,:) = c0
+      ta_isop(:,:,:,:) = c0
+      ta_Lr(:,:) = c0
+      ta_LRhi(:,:,:) = c0
 #  endif
 #  if defined O_save_npzd
       ta_rnpp(:,:,:) = c0
