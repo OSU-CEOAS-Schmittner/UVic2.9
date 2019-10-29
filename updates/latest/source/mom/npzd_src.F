@@ -501,7 +501,7 @@ c     juan: Levin's value was 0.1e-3
 # endif
       real calpro
 # if defined O_npzd_caco3
-      real biococc,jmax_C,u_C,avej_C,gd_C,npp_C, morp_C,morpt_C
+      real biococc,jmax_C,u_C,gd_C,npp_C, morp_C,morpt_C
       real nuct, g_C, graz_C, ing_C, felimit_C, gl_C, npp_C_dop
       real dissl, caco3in, sil_in, atmpres1, pHlo1, pHhi1, pH1, p_in
       real co2star1, dco2star1, pCO21, dpco21, CO31, omegaca, omegaar
@@ -1318,7 +1318,8 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 !     Nickelsen et al. 2015, Geosc. Model Dev. 8, 1357-1381, doi:10.5194/gmd-8-1357-2015
 !
 !     Juan Muglia has modified the subgrid-scale scheme used for benthic denitrification
-!     and iron release from sediments. He has also included geothermal sources of iron.
+!     and iron release from sediments. He has also included geothermal sources of iron:
+!     Muglia et al. 2017, doi:10.1002/2016PA003077.
 !
 !     Note that nutrient (N) represents phosphate
 !
