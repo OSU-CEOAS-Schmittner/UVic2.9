@@ -317,7 +317,7 @@ c     juan: Levin's value was 0.1e-3
 #  endif
 # endif
 # if defined O_npzd_iron
-#ifndef O_TMM
+#  ifndef O_TMM
 ! read the hydrothermal Fe input from O_fe_hydr.nc
       fe_hydr(:,:,:) = 0.
       ib(:) = 1
@@ -347,7 +347,7 @@ c     juan: Levin's value was 0.1e-3
       else
          print*,"Warning => Cannot find", trim(fname)
       endif
-#endif ! not O_TMM
+#  endif ! not O_TMM
 # endif
 # if defined O_carbon || defined O_npzd_alk
 
@@ -514,9 +514,9 @@ c     juan: Levin's value was 0.1e-3
       real pH, co2star, dco2star, pCO2, dpco2, CO3
       real Omega_c, Omega_a, pCO2_old, pCO2_new
       real atmpres, depth
-# if defined O_npzd_caco3
+#  if defined O_npzd_caco3
       real rcaco3c13impo, rcaco3c13expo, rtcaco3c13(km)
-# endif
+#  endif
 # endif
       real sgb_in(km)
 # if defined O_npzd_nitrogen
@@ -1076,9 +1076,8 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
 # endif
 # if defined O_sed
       sedcorgflx = sedrr*redctn*twodt
-#   if defined O_npzd_caco3
+#  if defined O_npzd_caco3
       sedcalflx = expocaco3*1.e-3*twodt
-#   endif
 #  endif
 # endif
 
