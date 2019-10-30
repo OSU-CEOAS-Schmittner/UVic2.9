@@ -103,7 +103,7 @@
       logical isTile
 # endif
 
-#ifndef O_TMM ! SPK
+#ifndef O_TMM
       parameter (istrt=2, iend=imt-1)
 #else
       parameter (istrt=1, iend=imt)
