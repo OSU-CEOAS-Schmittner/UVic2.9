@@ -1,12 +1,10 @@
-## Welcome to GitHub Pages
+## Welcome to OSU's UVic Pages
 
-You can use the [editor on GitHub](https://github.com/OSU-CEOAS-Schmittner/UVic2.9/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+This is the version of the University of Victoria (UVic) climate model (version 2.9) developed and used at [Oregon State University's](https://oregonstate.edu/) (OSU) [College of Earth, Ocean, and Atmospheric Sciences](https://ceoas.oregonstate.edu/) by the research group led by [Andreas Schmittner](https://andreasschmittner.github.io/). 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Collaboration
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+We collaborate with various groups around the world in this effort. Notably Andreas Oschlies' group at GEOMAR in Kiel, Germany. 
 
 ```markdown
 Syntax highlighted code block
