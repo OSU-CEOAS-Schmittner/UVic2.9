@@ -1,3 +1,30 @@
+Nov 2, 2020: 08 updates from Samar that include Karin Kvales diatom and silicon code
+Here are notes from Samar's email:
+1) This introduces two new tracers silica and diatoms which are switched on via O_kk_si and 
+O_kk_diat, respectively. They are nominally independent of each other and in principle one can 
+be switched on and off without regard to the other. In practice, this is not applied uniformly in the 
+code and I don't know what would happen if you were to do that.
+
+2) Silica can be either prognostic or read in as a mask (by undefining O_kk_si).
+
+3) Other related CPP options:
+O_kk_variable_sipr
+O_kk_si_compensating_sources
+
+4) To look for modifications do a diff with 07 or grep for "kk_" in 08 or in Karin's version.
+
+5) Where I've done something different from Karin's version, adapted MOBI code where there 
+wasn’t an equivalent in her’s, or had a question I've marked those places with SPKKK. You can 
+grep for this.
+
+6) Unfinished business:
+- mobi_src is not complete as I mentioned above.
+- the river silica business won't currently work with the TMM but I can fix that later. Everything else 
+should work offline.
+- silica is not yet passed to co2calc as is done in Karin's version (and it seems used to be done in 
+02 but we've removed that in MOBI). This is very easy to do but I first wanted to get the silica tracer 
+working before we mess with carbon.
+
 # updates
 Jun 19, 2019: Andreas added updates 04-06 and copied 06 to latest
 The 06 updates were created by Samar Khatiwala who added modifications to the light limitation from Juan Muglia and sends these notes:
