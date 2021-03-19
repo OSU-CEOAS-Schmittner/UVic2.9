@@ -1,3 +1,18 @@
+Mar 18, 2021: 08 updates corresponds to MOBI2 with silicon cycling.
+1) Si cycling simplified from Karin Kvale's model in that it does not include external sources and sinks. 
+Opal has been included as an additional prognostic tracer.
+Si is conserved as can be verified by adding o_sil and o_opl.
+Option: O_mobi_silicon
+
+2) Coccolithophores have been removed as a separate plankton functional type. CaCO2 production and dissolution now depend on the calciate saturation state omega.
+
+3) Option names have been changed:
+O_npzd -> O_mobi
+O_save_npzd -> O_save_mobi_fluxes
+O_npzd_extra_diagnostics and O_npzd_iron_diagnostics -> O_save_npzd_diagnostics
+
+4) All half-saturation constants (N, P, Fe) are variable as in Aumont et al. (2015)
+
 Nov 2, 2020: 08 updates from Samar that include Karin Kvales diatom and silicon code
 Here are notes from Samar's email:
 1) This introduces two new tracers silica and diatoms which are switched on via O_kk_si and 
