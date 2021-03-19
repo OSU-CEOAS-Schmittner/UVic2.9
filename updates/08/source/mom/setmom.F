@@ -957,7 +957,7 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
 
 #endif ! O_TMM
 
-# if defined O_npzd
+# if defined O_mobi
 !-----------------------------------------------------------------------
 !    initialize the model of ocean biogeochemistry and isotopes (MOBI)
 !-----------------------------------------------------------------------
@@ -1146,7 +1146,7 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
 
 #include "size.h"
 #include "param.h"
-#include "npzd.h" ! rstd*
+#include "mobi.h" ! rstd*
 #include "pconst.h"
 #include "stdunits.h"
 #include "coord.h"
@@ -1184,7 +1184,7 @@ c        edr(2:imtm1,2:jmtm1) = tmpij(1:imtm2,1:jmtm2)
       p035 = 0.035
       C2K = 273.15
 
-#if defined O_kk_si
+#if defined O_mobi_silicon
 ! pick a default value for river Si flux
 ! if O_kk_si_compensating_sources is active this number is over-written
 ! in gosbc.F with dust fluxes and used in tracer.F to calculate the river flux
@@ -1263,10 +1263,8 @@ C       endif
                 t(i,k,j,n,taup1) = 2.315
               elseif (trim(mapt(n)) .eq. 'alk') then
                 t(i,k,j,n,taup1) = 2.429
-# if defined O_kk_si
               elseif (trim(mapt(n)) .eq. 'sil') then
                 t(i,k,j,n,taup1) = 0.084 !mol/m3, Sarmiento & Gruber 2006
-# endif
               elseif (trim(mapt(n)) .eq. 'o2') then
                 t(i,k,j,n,taup1) = 0.1692
               elseif (trim(mapt(n)) .eq. 'po4') then
@@ -1319,17 +1317,17 @@ C       endif
                 t(i,k,j,n,taup1) = 0.0
               elseif (trim(mapt(n)) .eq. 'cfc12') then
                 t(i,k,j,n,taup1) = 0.0
-              elseif (trim(mapt(n)) .eq. 'cocc') then
-                t(i,k,j,n,taup1) = 0.14*exp((zt(1)-zt(k))/100.e2)
               elseif (trim(mapt(n)) .eq. 'caco3') then
-                t(i,k,j,n,taup1) = 2.e-6
+                t(i,k,j,n,taup1) = 5.e-5 ! mol/m^3 average Lam et al. (2010, GBC)
 # if defined O_kk_ballast
               elseif (trim(mapt(n)) .eq. 'detr_B') then
                 t(i,k,j,n,taup1) = 1.e-12
 # endif
-# if defined O_kk_diat
+# if defined O_mobi_silicon
               elseif (trim(mapt(n)) .eq. 'diat') then
                 t(i,k,j,n,taup1) = 0.14*exp((zt(1)-zt(k))/100.e2)
+              elseif (trim(mapt(n)) .eq. 'opl') then
+                t(i,k,j,n,taup1) = 5.e-5 ! mol/m^3 average Lam et al. (2010, GBC)
 # endif
               else
                 if (k .eq. 1) then
@@ -1416,15 +1414,14 @@ C       endif
               if (jrow .eq. 1)
      &          print*, "Warning => Can not find ",trim(fname)
             endif
-#  if defined O_kk_si
           elseif (trim(mapt(n)) .eq. 'sil') then
 !           expecting units of mol m-3 (equals model units, umol cm-3)
-            fname = new_file_name ("O_silica.nc")
+            fname = new_file_name ("O_sil.nc")
             inquire (file=trim(fname), exist=exists)
             if (exists) then
               call openfile (trim(fname), iou)
               tmpik(1:imtm2,1:km) = t(2:imtm1,1:km,j,n,taup1)
-              call getvara ('O_silica', iou, imtm2*km, ib, ic, tmpik
+              call getvara ('O_SIL', iou, imtm2*km, ib, ic, tmpik
      &,         c1, c0)
               t(2:imtm1,1:km,j,n,taup1) = tmpik(1:imtm2,1:km)
 ! KK remove bad values
@@ -1436,7 +1433,6 @@ C       endif
               if (jrow .eq. 1)
      &          print*, "Warning => Can not find ",trim(fname)
             endif
-#  endif
           elseif (trim(mapt(n)) .eq. 'o2') then
 !           expecting units of mol m-3 (equals model units, umol cm-3)
             fname = new_file_name ("O_o2.nc")
@@ -1527,7 +1523,7 @@ C       endif
 #endif ! not O_TMM
 
         enddo
-# if defined O_npzd_nitrogen_15
+# if defined O_mobi_nitrogen_15
         do k=1,km
           do i=1,imt
              t(i,k,j,idin15,taup1) = 1.005*rn15std*t(i,k,j,ino3,taup1)
@@ -1538,8 +1534,8 @@ C       endif
      &           / (1 + rn15std)
              t(i,k,j,iphytn15,taup1) = rn15std*t(i,k,j,iphyt,taup1)
      &           / (1 + rn15std)
-#  if defined O_npzd_caco3
-            t(i,k,j,icoccn15,taup1) = rn15std*t(i,k,j,icocc,taup1)
+#  if defined O_mobi_silicon
+            t(i,k,j,idiatn15,taup1) = rn15std*t(i,k,j,idiat,taup1)
      &           / (1 + rn15std)
 #  endif             
              t(i,k,j,izoopn15,taup1) = rn15std*t(i,k,j,izoop,taup1)
@@ -1557,12 +1553,14 @@ C       endif
 !     initialize at delta del13C = 0.4 permil
              t(i,k,j,idic13,taup1) = t(i,k,j,idic,taup1)*1.0004*rc13std
      &             / (1. + 1.0004*rc13std)
-#  if defined O_npzd
+#  if defined O_mobi
              t(i,k,j,iphytc13,taup1) = t(i,k,j,iphyt,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
-#   if defined O_npzd_caco3
-             t(i,k,j,icoccc13,taup1) = t(i,k,j,icocc,taup1)*6.625e-3
+#   if defined O_mobi_silicon
+             t(i,k,j,idiatc13,taup1) = t(i,k,j,idiat,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
+#   endif             
+#   if defined O_mobi_caco3
              t(i,k,j,icaco3c13,taup1) = t(i,k,j,icaco3,taup1)
      &            *rc13std/(1. + rc13std)
 #   endif             
@@ -1570,7 +1568,7 @@ C       endif
      &            *rc13std/(1. + rc13std)
              t(i,k,j,idetrc13,taup1) = t(i,k,j,idetr,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
              t(i,k,j,idoc13,taup1) = t(i,k,j,idon,taup1)*6.625e-3
      &            *rc13std/(1. + rc13std)
              t(i,k,j,idiazc13,taup1) = t(i,k,j,idiaz,taup1)*6.625e-3
@@ -1699,7 +1697,7 @@ C       endif
           stop '=> setmom sed dic'
         endif
 #  endif
-#  if !defined O_npzd_alk
+#  if !defined O_mobi_alk
         fname = new_file_name ("O_alk.nc")
         inquire (file=trim(fname), exist=exists)
         if (exists) then
@@ -1715,7 +1713,7 @@ C       endif
           stop '=> setmom sed alk'
         endif
 #  endif
-#  if !defined O_npzd_o2
+#  if !defined O_mobi_o2
         fname = new_file_name ("O_o2.nc")
         inquire (file=trim(fname), exist=exists)
         if (exists) then
@@ -1831,13 +1829,16 @@ C       endif
         print*, "global average sea surface alkalinity (mol m-3) = "
      &,   gaost(ialk)
       endif
-# if defined O_kk_si
       if (isil .ne. 0 .and. isssil .ne. 0) then
         call areaavg (sbc(1,1,isssil), dmsk, gaost(isil))
-        print*, "global average sea surface diss silica (mol Si m-3) = "
+        print*, "global average sea surface silica (mol Si m-3) = "
      &,   gaost(isil)
       endif
-# endif
+      if (iopl .ne. 0 .and. issopl .ne. 0) then
+        call areaavg (sbc(1,1,issopl), dmsk, gaost(iopl))
+        print*, "global average sea surface opal (mol Si m-3) = "
+     &,   gaost(iopl)
+      endif
       if (ipo4 .ne. 0 .and. isspo4 .ne. 0) then
         call areaavg (sbc(1,1,isspo4), dmsk, gaost(ipo4))
         print*, "global average sea surface phosphate (mol m-3) = "
@@ -1848,18 +1849,13 @@ C       endif
         print*, "global average sea surface DOP (mol m-3) = "
      &,   gaost(idop)*0.001
       endif
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
       if (iphyt .ne. 0 .and. issphyt .ne. 0) then
         call areaavg (sbc(1,1,issphyt), dmsk, gaost(iphyt))
         print*, "global average sea surface phytoplankton (mol m-3) = "
      &,   gaost(iphyt)*0.001
       endif
-#  if defined O_npzd_caco3
-      if (icocc .ne. 0 .and. isscocc .ne. 0) then
-        call areaavg (sbc(1,1,isscocc), dmsk, gaost(icocc))
-        print*, "global average sea surface coccs (mol m-3) = "
-     &,   gaost(icocc)*0.001
-      endif
+#  if defined O_mobi_caco3
       if (icaco3 .ne. 0 .and. isscaco3 .ne. 0) then
         call areaavg (sbc(1,1,isscaco3), dmsk, gaost(icaco3))
         print*, "global average sea surface calcite (mol C m-3) = "
@@ -1873,7 +1869,7 @@ C       endif
      &,   gaost(idetr_B)*0.001
       endif
 #  endif
-#  if defined O_kk_diat
+#  if defined O_mobi_silicon
       if (idiat .ne. 0 .and. issdiat .ne. 0) then
         call areaavg (sbc(1,1,issdiat), dmsk, gaost(idiat))
         print*, "global average sea surface diatoms (mol m-3) = "
@@ -1901,7 +1897,7 @@ C       endif
         print*, "global average sea surface DON (mol m-3) = "
      &,   gaost(idon)*0.001
       endif
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
       if (idiaz .ne. 0 .and. issdiaz .ne. 0) then
         call areaavg (sbc(1,1,issdiaz), dmsk, gaost(idiaz))
         print*, "global average sea surface diazotrophs (mol m-3) = "
@@ -1918,17 +1914,17 @@ C       endif
         print*, "global average sea surface DON15 (mol m-3) = "
      &,   gaost(idon15)*0.001
       endif
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
       if (iphytn15 .ne. 0 .and. issphytn15 .ne. 0) then
         call areaavg (sbc(1,1,issphytn15), dmsk, gaost(iphytn15))
         print*, "global average sea surface phytoplankton n15 " 
      &,         "(mol m-3) = ", gaost(iphytn15)*0.001
       endif
-#  if defined O_npzd_caco3
-      if (icoccn15 .ne. 0 .and. isscoccn15 .ne. 0) then
-        call areaavg (sbc(1,1,isscoccn15), dmsk, gaost(icoccn15))
-        print*, "global average sea surface calcifiers n15 " 
-     &,         "(mol m-3) = ", gaost(icoccn15)*0.001
+#  if defined O_mobi_silicon
+      if (idiatn15 .ne. 0 .and. issdiatn15 .ne. 0) then
+        call areaavg (sbc(1,1,issdiatn15), dmsk, gaost(idiatn15))
+        print*, "global average sea surface diazotroph n15 " 
+     &,         "(mol m-3) = ", gaost(idiatn15)*0.001
       endif
 #  endif      
       if (izoopn15 .ne. 0 .and. isszoopn15 .ne. 0) then
@@ -1952,18 +1948,20 @@ C       endif
         print*, "global average sea surface DOC13"
      &,         " (mol m-3) = ", gaost(idoc13)*0.001
       endif
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
       if (iphytc13 .ne. 0 .and. issphytc13 .ne. 0) then
         call areaavg (sbc(1,1,issphytc13), dmsk, gaost(iphytc13))
         print*, "global average sea surface phytoplankton C13"
      &,         " (mol m-3) = ", gaost(iphytc13)*0.001
       endif
-#  if defined O_npzd_caco3
-      if (icoccc13 .ne. 0 .and. isscoccc13 .ne. 0) then
-        call areaavg (sbc(1,1,isscoccc13), dmsk, gaost(icoccc13))
-        print*, "global average sea surface calcifiers C13"
-     &,         " (mol m-3) = ", gaost(icoccc13)*0.001
+#  if defined O_mobi_silicon
+      if (idiatc13 .ne. 0 .and. issdiatc13 .ne. 0) then
+        call areaavg (sbc(1,1,issdiatc13), dmsk, gaost(idiatc13))
+        print*, "global average sea surface diatom C13"
+     &,         " (mol m-3) = ", gaost(idiatc13)*0.001
       endif
+#  endif      
+#  if defined O_mobi_caco3
       if (icaco3c13 .ne. 0 .and. isscaco3c13 .ne. 0) then
         call areaavg (sbc(1,1,isscaco3c13), dmsk, gaost(icaco3c13))
         print*, "global average sea surface CaCO3 C13"
@@ -1991,7 +1989,7 @@ C       endif
         print*, "global average sea surface iron (mol m-3) = "
      &,   gaost(idfe)*0.001
       endif
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
       if (idetrfe .ne. 0 .and. issdetrfe .ne. 0) then
         call areaavg (sbc(1,1,issdetrfe), dmsk, gaost(idetrfe))
         print*, "global average sea surface particulate iron (mol m-3)="

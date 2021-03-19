@@ -83,46 +83,46 @@
           stf(i,j,ic14) = sbc(i,jrow,ic14flx)*tmask(i,1,j)
 #  endif
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
           stf(i,j,ialk) = sbc(i,jrow,ialkflx)*tmask(i,1,j)
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
           stf(i,j,isil) = sbc(i,jrow,isilflx)*tmask(i,1,j)
+          stf(i,j,iopl) = sbc(i,jrow,ioplflx)*tmask(i,1,j)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
           stf(i,j,io2) = sbc(i,jrow,io2flx)*tmask(i,1,j)
 # endif
-# if defined O_npzd
+# if defined O_mobi
           stf(i,j,ipo4) = sbc(i,jrow,ipo4flx)*tmask(i,1,j)
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
           stf(i,j,iphyt) = sbc(i,jrow,iphytflx)*tmask(i,1,j)
           stf(i,j,izoop) = sbc(i,jrow,izoopflx)*tmask(i,1,j)
           stf(i,j,idetr) = sbc(i,jrow,idetrflx)*tmask(i,1,j)
 #   if defined O_kk_ballast
           stf(i,j,idetr_B) = sbc(i,jrow,idetrflx_B)*tmask(i,1,j)
 #   endif
-#   if defined O_npzd_caco3
-          stf(i,j,icocc) = sbc(i,jrow,icoccflx)*tmask(i,1,j)
+#   if defined O_mobi_caco3
           stf(i,j,icaco3) = sbc(i,jrow,icaco3flx)*tmask(i,1,j)
 #   endif
-#   if defined O_kk_diat
+#   if defined O_mobi_silicon
           stf(i,j,idiat) = sbc(i,jrow,idiatflx)*tmask(i,1,j)
 #   endif
 #  endif
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
           stf(i,j,idop) = sbc(i,jrow,idopflx)*tmask(i,1,j)
           stf(i,j,ino3) = sbc(i,jrow,ino3flx)*tmask(i,1,j)
           stf(i,j,idon) = sbc(i,jrow,idonflx)*tmask(i,1,j)
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
           stf(i,j,idiaz) = sbc(i,jrow,idiazflx)*tmask(i,1,j)
 #   endif
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
           stf(i,j,idin15) = sbc(i,jrow,idin15flx)*tmask(i,1,j)
           stf(i,j,idon15) = sbc(i,jrow,idon15flx)*tmask(i,1,j)
-#    if !defined O_npzd_no_vflux
+#    if !defined O_mobi_no_vflux
           stf(i,j,iphytn15) = sbc(i,jrow,iphytn15flx)*tmask(i,1,j)
-#     if defined O_npzd_caco3
-          stf(i,j,icoccn15) = sbc(i,jrow,icoccn15flx)*tmask(i,1,j)
+#     if defined O_mobi_silicon
+          stf(i,j,idiatn15) = sbc(i,jrow,idiatn15flx)*tmask(i,1,j)
 #     endif          
           stf(i,j,izoopn15) = sbc(i,jrow,izoopn15flx)*tmask(i,1,j)
           stf(i,j,idetrn15) = sbc(i,jrow,idetrn15flx)*tmask(i,1,j)
@@ -130,23 +130,25 @@
 #    endif
 #   endif          
 #  endif
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
           stf(i,j,idfe) = sbc(i,jrow,idfeflx)*tmask(i,1,j)
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
           stf(i,j,idetrfe) = sbc(i,jrow,idetrfeflx)*tmask(i,1,j)
 #   endif
 #  endif
 #  if defined O_carbon_13
           stf(i,j,idoc13) = sbc(i,jrow,idoc13flx)*tmask(i,1,j)
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
           stf(i,j,iphytc13) = sbc(i,jrow,iphytc13flx)*tmask(i,1,j)
-#    if defined O_npzd_caco3
-         stf(i,j,icoccc13) = sbc(i,jrow,icoccc13flx)*tmask(i,1,j)
+#    if defined O_mobi_silicon
+         stf(i,j,idiatc13) = sbc(i,jrow,idiatc13flx)*tmask(i,1,j)
+#    endif          
+#    if defined O_mobi_caco3
          stf(i,j,icaco3c13) = sbc(i,jrow,icaco3c13flx)*tmask(i,1,j)
 #    endif          
           stf(i,j,izoopc13) = sbc(i,jrow,izoopc13flx)*tmask(i,1,j)
           stf(i,j,idetrc13) = sbc(i,jrow,idetrc13flx)*tmask(i,1,j)
-#    if defined O_npzd_nitrogen
+#    if defined O_mobi_nitrogen
           stf(i,j,idiazc13) = sbc(i,jrow,idiazc13flx)*tmask(i,1,j)
 #    endif
 #   endif

@@ -20,7 +20,7 @@
       real ak, aaqg, adicg, r13a, r13dic, batmc13, bdic13
 
 #include "size.h"
-#include "npzd.h"
+#include "mobi.h"
 #include "param.h"
 #include "pconst.h"
 #include "stdunits.h"
@@ -121,22 +121,24 @@ CSPKKK sit_in introduced by kk
      &  call areaavg (sbc(1,1,isspo4), dmsk, gaost(ipo4))
       if (issdop .ne. 0)
      &  call areaavg (sbc(1,1,issdop), dmsk, gaost(idop))
-#   if defined O_npzd_iron
+#   if defined O_mobi_iron
       if (issdfe .ne. 0)
      &  call areaavg (sbc(1,1,issdfe), dmsk, gaost(idfe))
 #   endif
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
       if (isssil .ne. 0)
      &  call areaavg (sbc(1,1,isssil), dmsk, gaost(isil))
+      if (issopl .ne. 0)
+     &  call areaavg (sbc(1,1,issopl), dmsk, gaost(iopl))
 #   endif
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       if (issphyt .ne. 0)
      &  call areaavg (sbc(1,1,issphyt), dmsk, gaost(iphyt))
       if (isszoop .ne. 0)
      &  call areaavg (sbc(1,1,isszoop), dmsk, gaost(izoop))
       if (issdetr .ne. 0)
      &  call areaavg (sbc(1,1,issdetr), dmsk, gaost(idetr))
-#    if defined O_npzd_iron
+#    if defined O_mobi_iron
       if (issdetrfe .ne. 0)
      &  call areaavg (sbc(1,1,issdetrfe), dmsk, gaost(idetrfe))
 #    endif
@@ -144,9 +146,7 @@ CSPKKK sit_in introduced by kk
       if (issdetr_B .ne. 0)
      &  call areaavg (sbc(1,1,issdetr_B), dmsk, gaost(idetr_B))
 #    endif
-#    if defined O_npzd_caco3
-      if (isscocc .ne. 0)
-     &  call areaavg (sbc(1,1,isscocc), dmsk, gaost(icocc))
+#    if defined O_mobi_caco3
       if (isscaco3 .ne. 0)
      &  call areaavg (sbc(1,1,isscaco3), dmsk, gaost(icaco3))
 #    endif
@@ -155,7 +155,7 @@ CSPKKK sit_in introduced by kk
      &  call areaavg (sbc(1,1,issno3), dmsk, gaost(ino3))
       if (issdon .ne. 0)
      &  call areaavg (sbc(1,1,issdon), dmsk, gaost(idon))
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       if (issdiaz .ne. 0)
      &  call areaavg (sbc(1,1,issdiaz), dmsk, gaost(idiaz))
 #   endif
@@ -163,12 +163,12 @@ CSPKKK sit_in introduced by kk
      &  call areaavg (sbc(1,1,issdin15), dmsk, gaost(idin15))
       if (issdon15 .ne. 0)
      &  call areaavg (sbc(1,1,issdon15), dmsk, gaost(idon15))
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       if (issphytn15 .ne. 0)
      &  call areaavg (sbc(1,1,issphytn15), dmsk, gaost(iphytn15))
-#    if defined O_npzd_caco3
-      if (isscoccn15 .ne. 0)
-     &  call areaavg (sbc(1,1,isscoccn15), dmsk, gaost(icoccn15))
+#    if defined O_mobi_silicon
+      if (issdiatn15 .ne. 0)
+     &  call areaavg (sbc(1,1,issdiatn15), dmsk, gaost(idiatn15))
 #    endif      
       if (isszoopn15 .ne. 0)
      &  call areaavg (sbc(1,1,isszoopn15), dmsk, gaost(izoopn15))
@@ -179,12 +179,14 @@ CSPKKK sit_in introduced by kk
 #   endif
       if (issdoc13 .ne. 0)
      &  call areaavg (sbc(1,1,issdoc13), dmsk, gaost(idoc13))
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       if (issphytc13 .ne. 0)
      &  call areaavg (sbc(1,1,issphytc13), dmsk, gaost(iphytc13))
-#    if defined O_npzd_caco3
-      if (isscoccc13 .ne. 0)
-     &  call areaavg (sbc(1,1,isscoccc13), dmsk, gaost(icoccc13))
+#    if defined O_mobi_silicon
+      if (issdiatc13 .ne. 0)
+     &  call areaavg (sbc(1,1,issdiatc13), dmsk, gaost(idiatc13))
+#    endif      
+#    if defined O_mobi_caco3
       if (isscaco3c13 .ne. 0)
      &  call areaavg (sbc(1,1,isscaco3c13), dmsk, gaost(icaco3c13))
 #    endif      
@@ -240,50 +242,53 @@ CSPKKK sit_in introduced by kk
       sbc(:,:,ic14flx) = 0.
 #  endif
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       sbc(:,:,isilflx) = 0.
+      sbc(:,:,ioplflx) = 0.
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       sbc(:,:,ialkflx) = 0.
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       sbc(:,:,io2flx) = 0.
 # endif
-# if defined O_npzd
+# if defined O_mobi
       sbc(:,:,ipo4flx) = 0.
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
       sbc(:,:,iphytflx) = 0.
       sbc(:,:,izoopflx) = 0.
       sbc(:,:,idetrflx) = 0.
 #   if defined O_kk_ballast
       sbc(:,:,idetrflx_B) = 0.
 #   endif
-#   if defined O_npzd_caco3
-      sbc(:,:,icoccflx) = 0.
+#   if defined O_mobi_caco3
       sbc(:,:,icaco3flx) = 0.
 #   endif
+#   if defined O_mobi_silicon
+      sbc(:,:,idiatflx) = 0.
+#   endif
 #  endif
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
       sbc(:,:,idfeflx) = 0. 
       sbc(:,:,idfeadep) = 0. 
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       sbc(:,:,idetrfeflx) = 0.
 #   endif
 #  endif
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
       sbc(:,:,idopflx) = 0.
       sbc(:,:,ino3flx) = 0.
       sbc(:,:,idonflx) = 0.
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       sbc(:,:,idiazflx) = 0.
 #   endif
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
       sbc(:,:,idin15flx) = 0.
       sbc(:,:,idon15flx) = 0.
-#    if !defined O_npzd_no_vflux
+#    if !defined O_mobi_no_vflux
       sbc(:,:,iphytn15flx) = 0.
-#     if defined O_npzd_caco3
-      sbc(:,:,icoccn15flx) = 0.
+#     if defined O_mobi_silicon
+      sbc(:,:,idiatn15flx) = 0.
 #     endif      
       sbc(:,:,izoopn15flx) = 0.
       sbc(:,:,idetrn15flx) = 0.
@@ -292,15 +297,17 @@ CSPKKK sit_in introduced by kk
 #   endif
 #  endif      
 #  if defined O_carbon_13
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       sbc(:,:,iphytc13flx) = 0.
-#    if defined O_npzd_caco3
-      sbc(:,:,icoccc13flx) = 0
+#    if defined O_mobi_silicon
+      sbc(:,:,idiatc13flx) = 0
+#    endif
+#    if defined O_mobi_caco3
       sbc(:,:,icaco3c13flx) = 0
 #    endif
       sbc(:,:,izoopc13flx) = 0.
       sbc(:,:,idetrc13flx) = 0.
-#    if defined O_npzd_nitrogen
+#    if defined O_mobi_nitrogen
       sbc(:,:,idoc13flx) = 0.
       sbc(:,:,idiazc13flx) = 0.
 #    endif
@@ -449,7 +456,7 @@ CSPKKK sit_in introduced by kk
             sss = 1000.0*sbc(i,j,isss) + 35.0
             frzpt(i,j) = -.0575*sss + 1.71e-3*sss**1.5 - 2.155e-4*sss**2
 # if defined O_mom
-#  if defined O_carbon || defined O_npzd_o2 || defined O_cfcs_data || defined O_cfcs_data_transient
+#  if defined O_carbon || defined O_mobi_o2 || defined O_cfcs_data || defined O_cfcs_data_transient
             sst = sbc(i,j,isst)
 !           put reasonable limits on sst and sss for chemistry flux calculations
             sst = min(35.,max(sst,-2.))
@@ -475,12 +482,12 @@ CSPKKK sit_in introduced by kk
             t_in = sst
             s_in = sss
             dic_in = sbc(i,j,issdic)
-#   if defined O_npzd_alk
+#   if defined O_mobi_alk
             ta_in = sbc(i,j,issalk)
 #   else
             ta_in = 2.36775*sss/(socn*1000.)
 #   endif
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
             sit_in = sbc(i,j,isssil)
 #   endif
 #   if defined O_carbon_co2_2d
@@ -488,7 +495,7 @@ CSPKKK sit_in introduced by kk
 #   else
             co2_in = co2ccn
 #   endif
-CSPKKK still need to implement passing in sil_in when O_kk_si is defined
+CSPKKK still need to implement passing in sil_in when O_mobi_silicon is defined
             call co2calc_SWS (t_in, s_in, dic_in, ta_in, co2_in, atmpres
      &,                       zero, pH, co2star, dco2star, pCO2, dpco2
      &,                       CO3, Omega_c, Omega_a)
@@ -546,7 +553,7 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idicflx)*rc13std/(1+rc13std)
      &                       - co2star*sbc(i,j,issc14)/sbc(i,j,issdic))
 #   endif
 #  endif
-#  if defined O_npzd_o2
+#  if defined O_mobi_o2
 
 !-----------------------------------------------------------------------
 !           calculate ocean oxygen fluxes
@@ -720,7 +727,7 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idicflx)*rc13std/(1+rc13std)
 #   endif
 #  endif
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
 
 !-----------------------------------------------------------------------
 !     set boundary conditions for oxygen

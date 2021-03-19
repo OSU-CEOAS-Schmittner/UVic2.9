@@ -45,9 +45,9 @@
       include "mw.h"
       include "tmngr.h"
       include "switch.h"
-#if defined O_kk_si
+#if defined O_mobi_silicon
       include "atm.h"
-      include "npzd.h"
+      include "mobi.h"
 #endif
 
 !-----------------------------------------------------------------------
@@ -115,7 +115,7 @@
         call mkstmp (stamp, year0, month0, day0, hour0, min0, sec0)
       endif
 
-#if defined O_kk_si
+#if defined O_mobi_silicon
       tmp = globalsilwflx
       call getvars ('globalsilwflx', iou, 1, tmp, c1, c0)
       globalsilwflx = tmp
@@ -265,10 +265,8 @@
             if (inqvardef('dic131', iou)) var1 = 'dic131'
           elseif (trim(mapt(n)) .eq. 'alk') then
             if (inqvardef('alk1', iou)) var1 = 'alk1'
-# if defined O_kk_si
           elseif (trim(mapt(n)) .eq. 'sil') then
-			if (inqvardef('sil1', iou)) var1 = 'sil1'
-# endif
+            if (inqvardef('sil1', iou)) var1 = 'sil1'
           elseif (trim(mapt(n)) .eq. 'o2') then
             if (inqvardef('o21', iou)) var1 = 'o21'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -319,22 +317,18 @@
             if (inqvardef('cfc111', iou)) var1 = 'cfc111'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             if (inqvardef('cfc121', iou)) var1 = 'cfc121'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            if (inqvardef('cocc1', iou)) var1 = 'cocc1'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            if (inqvardef('coccn151', iou)) var1 = 'coccn151'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            if (inqvardef('diatn151', iou)) var1 = 'diatn151'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             if (inqvardef('caco31', iou)) var1 = 'caco31'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            if (inqvardef('coccc131', iou)) var1 = 'coccc131'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            if (inqvardef('diatc131', iou)) var1 = 'diatc131'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             if (inqvardef('caco3c131', iou)) var1 = 'caco3c131'
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             if (inqvardef('detr1_B', iou)) var1 = 'detr1_B'
-# if defined O_kk_diat
           elseif (trim(mapt(n)) .eq. 'diat') then
-			if (inqvardef('diat1', iou)) var1 = 'diat1'
-# endif
+            if (inqvardef('diat1', iou)) var1 = 'diat1'
           endif
           exists = inqvardef(trim(var1), iou)
           if (exists) then
@@ -411,10 +405,8 @@
             if (inqvardef('dic132', iou)) var2 = 'dic132'
           elseif (trim(mapt(n)) .eq. 'alk') then
             if (inqvardef('alk2', iou)) var2 = 'alk2'
-# if defined O_kk_si
           elseif (trim(mapt(n)) .eq. 'sil') then
-			if (inqvardef('sil2', iou)) var2 = 'sil2'
-# endif
+            if (inqvardef('sil2', iou)) var2 = 'sil2'
           elseif (trim(mapt(n)) .eq. 'o2') then
             if (inqvardef('o22', iou)) var2 = 'o22'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -465,22 +457,18 @@
             if (inqvardef('cfc112', iou)) var2 = 'cfc112'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             if (inqvardef('cfc122', iou)) var2 = 'cfc122'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            if (inqvardef('cocc2', iou)) var2 = 'cocc2'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            if (inqvardef('coccn152', iou)) var2 = 'coccn152'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            if (inqvardef('diatn152', iou)) var2 = 'diatn152'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             if (inqvardef('caco32', iou)) var2 = 'caco32'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            if (inqvardef('coccc132', iou)) var2 = 'coccc132'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            if (inqvardef('diatc132', iou)) var2 = 'diatc132'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             if (inqvardef('caco3c132', iou)) var2 = 'caco3c132'
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             if (inqvardef('detr2_B', iou)) var2 = 'detr2_B'
-# if defined O_kk_diat
           elseif (trim(mapt(n)) .eq. 'diat') then
-			if (inqvardef('diat2', iou)) var2 = 'diat2'
-# endif
+            if (inqvardef('diat2', iou)) var2 = 'diat2'
           endif
           exists = inqvardef(trim(var2), iou)
           if (exists) then
@@ -680,7 +668,7 @@
       call defvar ('depth_W_edges', iou, 1, it, c0, c0, ' ', 'D'
      &, 'depth edges', ' ', 'm')
 
-#if defined O_kk_si
+#if defined O_mobi_silicon
       call defvar ('globalsilwflx', iou, 1, it, c0, c0, ' ', 'D'
      &, 'globalsilwflx', ' ',' ')
 #endif
@@ -766,13 +754,11 @@
      &,     'alkalinity at tau',' ', ' ')
           call defvar ('alk2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'alkalinity at tau+1',' ', ' ')
-# if defined O_kk_si
         elseif (trim(mapt(n)) .eq. 'sil') then
           call defvar ('sil1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'ocean silicon at tau', ' ', ' ')
           call defvar ('sil2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'ocean silicon at tau+1', ' ', ' ')
-# endif
         elseif (trim(mapt(n)) .eq. 'o2') then
           call defvar ('o21', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'oxygen at tau',' ', ' ')
@@ -898,26 +884,21 @@
      &,     'CFC12 at tau', ' ', ' ')
           call defvar ('cfc122', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'CFC12 at tau+1', ' ', ' ')
-        elseif (trim(mapt(n)) .eq. 'cocc') then
-          call defvar ('cocc1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores at tau', ' ', ' ')
-          call defvar ('cocc2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores at tau+1', ' ', ' ')
-        elseif (trim(mapt(n)) .eq. 'coccn15') then
-          call defvar ('coccn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores n15 at tau', ' ', ' ')
-          call defvar ('coccn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores n15 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'diatn15') then
+          call defvar ('diatn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom n15 at tau', ' ', ' ')
+          call defvar ('diatn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom n15 at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'caco3') then
           call defvar ('caco31', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'calcite at tau', ' ', ' ')
           call defvar ('caco32', iou, 4, it, -c1e20, c1e20, ' ','D'
      &,     'calcite at tau+1', ' ', ' ')
-        elseif (trim(mapt(n)) .eq. 'coccc13') then
-          call defvar ('coccc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores c13 at tau', ' ', ' ')
-          call defvar ('coccc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores c13 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'diatc13') then
+          call defvar ('diatc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom c13 at tau', ' ', ' ')
+          call defvar ('diatc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom c13 at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'caco3c13') then
           call defvar ('caco3c131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'calcite c13 at tau', ' ', ' ')
@@ -930,13 +911,11 @@
           call defvar ('detr2_B', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'ballasted detritus at tau+1', ' ', ' ')
 # endif
-# if defined O_kk_diat
         elseif (trim(mapt(n)) .eq. 'diat') then
           call defvar ('diat1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'diatoms at tau', ' ', ' ')
           call defvar ('diat2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'diatoms at tau+1', ' ', ' ')
-# endif
         else
           if (n .lt. 1000) write(a3,'(i3)') n
           if (n .lt. 100) write(a3,'(i2)') n
@@ -1011,9 +990,9 @@
       include "mw.h"
       include "switch.h"
       include "tmngr.h"
-#if defined O_kk_si
+#if defined O_mobi_silicon
       include "atm.h"
-      include "npzd.h"
+      include "mobi.h"
 #endif
 
       real xt_e(imt+1), xu_e(imt+1), yt_e(jmt+1), yu_e(jmt+1)
@@ -1156,7 +1135,7 @@
       tmpke(kgs:kge+1) = zw_e(kgs:kge+1)
       call putvara ('depth_W_edges', iou, kg+1, ib, ic, tmpke, c100, c0)
 
-#if defined O_kk_si
+#if defined O_mobi_silicon
 # if defined O_kk_si_compensating_sources
       tmp = rivsil*globaldisch !ratio times water flux
 # else
@@ -1304,10 +1283,8 @@
             var1 = 'dic131'
           elseif (trim(mapt(n)) .eq. 'alk') then
             var1 = 'alk1'
-# if defined O_kk_si
           elseif (trim(mapt(n)) .eq. 'sil') then
             var1 = 'sil1'
-# endif
           elseif (trim(mapt(n)) .eq. 'o2') then
             var1 = 'o21'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -1358,24 +1335,20 @@
             var1 = 'cfc111'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             var1 = 'cfc121'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            var1 = 'cocc1'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            var1 = 'coccn151'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            var1 = 'diatn151'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             var1 = 'caco31'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            var1 = 'coccc131'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            var1 = 'diatc131'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             var1 = 'caco3c131'
 # if defined O_kk_ballast
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             var1 = 'detr1_B'
 # endif
-# if defined O_kk_diat
           elseif (trim(mapt(n)) .eq. 'diat') then
             var1 = 'diat1'
-# endif
           else
             if (n .lt. 1000) write(a3, '(i3)') n
             if (n .lt. 100) write(a3, '(i2)') n
@@ -1412,10 +1385,8 @@
             var2 = 'dic132'
           elseif (trim(mapt(n)) .eq. 'alk') then
             var2 = 'alk2'
-# if defined O_kk_si
           elseif (trim(mapt(n)) .eq. 'sil') then
             var2 = 'sil2'
-# endif
           elseif (trim(mapt(n)) .eq. 'o2') then
             var2 = 'o22'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -1466,24 +1437,20 @@
             var2 = 'cfc112'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             var2 = 'cfc122'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            var2 = 'cocc2'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            var2 = 'coccn152'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            var2 = 'diatn152'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             var2 = 'caco32'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            var2 = 'coccc132'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            var2 = 'diatc132'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             var2 = 'caco3c132'
 # if defined O_kk_ballast
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             var2 = 'detr2_B'
 # endif
-# if defined O_kk_diat
           elseif (trim(mapt(n)) .eq. 'diat') then
             var2 = 'diat2'
-# endif
           else
             if (n .lt. 1000) write(a3, '(i3)') n
             if (n .lt. 100) write(a3, '(i2)') n

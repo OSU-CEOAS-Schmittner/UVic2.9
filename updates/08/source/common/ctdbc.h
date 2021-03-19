@@ -80,10 +80,10 @@
 #if defined O_mtlm
      &                 + 1
 #endif
-#if defined O_npzd_iron
+#if defined O_mobi_iron
      &                 + 1
 #endif
-#if defined O_kk_si
+#if defined O_mobi_silicon
      &                 + 1
 #endif
      &                    )

@@ -225,9 +225,7 @@
       real tai_ssno3, tai_sscfc11, tai_sscfc12, tai_sulph, tai_volc
       real tai_agg, tai_catm, tai_carbemit, tai_ssdop, tai_ssdon
       real tai_ssdin15, tai_ssdon15, tai_ssdic13, tai_ssdoc13, tai_ssdfe
-#if defined O_kk_si
       real tai_sssil
-#endif
 
       common /cembm_r/ tai_sat, tai_shum, tai_precip, tai_evap
       common /cembm_r/ tai_ohice, tai_oaice, tai_hsno, tai_lhice
@@ -249,6 +247,4 @@
       common /cembm_r/ tai_catm, tai_carbemit, tai_ssdop, tai_ssdon
       common /cembm_r/ tai_ssdin15, tai_ssdon15, tai_ssdic13
       common /cembm_r/ tai_ssdoc13, tai_ssdfe
-#if defined O_kk_si
       common /cembm_r/ tai_sssil
-#endif

@@ -242,29 +242,29 @@
      &,   'F', 'global average sea surface c14', ' ','mol m-3')
 #  endif
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       call defvar ('O_silsur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface sil', ' ','mol m-3')
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call defvar ('O_alksur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface alkalinity', ' ','mol m-3')
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       call defvar ('O_o2sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface oxygen', ' ','mol m-3')
 # endif
-# if defined O_npzd
+# if defined O_mobi
       call defvar ('O_po4sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface phosphate', ' ','mol m-3')
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
       call defvar ('O_dopsur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface DOP', ' ','mol m-3')
       call defvar ('O_no3sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface nitrate', ' ','mol m-3')
       call defvar ('O_donsur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface DON', ' ','mol m-3')
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
       call defvar ('O_din15sur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface nitrate 15', ' ','mol m-3')
       call defvar ('O_don15sur', iou, 1, id, c0, c100, ' '
@@ -272,7 +272,7 @@
 #   endif
 #  endif
 !juan
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
       call defvar ('O_dfesur', iou, 1, id, c0, c100, ' '
      &,   'F', 'global average sea surface iron', ' ','mol m-3')
 #  endif
@@ -328,9 +328,7 @@
      &,                        sso2, sspo4, ssdop, ssno3, ssdon, ssdin15
      &,                        ssdon15, ssdoc13, sscfc11, sscfc12, sulph
      &,                        volc, agg, catm, carbemit, ntrec, ssdfe
-# if defined O_kk_si
      &,                        sssil
-# endif
      &                         )     
 !=======================================================================
 !     output routine for atmospheric time step integrals
@@ -364,10 +362,7 @@
       real sscfc11, sscfc12, sulph, volc, agg, catm, carbemit, time, tmp
       real c0, c1, c100, c1e3, c1e4, c1e6, p1, p001, p035, cal2J, C2K
       real kgsPgyr, ssdop, ssdon, ssdin15, ssdon15, ssdic13, ssdoc13
-      real ssdfe
-# if defined O_kk_si
-      real sssil
-# endif
+      real ssdfe, sssil
 
       c0 = 0.
       c1 = 1.
@@ -503,29 +498,29 @@
       call putvars ('O_c14sur', iou, ntrec, ssc14, c1, c0)
 #  endif
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       call putvars ('O_silsur', iou, ntrec, sssil, c1, c0)
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call putvars ('O_alksur', iou, ntrec, ssalk, c1, c0)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       call putvars ('O_o2sur', iou, ntrec, sso2, c1, c0)
 # endif
-# if defined O_npzd
+# if defined O_mobi
       call putvars ('O_po4sur', iou, ntrec, sspo4, c1e3, c0)
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
       call putvars ('O_dopsur', iou, ntrec, ssdop, c1e3, c0)
       call putvars ('O_no3sur', iou, ntrec, ssno3, c1e3, c0)
       call putvars ('O_donsur', iou, ntrec, ssdon, c1e3, c0)
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
       call putvars ('O_din15sur', iou, ntrec, ssdin15, c1e3, c0)
       call putvars ('O_don15sur', iou, ntrec, ssdon15, c1e3, c0)
 #   endif
 #  endif
 !juan
-#  if defined O_npzd_iron
-      call putvars ('O_dfesur', iou, ntrec, ssno3, c1e3, c0)
+#  if defined O_mobi_iron
+      call putvars ('O_dfesur', iou, ntrec, ssdfe, c1e3, c0)
 #  endif
 !
 #  if defined O_carbon_13

@@ -122,13 +122,9 @@
       call put_names ('O_fe_dissolved', 'data/O_fe_dissolved')
       call put_names ('O_feflux', 'data/O_feflux')
       call put_names ('O_fe_hydr', 'data/O_fe_hydr')
-#if defined O_kk_diat
-      call put_names ('O_silica', 'data/O_silica')
-# if defined O_kk_si
+      call put_names ('O_sil', 'data/O_sil')
       call put_names ('O_sil_dep', 'data/O_sil_dep')
       call put_names ('O_si_hydr', 'data/O_si_hydr')
-# endif
-#endif
 #if defined O_matrix
       do n=1,km
         write(tilename,'(A6,I2.2)') 'O_tile',n

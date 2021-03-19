@@ -314,7 +314,7 @@
           enddo
         enddo
 
-# if defined O_source_term || defined O_npzd || defined O_carbon_14
+# if defined O_source_term || defined O_mobi || defined O_carbon_14
 
 !-----------------------------------------------------------------------
 !       set source term for "u" cell
@@ -348,7 +348,7 @@
      &          + ADV_metric(i,k,j,jrow,n)
 # endif
      &          - grad_p(i,k,j,n) + CORIOLIS(i,k,j,jrow,n)
-# if defined O_source_term || defined O_npzd || defined O_carbon_14
+# if defined O_source_term || defined O_mobi || defined O_carbon_14
      &          + source(i,k,j)
 # endif
      &          )*umask(i,k,j)

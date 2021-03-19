@@ -18,6 +18,8 @@
 !   * moved upward the calculation of bt, st and ft
 !     (needed in evaluation of kb);
 !   * added various comments and references.
+!   * A. Schmittner, 2021: pressure dependence added as default
+!     added CO3, Omega_c, Omega_a as output
 
 ! subroutine CO2CALC_SWS
 
@@ -176,10 +178,6 @@
       b_x = b_x + 3.16528*1e-5*tk*tk*tk
       FugFac = exp((b_x+2*delta_x)*1/rt_x) ! Note that 1 is the atmospheric pressure in bars
 !
-# if defined k0_as_solubility
-      k0 = exp(93.4517/tk100 - 60.2409 + 23.3585 * log(tk100)
-     &   + s*(.023517 - 0.023656 * tk100 + 0.0047036 * tk1002))
-# endif
 !------------------------------------------------------------------------
 ! k1 = [H][HCO3]/[H2CO3]
 ! k2 = [H][CO3]/[HCO3]     on hSWS
@@ -188,16 +186,12 @@
 
       k1 = 10**(-1.*(3670.7*invtk - 62.008 + 9.7944*dlogtk
      &   - 0.0118*s + 0.000116*s2))
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &     *exp((25.5 - 0.1271*t)*pitkR
      &   + 0.5*(-3.08e-3 + 8.77e-5*t)*p2itkR)
-# endif
 
       k2 = 10**(-1*(1394.7*invtk + 4.777 - 0.0184*s + 0.000118*s2))
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &     *exp((15.82 + 0.0219*t)*pitkR
      &   + 0.5*(1.13e-3 - 1.475e-4*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! k1p = [H][H2PO4]/[H3PO4] on hSWS
@@ -206,10 +200,8 @@
       k1p = exp(-4576.752*invtk + 115.540 - 18.453*dlogtk
      &    + (-106.736*invtk + 0.69171)*sqrts
      &    + (-0.65643*invtk - 0.01844)*s)
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &      *exp((14.51 - 0.1211*t + 3.21e-4*t2)*pitkR
      &    + 0.5*(-2.67e-3 + 4.27e-5*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! k2p = [H][HPO4]/[H2PO4] on hSWS
@@ -218,10 +210,8 @@
       k2p = exp(-8814.715*invtk + 172.1033 - 27.927*dlogtk
      &    + (-160.340*invtk + 1.3566)*sqrts
      &    + (0.37335*invtk - 0.05778)*s)
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &      *exp((23.12 - 0.1758*t + 2.647e-3*t2)*pitkR
      &    + 0.5*(-5.15e-3 + 9.0e-5*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! k3p = [H][PO4]/[HPO4] on hSWS
@@ -230,10 +220,8 @@
       k3p = exp(-3070.75*invtk - 18.126
      &    + (17.27039*invtk + 2.81197)*sqrts
      &    + (-44.99486*invtk - 0.09984)*s)
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &      *exp((26.57 - 0.202*t + 3.042e-3*t2)*pitkR
      &    + 0.5*(-4.08e-3 + 7.14e-5*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! ksi = [H][SiO(OH)3]/[Si(OH)4] on hSWS
@@ -247,10 +235,8 @@
      &     + (188.74*invtk - 1.5998)*is
      &     + (-12.1652*invtk + 0.07871)*is2
      &     + log(1.0-0.001005*s))
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &       *exp((29.48 - 0.1622*t - 2.608e-3*t2)*pitkR
      &     + 0.5*(-2.84e-3)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! kw = [H][OH] on hSWS
@@ -260,10 +246,8 @@
 
        kw = exp(-13847.26*invtk + 148.9802 - 23.6521*dlogtk
      &    + (118.67*invtk - 5.977 + 1.0495*dlogtk)*sqrts - 0.01615*s)
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &      *exp((20.02 - 0.1119*t + 1.409e-3*t2)*pitkR
      &    + 0.5*(-5.13e-3 + 7.94e-5*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! ks = [H][SO4]/[HSO4] on free H scale
@@ -275,10 +259,8 @@
      &   + (35474*invtk - 771.54 + 114.723*dlogtk)*is
      &   - 2698*invtk*is**1.5 + 1776*invtk*is2
      &   + log(1.0 - 0.001005*s))
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &     *exp((18.03 - .0466*t - 3.16e-4*t2)*pitkR
      &   + 0.5*(-4.53e-3 + 9.0e-5*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! kf = [H][F]/[HF] on free H scale
@@ -287,10 +269,8 @@
 
       kf = exp(1590.2*invtk - 12.641 + 1.525*sqrtis
      &   + log(1.0 - 0.001005*s))
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &     *exp((9.78 + 9.0e-3*t + 9.42e-4*t2)*pitkR
      &   + 0.5*(-3.91e-3 + 5.4e-5*t)*p2itkR)
-# endif
 
 !------------------------------------------------------------------------
 ! kb = [H][BO2]/[HBO2] on hSWS
@@ -304,10 +284,8 @@
      &   + (-24.4344 - 25.085*sqrts - 0.2474*s)*dlogtk
      &   + 0.053105*sqrts*tk
      &   + log((1+(st/ks)+(ft/kf))/(1+(st/ks))))
-# if defined O_save_carbon_carbonate_depth || O_carbon_13
      &     *exp((29.48 - 0.1622*t - 2.608e-3*t2)*pitkR
      &   + 0.5*(-2.84e-3)*p2itkR)
-# endif
 
 !*************************************************************************
 
@@ -357,7 +335,6 @@ c      pCO2 = co2star/ff ! if not O_pCO2_bug_fix
       dpCO2 = pCO2 - co2starair
 c      dpCO2 = pCO2 - co2*atmpres ! if not O_pCO2_bug_fix
 
-# if defined O_save_carbon_carbonate_chem
 ! Calculate [CO3] in mol/kg from co2star and hSWS
       CO3 = k1*k2*co2star/hSWS2
 
@@ -375,8 +352,6 @@ c      dpCO2 = pCO2 - co2*atmpres ! if not O_pCO2_bug_fix
      &     - 0.17959*tk + (-0.157481 + (202.938/tk)
      &     + 0.0039780*tk)*s**0.5 - 0.23067*s + 0.0136808*s15)
 
-# endif
-# if defined O_save_carbon_carbonate_depth
 !------------------------------------------------------------------------
 ! Pressure dependent solubility products (KspP) based on Millero, 1983 as
 ! written by Sarmiento and Gruber, 2006 p366
@@ -398,8 +373,6 @@ c      dpCO2 = pCO2 - co2*atmpres ! if not O_pCO2_bug_fix
 ! KspP for aragonite, pressure (pres) in bars
       Kspa = Kspa*exp(-DVa*pitkR + 0.5*DK*p2itkR)
 
-# endif
-# if defined O_save_carbon_carbonate_chem
 ! Calculate saturation state (Omega) using a fix value
 ! for [Ca] in mol/kg
       Ca = 10.28E-3
@@ -410,7 +383,6 @@ c      dpCO2 = pCO2 - co2*atmpres ! if not O_pCO2_bug_fix
 ! aragonite (Omga)
       Omega_a = Ca*CO3/Kspa
 
-# endif
 ! Convert units of output arguments
 ! Note: co2star and dco2star are calculated in mol/kg within this routine
 ! Thus Convert now from mol/kg -> mol/m^3

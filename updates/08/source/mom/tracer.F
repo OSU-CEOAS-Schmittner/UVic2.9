@@ -34,10 +34,6 @@
       real drhom1, wt, ahbi_cstr, ahbi_csu_dyur, gamma, fy, fyz
       real fe_dy, fe_conc, fe_x(fe_n), fe_y(fe_n), bctz
 
-      real expofe, impofe, feorgads, remife, thetamax, deffe, fecol
-      real thetachl, chl, chl_D, feprime, fesed, bfe, sgb, thetamax_C
-      real deffe_C
-
 #include "size.h"
 #include "param.h"
 #include "pconst.h"
@@ -66,32 +62,32 @@
 #  endif
 #include "ice.h"
 # endif
-# if defined O_npzd || defined O_carbon_14
-#include "npzd.h"
+# if defined O_mobi || defined O_carbon_14
+#include "mobi.h"
 # endif
-# if defined O_npzd
+# if defined O_mobi
       real t_in(km), po4_in(km)
-#  if defined O_npzd_o2
+#  if defined O_mobi_o2
       real o2_in(km)
 #  endif
-#  if defined O_carbon_13 || defined O_npzd_caco3
+#  if defined O_carbon_13 || defined O_mobi_caco3
       real s_in(km), dic_in(km), alk_in(km), co2_in, dic13_in(km)
 #  endif
-# if defined O_kk_si || defined O_kk_diat
+# if defined O_mobi_silicon
       real sil_in(km)
       real opalburial, silhydrflux
 # endif
       real sgb_in(km)
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
       real no3_in(km)
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
       real din15_in(km)
 #   endif
 #  endif     
       real expo, tnpzd(km,ntnpzd)
 #  if defined O_embm
 #include "atm.h"
-#   if defined O_carbon_13 || defined O_npzd_caco3
+#   if defined O_carbon_13 || defined O_mobi_caco3
 #include "cembm.h"
 #   endif
 #  endif
@@ -117,7 +113,7 @@
 # if defined O_plume
       real  work(imt,km,jsmw:jemw)
 # endif
-# if defined O_npzd || defined O_carbon_14
+# if defined O_mobi || defined O_carbon_14
       real ai, hi, hs, rctheta, dayfrac, swr, declin
       real src(imt,km,jsmw:jemw,nsrc)
 #  ifdef O_TMM
@@ -160,7 +156,7 @@
 #  if defined O_carbon
           if (inqvardef('O_fnpzd1', iou)) nfnpzd = mxfnpzd
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
           if (inqvardef('O_fnpzd2', iou)) nfnpzd = mxfnpzd
 #  endif
         else
@@ -192,7 +188,7 @@
           call defvar ('O_fnpzd1', iou, 4, it, c0, c0, ' ', 'D'
      &,       ' ', ' ', ' ')
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
           call defvar ('O_fnpzd2', iou, 4, it, c0, c0, ' ', 'D'
      &,       ' ', ' ', ' ')
 #  endif
@@ -304,7 +300,7 @@
 
 # endif ! SPK not O_TMM
 
-# if defined O_npzd
+# if defined O_mobi
 !-----------------------------------------------------------------------
 !     ocean biogeochemistry and isotopes
 !-----------------------------------------------------------------------
@@ -315,7 +311,7 @@
       rdtts = 1./c2dtts
       rnbio = 1./nbio
 
-#  if defined O_kk_si
+#  if defined O_mobi_silicon
       rivsil = 0.0        !river Si deposition mol si/s??
 CSPKKK I've removed the variable silwflx because it was confusing. In it's place 
 C      I've created two new ones opalburial and silhydrflux. 
@@ -370,34 +366,35 @@ C      The units really need to be checked!
 #  if defined O_carbon            
             tnpzd(:,imobidic) = t(i,:,j,idic,taum1)
 #  endif            
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
             tnpzd(:,imobidop) = t(i,:,j,idop,taum1)            
             tnpzd(:,imobino3) = t(i,:,j,ino3,taum1)
             tnpzd(:,imobidon) = t(i,:,j,idon,taum1)
             tnpzd(:,imobidiaz) = t(i,:,j,idiaz,taum1)
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
             tnpzd(:,imobidin15) = t(i,:,j,idin15,taum1)
             tnpzd(:,imobidon15) = t(i,:,j,idon15,taum1)
             tnpzd(:,imobiphytn15) = t(i,:,j,iphytn15,taum1)
             tnpzd(:,imobizoopn15) = t(i,:,j,izoopn15,taum1)
             tnpzd(:,imobidetrn15) = t(i,:,j,idetrn15,taum1)
             tnpzd(:,imobidiazn15) = t(i,:,j,idiazn15,taum1)
-#    if defined O_npzd_caco3
-            tnpzd(:,imobicoccn15) = t(i,:,j,icoccn15,taum1)
-#    endif            
+#    if defined O_mobi_silicon
+            tnpzd(:,imobidiatn15) = t(i,:,j,idiatn15,taum1)
+#    endif
 #   endif
 #  endif
-#  if defined O_npzd_caco3
-            tnpzd(:,imobicocc) = t(i,:,j,icocc,taum1)
+#  if defined O_mobi_caco3
             tnpzd(:,imobicaco3) = t(i,:,j,icaco3,taum1)
 #  endif
 #  if defined O_kk_ballast
             tnpzd(:,imobidetr_B) = t(i,:,j,idetr_B,taum1) 
 #  endif
-#  if defined O_kk_diat
-			tnpzd(:,imobidiat) = t(i,:,j,idiat,taum1)
+#  if defined O_mobi_silicon
+            tnpzd(:,imobidiat) = t(i,:,j,idiat,taum1)
+            tnpzd(:,imobisil) = t(i,:,j,isil,taum1)
+            tnpzd(:,imobiopl) = t(i,:,j,iopl,taum1)
 #  endif
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
             tnpzd(:,imobidfe) = t(i,:,j,idfe,taum1)
             tnpzd(:,imobidetrfe) = t(i,:,j,idetrfe,taum1)
 #  endif
@@ -408,24 +405,24 @@ C      The units really need to be checked!
             tnpzd(:,imobizoopc13) = t(i,:,j,izoopc13,taum1)
             tnpzd(:,imobidetrc13) = t(i,:,j,idetrc13,taum1)
             tnpzd(:,imobidiazc13) = t(i,:,j,idiazc13,taum1)
-#   if defined O_npzd_caco3
-            tnpzd(:,imobicoccc13) = t(i,:,j,icoccc13,taum1) 
+#   if defined O_mobi_silicon
+            tnpzd(:,imobidiatc13) = t(i,:,j,idiatc13,taum1)
+#   endif            
+#   if defined O_mobi_caco3
             tnpzd(:,imobicaco3c13) = t(i,:,j,icaco3c13,taum1) 
 #   endif            
 #  endif
 !        set other input variables
             t_in(:) = t(i,:,j,itemp,taum1) !degree Celsius
             po4_in(:) = t(i,:,j,ipo4,taum1)
-#  if defined O_npzd_o2
+#  if defined O_mobi_o2
             o2_in(:) = t(i,:,j,io2,taum1)*1000. ! uM
 #  endif
-#  if defined O_kk_si
-			sil_in(:) =  t(i,:,j,isil,taum1)*1.e3 ! convert to mmol m-3 for npzd_src!
+#  if defined O_mobi_silicon
+cAAA now in tnpzd
+c            sil_in(:) =  t(i,:,j,isil,taum1)*1.e3 ! convert to mmol m-3 for npzd_src!
 #  endif
-#  if defined O_kk_diat && !defined O_kk_si
-			sil_in(:) = si_msk(i,j,:)*1.e3  ! convert to mmol m-3 for npzd_src!
-#  endif
-#  if defined O_carbon_13 || defined O_npzd_caco3
+#  if defined O_carbon_13 || defined O_mobi_caco3
             s_in(:) = 1.e3*t(i,:,j,isalt,taum1) + 35.0
             dic_in(:) = t(i,:,j,idic,taum1) !mol/m^3
             alk_in(:)  = t(i,:,j,ialk,taum1) !eq/m^3
@@ -438,9 +435,10 @@ C      The units really need to be checked!
             dic13_in(:) = tnpzd(:,imobidic13) !mol/m^3
 #   endif
 #  endif
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
+cAAA is this necessary (already in tnpzd)?
             no3_in(:) = tnpzd(:,imobino3)
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
             din15_in(:) = tnpzd(:,imobidin15)
 #   endif
 #  endif
@@ -448,24 +446,24 @@ C      The units really need to be checked!
 !  end input
             call mobi_driver(
      &                 kmt(i,jrow), c2dtts, rctheta, dayfrac, swr, tnpzd
-     &,                t_in, po4_in
-#  if defined O_npzd_o2
+     &,                t_in
+#  if defined O_mobi_o2
      &,                o2_in
 #  endif
-#  if defined O_carbon_13 || defined O_npzd_caco3
+#  if defined O_carbon_13 || defined O_mobi_caco3
      &,                s_in, dic_in, alk_in, co2_in
 #  endif
 #  if defined O_carbon_13
-     &,                dic13_in
+c     &,                dic13_in
 #  endif
-#  if defined O_kk_diat
-     &,                sil_in
+#  if defined O_mobi_silicon
+c     &,                sil_in
 #  endif
      &,                sgb_in
-#  if defined O_npzd_nitrogen
-     &,                no3_in
-#   if defined O_npzd_nitrogen_15
-     &,                din15_in
+#  if defined O_mobi_nitrogen
+c     &,                no3_in
+#   if defined O_mobi_nitrogen_15
+c     &,                din15_in
 #   endif
 #  endif
 #  if defined O_sed
@@ -474,7 +472,7 @@ C      The units really need to be checked!
      &,                src(i,:,j,:))
 
 !juan added dust iron here instead of in the set source/sinks part:
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
 ! comes in mol/m2/s gets converted to mmol/m3/s
                 src(i,1,j,isdfe) = src(i,1,j,isdfe) +    
      &          sbc(i,j,idfeadep)*1000./(dzt(1)/100.)  !dzt is in cm
@@ -484,11 +482,12 @@ C      The units really need to be checked!
      &          fe_hydr(i,j,k)
                enddo
 #  endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
 CSPKKK      sink due to opal production term has already been applied to src 
 C           in S/R mobi_driver; we add hydrothermal fluxes here
-			src(i,k,j,issil) = src(i,k,j,issil) 
-     &                         + si_hydr(i,j,k)*si_h_sol !umol Si cm-3 s-1
+cAAA commented out for now
+c			src(i,k,j,issil) = src(i,k,j,issil) 
+c     &                         + si_hydr(i,j,k)*si_h_sol !umol Si cm-3 s-1
 CSPKKK     accumulate hydrothermal flux and opal burial terms
  	        silhydrflux = silhydrflux 
      &                          + si_hydr(i,j,k)*si_h_sol
@@ -502,18 +501,15 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
                sbc(i,jrow,ircal) = sbc(i,jrow,ircal) + sedcalflx
             endif
 #  endif
-#  if (defined O_time_averages || defined O_TMM) && defined O_save_npzd
+#  if (defined O_time_averages || defined O_TMM) && defined O_save_mobi_fluxes
 
 !-----------------------------------------------------------------------
 !             accumulate time averages
 !-----------------------------------------------------------------------
             if (timavgperts .and. .not. euler2) then
              expo = rprca
-#   if !defined O_npzd_caco3
+#   if !defined O_mobi_caco3
              ta_rprocal(i,jrow) =  ta_rprocal(i,jrow) + rprca
-#   endif
-#   if defined O_kk_si
-              ta_rproopl(i,jrow) =  ta_rproopl(i,jrow) + prop
 #   endif
              do k = 1, kmt(i,jrow)
               ta_rnpp(i,k,jrow) = ta_rnpp(i,k,jrow) + rnpp(k)
@@ -525,7 +521,7 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
               ta_rmorpt(i,k,jrow)= ta_rmorpt(i,k,jrow) + rmorpt(k)
               ta_rmorz(i,k,jrow) = ta_rmorz(i,k,jrow) + rmorz(k)
               ta_rexcr(i,k,jrow) = ta_rexcr(i,k,jrow) + rexcr(k)
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
               ta_rnpp_dop(i,k,jrow) = ta_rnpp_dop(i,k,jrow) 
      &             + rnpp_dop(k)              
               ta_rnpp_D(i,k,jrow) = ta_rnpp_D(i,k,jrow) + rnpp_D(k)
@@ -537,16 +533,20 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
      &                               + rmorpt_D(k)
               ta_rnfix(i,k,jrow) = ta_rnfix(i,k,jrow) + rnfix(k)
               ta_rbdeni(i,k,jrow) = ta_rbdeni(i,k,jrow) + rbdeni(k)
-#    if defined O_npzd_caco3
+#    if defined O_mobi_caco3
               ta_rnpp_C_dop(i,k,jrow) = ta_rnpp_C_dop(i,k,jrow) 
      &             + rnpp_C_dop(k)   
+#    endif              
+#    if defined O_mobi_silicon
+              ta_rnpp_Diat_dop(i,k,jrow) = ta_rnpp_Diat_dop(i,k,jrow) 
+     &             + rnpp_Diat_dop(k)
 #    endif              
 #   endif
 #   if defined O_kk_ballast
               ta_rgraz_Det_B(i,k,jrow) = ta_rgraz_Det_B(i,k,jrow)
      &                                 + rgraz_Det_B(k)
 #   endif
-#   if defined O_npzd_caco3
+#   if defined O_mobi_caco3
 !       print*,'KK tracer', rcalatt(k), rcalpro(k)
               ta_rcalatt(i,k,jrow) = ta_rcalatt(i,k,jrow)
      &                               + rcalatt(k)
@@ -561,18 +561,18 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
               ta_rmorpt_C(i,k,jrow)= ta_rmorpt_C(i,k,jrow)
      &                               + rmorpt_C(k)
 #   endif
-#   if defined O_kk_diat
-			  ta_rnpp_Diat(i,k,jrow) = ta_rnpp_Diat(i,k,jrow)
+#   if defined O_mobi_silicon
+              ta_rnpp_Diat(i,k,jrow) = ta_rnpp_Diat(i,k,jrow)
      &                                 + rnpp_Diat(k)
-			  ta_rgraz_Diat(i,k,jrow) = ta_rgraz_Diat(i,k,jrow)
+              ta_rgraz_Diat(i,k,jrow) = ta_rgraz_Diat(i,k,jrow)
      &                                  + rgraz_Diat(k)
-			  ta_rmorp_Diat(i,k,jrow) = ta_rmorp_Diat(i,k,jrow)
+              ta_rmorp_Diat(i,k,jrow) = ta_rmorp_Diat(i,k,jrow)
      &                                  + rmorp_Diat(k)
-			  ta_rmorpt_Diat(i,k,jrow)= ta_rmorpt_Diat(i,k,jrow)
+              ta_rmorpt_Diat(i,k,jrow)= ta_rmorpt_Diat(i,k,jrow)
      &                                  + rmorpt_Diat(k)
 #   endif
-#   if defined O_npzd_iron
-#    if defined O_npzd_iron_diagnostics
+#   if defined O_mobi_iron
+#    if defined O_save_mobi_diagnostics
               ta_rfeorgads(i,k,jrow) = ta_rfeorgads(i,k,jrow)
      &                              + rfeorgads(k)
               ta_rdeffe(i,k,jrow) = ta_rdeffe(i,k,jrow)
@@ -585,13 +585,17 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
      &                              + rbfe(k)
               ta_rfecol(i,k,jrow) = ta_rfecol(i,k,jrow)
      &                              + rfecol(k)
-#     if defined O_npzd_caco3
+#     if defined O_mobi_caco3
               ta_rdeffe_C(i,k,jrow) = ta_rdeffe_C(i,k,jrow)
      &                              + rdeffe_C(k)
 #     endif                
+#     if defined O_mobi_silicon
+              ta_rdeffe_Diat(i,k,jrow) = ta_rdeffe_Diat(i,k,jrow)
+     &                              + rdeffe_Diat(k)
+#     endif                
 #    endif
 #   endif
-#   if defined O_npzd_extra_diagnostics
+#   if defined O_save_mobi_diagnostics
               ta_ravej(i,k,jrow) = ta_ravej(i,k,jrow) + ravej(k)
               ta_ravej_D(i,k,jrow) = ta_ravej_D(i,k,jrow) + ravej_D(k)
               ta_rgmax(i,k,jrow) = ta_rgmax(i,k,jrow) + rgmax(k)
@@ -599,9 +603,10 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
               ta_rpo4P(i,k,jrow) = ta_rpo4P(i,k,jrow) + rpo4P(k)
               ta_rpo4_D(i,k,jrow) = ta_rpo4_D(i,k,jrow) + rpo4_D(k)
 #   endif
-#   if defined O_npzd_caco3
-              ta_rdissl(i,k,jrow) = ta_rdissl(i,k,jrow)
-     &                              + rdissl(k)
+#   if defined O_mobi_caco3
+              ta_rdissl(i,k,jrow) = ta_rdissl(i,k,jrow) + rdissl(k)
+              ta_romega_c(i,k,jrow) = ta_romega_c(i,k,jrow)
+     &                              + romega_c(k)
               ta_rexpocaco3(i,k,jrow) =
      &          ta_rexpocaco3(i,k,jrow) + rexpocaco3(k)
 #   endif
@@ -610,14 +615,14 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
      &                                 + rremi_B(k)
               ta_rexpo_B(i,k,jrow) = ta_rexpo_B(i,k,jrow)
      &                                 + rexpo_B(k) !ballast detritus
-#   endif              
-#   if defined O_kk_si
-			  ta_rexpoopl(i,k,jrow) = ta_rexpoopl(i,k,jrow) 
-     &                                 + expo_op*dztr(k) !umol/cm3/s
-			  ta_rdisopl(i,k,jrow) = ta_rdisopl(i,k,jrow)
-     &                                 + op_diss*dztr(k)
-			  ta_rbur_sil(i,k,jrow) = ta_rbur_sil(i,k,jrow)
-     &                                 + bsi(k)*dztr(k) !umol/cm3/s
+#   endif
+#   if defined O_mobi_silicon
+              ta_rexpoopl(i,k,jrow) = ta_rexpoopl(i,k,jrow) 
+     &                                 + rexpoopl(k) 
+              ta_rdisopl(i,k,jrow) = ta_rdisopl(i,k,jrow)
+     &                                 + rdisopl(k)
+              ta_rproopl(i,k,jrow) = ta_rproopl(i,k,jrow)
+     &                                 + rproopl(k)
 #   endif
               expo = expo*dztr(k)
               ta_rremi(i,k,jrow) = ta_rremi(i,k,jrow) + rremi(k)
@@ -625,11 +630,11 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
               expo = expo - rprca*rcak(k)
               ta_rexpocal(i,k,jrow) = ta_rexpocal(i,k,jrow) + expo
               expo = expo*dzt(k)
-#   if defined O_npzd_nitrogen && defined O_npzd_o2
+#   if defined O_mobi_nitrogen && defined O_mobi_o2
               ta_rwcdeni(i,k,jrow) = ta_rwcdeni(i,k,jrow) 
      &           + rwcdeni(k)
 #   endif
-#   if defined O_npzd_iron
+#   if defined O_mobi_iron
                 ta_rremife(i,k,jrow) = ta_rremife(i,k,jrow) 
      &               + rremife(k)
                 ta_rexpofe(i,k,jrow) = ta_rexpofe(i,k,jrow)
@@ -643,8 +648,8 @@ CSPKKK     accumulate hydrothermal flux and opal burial terms
         enddo
       enddo
 
-#  if defined O_embm      
-#   if defined O_kk_si 
+#  if defined O_embm
+#   if defined O_mobi_silicon
 #    if defined O_kk_si_compensating_sources
 CSPKKK This will not work with TMM. opalburial and silhydrflux as computed above 
 C      are the spatially integrated local (for the current CPU) terms. But we need 
@@ -656,12 +661,14 @@ C      the next time step. Ugh.
 #    else
 	  rivsil = globalsilwflx/globaldisch
 #    endif
+#    if defined O_save_mobi_fluxes
 	 do j=js,je
 	   jrow = j + joff
 	   do i=is,ie
 		 if (kmt(i,jrow) .gt. 0) then      
-		 src(i,1,j,issil) = src(i,1,j,issil)
-     &                        + rivsil*disch(i,j)*dztr(1)
+cAAA comment out for now
+c		 src(i,1,j,issil) = src(i,1,j,issil)
+c     &                        + rivsil*disch(i,j)*dztr(1)
 		  if (timavgperts .and. .not. euler2) then
 			 ta_rrivsil(i,jrow) = ta_rrivsil(i,jrow)
      &                           + rivsil*disch(i,j)
@@ -669,6 +676,7 @@ C      the next time step. Ugh.
 		 endif
 	  enddo
 	 enddo 
+#    endif
 #   endif
 #  endif ! O_embm
 # endif
@@ -708,7 +716,7 @@ C      the next time step. Ugh.
      &,         tmpijk, c1, c0)
               fnpzd(2:imtm1,2:jmtm1,1:km,1)=tmpijk(1:imtm2,1:jmtm2,1:km)
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
               call getvara ('O_fnpzd2', iou, imtm2*jmtm2*km, ib, ic
      &,         tmpijk, c1, c0)
               fnpzd(2:imtm1,2:jmtm1,1:km,2)=tmpijk(1:imtm2,1:jmtm2,1:km)
@@ -725,7 +733,7 @@ C      the next time step. Ugh.
 #  if defined O_carbon
               fnpzd(i,jrow,k,1) = src(i,k,j,isdic)
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
               fnpzd(i,jrow,k,2) = src(i,k,j,isalk)
 #  endif
             enddo
@@ -749,7 +757,7 @@ C      the next time step. Ugh.
             call putvara ('O_fnpzd1', iou, imtm2*jmtm2*km, ib, ic
      &,       tmpijk, c1, c0)
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
             tmpijk(1:imtm2,1:jmtm2,1:km) = fnpzd(2:imtm1,2:jmtm1,1:km,2)
             call putvara ('O_fnpzd2', iou, imtm2*jmtm2*km, ib, ic
      &,       tmpijk, c1, c0)
@@ -764,7 +772,7 @@ C      the next time step. Ugh.
 #  if defined O_carbon
               src(i,k,j,isdic) = fnpzd(i,jrow,k,1)
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
               src(i,k,j,isalk) = fnpzd(i,jrow,k,2)
 #  endif
             enddo
@@ -784,7 +792,7 @@ C      the next time step. Ugh.
         do i=is,ie
           if (kmt(i,jrow) .gt. 0) then
             do k=1,kmt(i,jrow)
-#  if defined O_npzd
+#  if defined O_mobi
               src(i,k,j,isc14) = src(i,k,j,isdic)*rc14std
      &                         - 3.836e-12*t(i,k,j,ic14,taum1)
 #  else
@@ -805,14 +813,14 @@ C      the next time step. Ugh.
         do i=is,ie
           if (kmt(i,jrow) .gt. 0) then
             k = kmt(i,jrow)
-#  if defined O_carbon && defined O_npzd
+#  if defined O_carbon && defined O_mobi
             src(i,k,j,isdic) = src(i,k,j,isdic) + sbc(i,j,ibdicfx)
 #   if defined O_global_sums
             if (addflxo .and. eots) dtoic = dtoic - sbc(i,j,ibdicfx)
      &        *c2dtts*dtxcel(k)*dxt(i)*dyt(jrow)*cst(jrow)*dzt(k)
 #   endif
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
             src(i,k,j,isalk) = src(i,k,j,isalk) + sbc(i,j,ibalkfx)
 #  endif
           endif
@@ -995,7 +1003,7 @@ C      the next time step. Ugh.
           enddo
         enddo
 
-# if defined O_source_term || defined O_npzd || defined O_carbon_14
+# if defined O_source_term || defined O_mobi || defined O_carbon_14
 
 !-----------------------------------------------------------------------
 !       set source term for "T" cells
@@ -1003,7 +1011,7 @@ C      the next time step. Ugh.
 
         source(:,:,:) = c0
 
-#  if defined O_npzd || defined O_carbon_14
+#  if defined O_mobi || defined O_carbon_14
         if (itrc(n) .ne. 0) then
           do j=js,je
             do k=1,km
@@ -1047,7 +1055,7 @@ c,src(50,5,50,itrc(ipo4))
      &          - ADV_Txiso(i,k,j,n) - ADV_Tyiso(i,k,j,jrow,n)
      &          - ADV_Tziso(i,k,j)
 # endif
-# if defined O_source_term || defined O_npzd || defined O_carbon_14
+# if defined O_source_term || defined O_mobi || defined O_carbon_14
      &          + source(i,k,j)
 # endif
 # if defined O_plume
@@ -1236,11 +1244,11 @@ C SPK: this used to be twodt(1) but in offline mode this is not set anywhere
               sbc(i,jrow,ibdic) = sbc(i,jrow,ibdic)
      &                          + t(i,k,j,idic,taup1)*c2dtts
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
               sbc(i,jrow,ibalk) = sbc(i,jrow,ibalk)
      &                          + t(i,k,j,ialk,taup1)*c2dtts
 #  endif
-#  if defined O_npzd_o2
+#  if defined O_mobi_o2
               sbc(i,jrow,ibo2) = sbc(i,jrow,ibo2)
      &                         + t(i,k,j,io2,taup1)*c2dtts
 #  endif
@@ -1335,8 +1343,8 @@ C SPK: this used to be twodt(1) but in offline mode this is not set anywhere
 # if defined O_tracer_averages
 #include "ctavg.h"
 # endif
-# if defined O_npzd_caco3
-#include "npzd.h"
+# if defined O_mobi_caco3
+#include "mobi.h"
 # endif      
 #include "diag.h"
 #include "diaga.h"
@@ -1516,7 +1524,7 @@ C SPK: this used to be twodt(1) but in offline mode this is not set anywhere
      &          - delx*(ADV_Ty(i,k,j,jrow,n) + ADV_Tz(i,k,j))
               tyz(jrow,k,n,4) =  tyz(jrow,k,n,4)
      &          + delx*(DIFF_Ty(i,k,j,jrow,n) + DIFF_Tz(i,k,j))
-#  if defined O_source_term || defined O_npzd || defined O_carbon_14
+#  if defined O_source_term || defined O_mobi || defined O_carbon_14
               tyz(jrow,k,n,5) = tyz(jrow,k,n,5) + delx*source(i,k,j)
 #  endif
             enddo
@@ -1566,7 +1574,7 @@ C SPK: this used to be twodt(1) but in offline mode this is not set anywhere
               stor(i,k) = stor(i,k) + rtwodt*dxdydz*
      &                            (t(i,k,j,n,taup1) - t(i,k,j,n,taum1))
               div(i,k)  = div(i,k)  - dxdydz*ADV_Ty(i,k,j,jrow,n)
-#  if defined O_source_term || defined O_npzd || defined O_carbon_14
+#  if defined O_source_term || defined O_mobi || defined O_carbon_14
               sorc(i,k) = sorc(i,k) + dxdydz*source(i,k,j)
 #  endif
               dif(i,k)  = dif(i,k)  + dxdydz*DIFF_Ty(i,k,j,jrow,n)

@@ -29,7 +29,7 @@
       real tah(3), taf(3), tac(3), tsh(3), tsf(3), tsc(3), tih(3)
       real tif(3), tic(3), tlh(3), tlf(3), tlc(3), toh(3), tof(3)
       real toc(3), th, tf, tc, RFTIME, time, tmp, c1e20, vol, avgper
-# if defined O_kk_si
+# if defined O_mobi_silicon
       real dtos1, dtos2, dts1, dts2, dtois1, dtois2, tos(3)
       save tos, dtois1, ts
 # endif
@@ -59,8 +59,8 @@
       include "switch.h"
 # if defined O_mom
       include "mw.h"
-#  if defined O_npzd
-      include "npzd.h"
+#  if defined O_mobi
+      include "mobi.h"
 #  endif
 # endif
 # if defined O_mtlm
@@ -79,7 +79,7 @@
         dtoic = 0.
         dtoic1 = 0.0
       endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       if (ind .eq. 1) then
         dtois = 0.
         dtois1 = 0.0
@@ -103,7 +103,7 @@
         toh(n) = 0.
         tof(n) = 0.
         toc(n) = 0.
-# if defined O_kk_si
+# if defined O_mobi_silicon
         tos(n) = 0.
 # endif
       enddo
@@ -206,31 +206,27 @@
             tof(3) = tof(3) + t(i,k,j,isalt,taup1)*vol
 #  if defined O_carbon
             toc(3) = toc(3) + t(i,k,j,idic,taup1)*vol
-#   if defined O_npzd
+#   if defined O_mobi
             toc(3) = toc(3) + t(i,k,j,iphyt,taup1)*vol*redctn
             toc(3) = toc(3) + t(i,k,j,izoop,taup1)*vol*redctn
             toc(3) = toc(3) + t(i,k,j,idetr,taup1)*vol*redctn
-#    if defined O_npzd_caco3
+#    if defined O_mobi_caco3
             toc(3) = toc(3) + t(i,k,j,icaco3,taup1)*vol*1.e-3
 ! attached calcite
             toc(3) = toc(3) + t(i,k,j,izoop,taup1)*vol*redctn*capr
-            toc(3) = toc(3) + t(i,k,j,icocc,taup1)*vol*redctn*capr
 #     if defined O_kk_ballast
             toc(3) = toc(3) + t(i,k,j,idetr_B,taup1)*vol*redctn
 #     endif
 #    endif
-#    if defined O_npzd_caco3
-            toc(3) = toc(3) + t(i,k,j,icocc,taup1)*vol*redctn
-#    endif
-#    if defined O_kk_diat
+#    if defined O_mobi_silicon
             toc(3) = toc(3) + t(i,k,j,idiat,taup1)*vol*redctn
 #    endif
-#    if defined O_npzd_nitrogen
+#    if defined O_mobi_nitrogen
             toc(3) = toc(3) + t(i,k,j,idiaz,taup1)*vol*redctn
 #    endif
 #   endif
 #  endif
-#  if defined O_kk_si
+#  if defined O_mobi_silicon
             tos(3) = tos(3) + t(i,k,j,isil,taup1)*vol
 #  endif
           enddo
@@ -275,7 +271,7 @@
       tof(3) = -tof(3)/(socn*1.e3)
 !     12e-9 kg/umol
       toc(3) = toc(3)*12.e-9
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
       tos(3) = tos(3)*28.0855e-9
 #   endif
 # endif
@@ -302,7 +298,7 @@
       dtoc1 = toc(3) - toc(1)
       dtoih1 = dtoih1 + dtoih
       dtoic1 = dtoic1 + dtoic
-# if defined O_kk_si
+# if defined O_mobi_silicon
       dtois = dtois*28.0855e-9 !28 kg/umol
       dtos1 = tos(3) - tos(1)
       dtois1 = dtois1 + dtois
@@ -326,7 +322,7 @@
       dtoc2 = toc(3) - toc(2)
       dtoih2 = dtoih
       dtoic2 = dtoic
-# if defined O_kk_si
+# if defined O_mobi_silicon
       dtos2 = tos(3) - tos(2)
       dtois2 = dtois
       dtois = 0.0
@@ -350,7 +346,7 @@
         toh(n) = toh(3)
         tof(n) = tof(3)
         toc(n) = toc(3)
-# if defined O_kk_si
+# if defined O_mobi_silicon
         tos(n) = tos(3)
 # endif
       enddo
@@ -365,7 +361,7 @@
         dth2 = dtah2 + dtsh2 + dtih2 + dtlh2 + dtoh2 + dtoih2
         dtf2 = dtaf2 + dtsf2 + dtif2 + dtlf2 + dtof2
         dtc2 = dtac2 + dtsc2 + dtic2 + dtlc2 + dtoc2 + dtoic2
-# if defined O_kk_si
+# if defined O_mobi_silicon
         dts1 = dtos1 + dtois1
         dts2 = dtos2 + dtois2
 # endif
@@ -433,7 +429,7 @@
           call putvars ('G_dtheat', iou, ntrec, dth1, c1, c0)
           call putvars ('G_dtwater', iou, ntrec, dtf1, c1, c0)
           call putvars ('G_dtcarb', iou, ntrec, dtc1, c1, c0)
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
           call putvars ('G_dtsilica', iou, ntrec, dts1, c1, c0)
 #   endif
 # endif
@@ -478,7 +474,7 @@
         th = tah(ind) + tsh(ind) + tih(ind) + tlh(ind) + toh(ind)
         tf = taf(ind) + tsf(ind) + tif(ind) + tlf(ind) + tof(ind)
         tc = tac(ind) + tsc(ind) + tic(ind) + tlc(ind) + toc(ind)
-#  if defined O_kk_si
+#  if defined O_mobi_silicon
         ts = tos(ind)
 #  endif
         write (*,'(/,a,a)') 'Total heat (in Joules referenced to 0 C'
@@ -497,7 +493,7 @@
      &,   ' t lnd    ', tlh(ind),' J ',tlf(ind),' kg ',tlc(ind),' kg'
      &,   ' t ocn    ', toh(ind),' J ',tof(ind),' kg ',toc(ind),' kg'
      &,   ' t total  ', th,      ' J ',tf,      ' kg ',tc,      ' kg'
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
 !     &,   ' ocn sil  ', tos(ind),' kg tot sil', ts, ' kg'
 #   endif
 # else
@@ -591,7 +587,7 @@
      &, c1e20, ' ', 'F', 'water conservation error', ' ', 'kg')
       call defvar ('G_dtcarb', iou, 1, id, -c1e20
      &, c1e20, ' ', 'F', 'carbon conservation error', ' ', 'kg')
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
       call defvar ('G_dtsilica', iou, 1, id, -c1e20
      &, c1e20, ' ', 'F', 'silica conservation error', ' ', 'kg')
 #   endif

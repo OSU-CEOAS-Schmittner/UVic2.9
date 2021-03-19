@@ -169,9 +169,7 @@
      &,                    tai_sscfc12, tai_sulph, tai_volc, tai_agg
      &,                    tai_catm, tai_carbemit, ntrec
      &,                    tai_ssdfe
-#  if defined O_kk_si
      &,                    tai_sssil
-#  endif
      &                     )     
 
         call ta_embm_tsi (is, ie, js, je, 0)
@@ -1239,25 +1237,25 @@
         tai_ssc14 = tai_ssc14 + tmp
 #  endif
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
         call areaavg (sbc(1,1,issalk), dmsk, tmp)
         tai_ssalk = tai_ssalk + tmp
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
         call areaavg (sbc(1,1,isso2), dmsk, tmp)
         tai_sso2 = tai_sso2 + tmp
 # endif
-# if defined O_npzd
+# if defined O_mobi
         call areaavg (sbc(1,1,isspo4), dmsk, tmp)
         tai_sspo4 = tai_sspo4 + tmp
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
         call areaavg (sbc(1,1,issdop), dmsk, tmp)
         tai_ssdop = tai_ssdop + tmp
         call areaavg (sbc(1,1,issno3), dmsk, tmp)
         tai_ssno3 = tai_ssno3 + tmp
         call areaavg (sbc(1,1,issdon), dmsk, tmp)
         tai_ssdon = tai_ssdon + tmp
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
         call areaavg (sbc(1,1,issdin15), dmsk, tmp)
         tai_ssdin15 = tai_ssdin15 + tmp
         call areaavg (sbc(1,1,issdon15), dmsk, tmp)
@@ -1268,7 +1266,7 @@
         call areaavg (sbc(1,1,issdoc13), dmsk, tmp)
         tai_ssdoc13 = tai_ssdoc13 + tmp
 #  endif
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
         call areaavg (sbc(1,1,issdfe), dmsk, tmp)
         tai_ssdfe = tai_ssdfe + tmp
 #  endif

@@ -49,7 +49,7 @@
       include "evp.h"
 # endif
 # if defined O_carbon_13 && defined O_carbon_13_coupled && !defined O_c13ccn_data && !defined O_c13ccn_data_transient
-      include "npzd.h"
+      include "mobi.h"
 # endif
       include "tmngr.h"
       include "switch.h"
@@ -290,7 +290,7 @@
       call getvara ('sbc_ssdic', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdic) = tmpij(ils:ile,jls:jle)
 #  if defined O_carbon_13
-       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdic13)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdic13)
       call getvara ('sbc_ssdic13', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdic13) = tmpij(ils:ile,jls:jle)
 #  endif
@@ -300,27 +300,30 @@
       sbc(ils:ile,jls:jle,issc14) = tmpij(ils:ile,jls:jle)
 #  endif
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isssil)
       call getvara ('sbc_sssil', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,isssil) = tmpij(ils:ile,jls:jle)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issopl)
+      call getvara ('sbc_ssopl', iou, ln, ib, ic, tmpij, c1, c0)
+      sbc(ils:ile,jls:jle,issopl) = tmpij(ils:ile,jls:jle)
 # endif
-# if defined O_npzd
+# if defined O_mobi
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isspo4)
       call getvara ('sbc_sspo4', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,isspo4) = tmpij(ils:ile,jls:jle)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isso2)
       call getvara ('sbc_sso2', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,isso2) = tmpij(ils:ile,jls:jle)
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issalk)
       call getvara ('sbc_ssalk', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issalk) = tmpij(ils:ile,jls:jle)
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
       call getvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdop) = tmpij(ils:ile,jls:jle)
@@ -330,7 +333,7 @@
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon)
       call getvara ('sbc_ssdon', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdon) = tmpij(ils:ile,jls:jle)
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdin15)
       call getvara ('sbc_ssdin15', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdin15) = tmpij(ils:ile,jls:jle)
@@ -339,7 +342,7 @@
       sbc(ils:ile,jls:jle,issdon15) = tmpij(ils:ile,jls:jle)
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdfe)
       call getvara ('sbc_ssdfe', iou, ln, ib, ic, tmpij, c1, c0)
       sbc(ils:ile,jls:jle,issdfe) = tmpij(ils:ile,jls:jle)
@@ -776,37 +779,39 @@
      &, 'ssc14', ' ', ' ')
 #  endif
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       call defvar ('sbc_sssil', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sssil', ' ', ' ')
+      call defvar ('sbc_ssopl', iou, 3, it, -c1e20, c1e20, ' ', 'D'
+     &, 'ssopl', ' ', ' ')
 # endif
-# if defined O_npzd
+# if defined O_mobi
       call defvar ('sbc_sspo4', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sspo4', ' ', ' ')
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       call defvar ('sbc_sso2', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'sso2', ' ', ' ')
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call defvar ('sbc_ssalk', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssalk', ' ', ' ')
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
       call defvar ('sbc_ssdop', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssdop', ' ', ' ')
       call defvar ('sbc_ssno3', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssno3', ' ', ' ')
       call defvar ('sbc_ssdon', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssdon', ' ', ' ')
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
       call defvar ('sbc_ssdin15', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssdin15', ' ', ' ')
       call defvar ('sbc_ssdon15', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssdon15', ' ', ' ')
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
       call defvar ('sbc_ssdfe', iou, 3, it, -c1e20, c1e20, ' ', 'D'
      &, 'ssdfe', ' ', ' ')
 # endif
@@ -995,7 +1000,7 @@
       include "iounit.h"
       include "switch.h"
 # if defined O_carbon_13
-      include "npzd.h"
+      include "mobi.h"
 # endif
       real xt_e(imt+1), xu_e(imt+1), yt_e(jmt+1), yu_e(jmt+1)
 
@@ -1221,37 +1226,39 @@
       call putvara ('sbc_ssc14', iou, ln, ib, ic, tmpij, c1, c0)
 #  endif
 # endif
-# if defined O_kk_si
+# if defined O_mobi_silicon
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isssil)
       call putvara ('sbc_sssil', iou, ln, ib, ic, tmpij, c1, c0)
+      tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issopl)
+      call putvara ('sbc_ssopl', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
-# if defined O_npzd
+# if defined O_mobi
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isspo4)
       call putvara ('sbc_sspo4', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,isso2)
       call putvara ('sbc_sso2', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issalk)
       call putvara ('sbc_ssalk', iou, ln, ib, ic, tmpij, c1, c0)
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdop)
       call putvara ('sbc_ssdop', iou, ln, ib, ic, tmpij, c1, c0)
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issno3)
       call putvara ('sbc_ssno3', iou, ln, ib, ic, tmpij, c1, c0)
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon)
       call putvara ('sbc_ssdon', iou, ln, ib, ic, tmpij, c1, c0)
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdin15)
       call putvara ('sbc_ssdin15', iou, ln, ib, ic, tmpij, c1, c0)
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdon15)
       call putvara ('sbc_ssdon15', iou, ln, ib, ic, tmpij, c1, c0)
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
       tmpij(ils:ile,jls:jle) = sbc(ils:ile,jls:jle,issdfe)
       call putvara ('sbc_ssdfe', iou, ln, ib, ic, tmpij, c1, c0)
 # endif

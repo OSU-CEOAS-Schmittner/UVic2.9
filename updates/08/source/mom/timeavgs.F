@@ -245,7 +245,7 @@
       include "levind.h"
       include "cregin.h"
       include "timeavgs.h"
-      include "npzd.h"
+      include "mobi.h"
 
 !     the following parameters are needed to define the workspace area
 
@@ -474,7 +474,7 @@
           ta_Lr(i,jj+1) = rnavgt * ta_Lr(i,jj+1)
         enddo
 #  endif
-#  if defined O_save_npzd
+#  if defined O_save_mobi_fluxes
 
         do k=1,kpzd
           do i=2,imtav
@@ -486,7 +486,7 @@
             ta_rmorpt(i,k,jj+1) = rnavgt*ta_rmorpt(i,k,jj+1)
             ta_rmorz(i,k,jj+1) = rnavgt*ta_rmorz(i,k,jj+1)
             ta_rexcr(i,k,jj+1) = rnavgt*ta_rexcr(i,k,jj+1)
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
             ta_rnpp_dop(i,k,jj+1) = rnavgt*ta_rnpp_dop(i,k,jj+1)            
             ta_rnpp_D(i,k,jj+1) = rnavgt*ta_rnpp_D(i,k,jj+1)
             ta_rnpp_D_dop(i,k,jj+1) = rnavgt*ta_rnpp_D_dop(i,k,jj+1)
@@ -494,43 +494,39 @@
             ta_rmorp_D(i,k,jj+1) = rnavgt*ta_rmorp_D(i,k,jj+1)
             ta_rmorpt_D(i,k,jj+1) = rnavgt*ta_rmorpt_D(i,k,jj+1)
             ta_rnfix(i,k,jj+1) = rnavgt*ta_rnfix(i,k,jj+1)
-#    if defined O_npzd_caco3
-            ta_rnpp_C_dop(i,k,jj+1) = rnavgt*ta_rnpp_C_dop(i,k,jj+1)  
+#    if defined O_mobi_silicon
+            ta_rnpp_Diat_dop(i,k,jj+1) = 
+     &                             rnavgt*ta_rnpp_Diat_dop(i,k,jj+1)  
 #    endif            
 #   endif
 #   if defined O_kk_ballast
             ta_rgraz_Det_B(i,k,jj+1) = rnavgt*ta_rgraz_Det_B(i,k,jj+1)
 #   endif
-#   if defined O_npzd_caco3
+#   if defined O_mobi_caco3
             ta_rprocal(i,k,jj+1) = rnavgt*ta_rprocal(i,k,jj+1)
-            ta_rcalatt(i,k,jj+1) = rnavgt*ta_rcalatt(i,k,jj+1)
-            ta_rnpp_C(i,k,jj+1) = rnavgt*ta_rnpp_C(i,k,jj+1)
-            ta_rgraz_C(i,k,jj+1) = rnavgt*ta_rgraz_C(i,k,jj+1)
-            ta_rmorp_C(i,k,jj+1) = rnavgt*ta_rmorp_C(i,k,jj+1)
-            ta_rmorpt_C(i,k,jj+1) = rnavgt*ta_rmorpt_C(i,k,jj+1)
 #   endif
-#   if defined O_kk_diat
+#   if defined O_mobi_silicon
             ta_rnpp_Diat(i,k,jj+1) = rnavgt*ta_rnpp_Diat(i,k,jj+1)
             ta_rgraz_Diat(i,k,jj+1) = rnavgt*ta_rgraz_Diat(i,k,jj+1)
             ta_rmorp_Diat(i,k,jj+1) = rnavgt*ta_rmorp_Diat(i,k,jj+1)
             ta_rmorpt_Diat(i,k,jj+1) = rnavgt*ta_rmorpt_Diat(i,k,jj+1)
 #   endif
-#   if defined O_npzd_iron
+#   if defined O_mobi_iron
             ta_rexpofe(i,k,jj+1) = rnavgt*ta_rexpofe(i,k,jj+1)
             ta_rremife(i,k,jj+1) = rnavgt*ta_rremife(i,k,jj+1)
-#    if defined O_npzd_iron_diagnostics
+#    if defined O_save_mobi_diagnostics
             ta_rfeorgads(i,k,jj+1) = rnavgt*ta_rfeorgads(i,k,jj+1)
             ta_rdeffe(i,k,jj+1) = rnavgt*ta_rdeffe(i,k,jj+1)
             ta_rfeprime(i,k,jj+1) = rnavgt*ta_rfeprime(i,k,jj+1)
             ta_rfesed(i,k,jj+1) = rnavgt*ta_rfesed(i,k,jj+1)
             ta_rbfe(i,k,jj+1) = rnavgt*ta_rbfe(i,k,jj+1)
             ta_rfecol(i,k,jj+1) = rnavgt*ta_rfecol(i,k,jj+1)
-#     if defined O_npzd_caco3
-            ta_rdeffe_C(i,k,jj+1) = rnavgt*ta_rdeffe_C(i,k,jj+1)
+#     if defined O_mobi_silicon
+            ta_rdeffe_Diat(i,k,jj+1) = rnavgt*ta_rdeffe_Diat(i,k,jj+1)
 #     endif            
 #    endif
 #   endif
-#   if defined O_npzd_extra_diagnostics
+#   if defined O_save_mobi_diagnostics
             ta_ravej(i,k,jj+1) = rnavgt*ta_ravej(i,k,jj+1)
             ta_ravej_D(i,k,jj+1) = rnavgt*ta_ravej_D(i,k,jj+1)
             ta_rgmax(i,k,jj+1) = rnavgt*ta_rgmax(i,k,jj+1)
@@ -550,29 +546,29 @@
             ta_rremi_B(i,k,jj+1) = rnavgt*ta_rremi_B(i,k,jj+1)
             ta_rexpo_B(i,k,jj+1) = rnavgt*ta_rexpo_B(i,k,jj+1)
 #   endif
-#   if defined O_npzd_caco3
+#   if defined O_mobi_caco3
+            ta_romega_c(i,k,jj+1) = rnavgt*ta_romega_c(i,k,jj+1)
             ta_rdissl(i,k,jj+1) = rnavgt*ta_rdissl(i,k,jj+1)
             ta_rexpocaco3(i,k,jj+1) = rnavgt*ta_rexpocaco3(i,k,jj+1)
 #   endif
-#   if defined O_kk_si
+#   if defined O_mobi_silicon
             ta_rexpoopl(i,k,jj+1) = rnavgt*ta_rexpoopl(i,k,jj+1)
             ta_rdisopl(i,k,jj+1) = rnavgt*ta_rdisopl(i,k,jj+1)
-            ta_rbur_sil(i,k,jj+1) = rnavgt*ta_rbur_sil(i,k,jj+1)
+            ta_rproopl(i,k,jj+1) = rnavgt*ta_rproopl(i,k,jj+1)
 #   endif
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
             ta_rwcdeni(i,k,jj+1) = rnavgt*ta_rwcdeni(i,k,jj+1)
             ta_rbdeni(i,k,jj+1) = rnavgt*ta_rbdeni(i,k,jj+1)
 #   endif
           enddo
         enddo
         do i=2,imtav
-#  if !defined O_npzd_caco3           
+#  if !defined O_mobi_caco3           
           ta_rprocal(i,jj+1) = rnavgt*ta_rprocal(i,jj+1)
 #  endif
-#   if defined O_kk_si
-		  ta_rproopl(i,jj+1) = rnavgt*ta_rproopl(i,jj+1)
-		  ta_rrivsil(i,jj+1) = rnavgt*ta_rrivsil(i,jj+1)           
-#   endif
+#  if defined O_mobi_silicon
+          ta_rrivsil(i,jj+1) = rnavgt*ta_rrivsil(i,jj+1)           
+#  endif
           ta_rsedrr(i,jj+1) = rnavgt*ta_rsedrr(i,jj+1)
         enddo
 #  endif
@@ -668,7 +664,7 @@
      &,   ta_Lr(is,jj+1)
      &,   ta_LRhi(is,1,jj+1)
 #  endif
-#  if defined O_save_npzd
+#  if defined O_save_mobi_fluxes
 #   if defined O_save_carbon_totals
      &,   redctn
 #   endif
@@ -678,7 +674,7 @@
      &,   ta_rmorz(is,1,jj+1), ta_rremi(is,1,jj+1)
      &,   ta_rexcr(is,1,jj+1), ta_rexpo(is,1,jj+1)
      &,   ta_rexpocal(is,1,jj+1)
-#    if !defined O_npzd_caco3 
+#    if !defined O_mobi_caco3 
      &,   ta_rprocal(is,jj+1)
 #    else
      &,   ta_rprocal(is,1,jj+1)        
@@ -689,45 +685,43 @@
      &,   ta_rexpo_B(is,1,jj+1), ta_rremi_B(is,1,jj+1)
      &,   ta_rgraz_Det_B(is,1,jj+1)
 #   endif
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
      &,   ta_rnpp_D(is,1,jj+1), ta_rnpp_D_dop(is,1,jj+1)
      &,   ta_rgraz_D(is,1,jj+1), ta_rnpp_dop(is,1,jj+1)
      &,   ta_rmorp_D(is,1,jj+1), ta_rmorpt_D(is,1,jj+1)
      &,   ta_rnfix(is,1,jj+1), ta_rwcdeni(is,1,jj+1)
      &,   ta_rbdeni(is,1,jj+1) 
-#    if defined O_npzd_caco3
-     &,   ta_rnpp_C_dop(is,1,jj+1)
+#    if defined O_mobi_silicon
+     &,   ta_rnpp_Diat_dop(is,1,jj+1)
 #    endif        
 #   endif
-#   if defined O_npzd_caco3
-     &,   ta_rnpp_C(is,1,jj+1), ta_rgraz_C(is,1,jj+1)
-     &,   ta_rmorp_C(is,1,jj+1), ta_rmorpt_C(is,1,jj+1)
+#   if defined O_mobi_caco3
      &,   ta_rdissl(is,1,jj+1),   ta_rexpocaco3(is,1,jj+1)
-     &,   ta_rcalatt(is,1,jj+1)
+     &,   ta_romega_c(is,1,jj+1)
 #   endif
-#   if defined O_kk_diat
+#   if defined O_mobi_silicon
      &,   ta_rnpp_Diat(is,1,jj+1), ta_rgraz_Diat(is,1,jj+1)
      &,   ta_rmorp_Diat(is,1,jj+1), ta_rmorpt_Diat(is,1,jj+1)
 #   endif
-#   if defined O_kk_si
-     &,   ta_rproopl(is,jj+1), ta_rrivsil(is,jj+1)
+#   if defined O_mobi_silicon
+     &,   ta_rproopl(is,1,jj+1), ta_rrivsil(is,jj+1)
      &,   ta_rexpoopl(is,1,jj+1)
      &,   ta_rdisopl(is,1,jj+1) 
-     &,   ta_rbur_sil(is,1,jj+1)        
+c     &,   ta_rbur_sil(is,1,jj+1)        
 #   endif
-#   if defined O_npzd_iron
+#   if defined O_mobi_iron
      &,   ta_rexpofe(is,1,jj+1), ta_rremife(is,1,jj+1)
-#    if defined O_npzd_iron_diagnostics
+#    if defined O_save_mobi_diagnostics
      &,   ta_rfeorgads(is,1,jj+1)
      &,   ta_rdeffe(is,1,jj+1), ta_rfeprime(is,1,jj+1)
      &,   ta_rfesed(is,1,jj+1), ta_rbfe(is,1,jj+1)
      &,   ta_rfecol(is,1,jj+1)
-#     if defined O_npzd_caco3
-     &,   ta_rdeffe_C(is,1,jj+1)
+#     if defined O_mobi_silicon
+     &,   ta_rdeffe_Diat(is,1,jj+1)
 #     endif
 #    endif
 #   endif
-#   if defined O_npzd_extra_diagnostics
+#   if defined O_save_mobi_diagnostics
      &,    ta_ravej(is,1,jj+1), ta_ravej_D(is,1,jj+1)
      &,    ta_rgmax(is,1,jj+1), ta_rno3P(is,1,jj+1)
      &,    ta_rpo4P(is,1,jj+1), ta_rpo4_D(is,1,jj+1)
@@ -796,7 +790,7 @@
       ta_Lr(:,:) = c0
       ta_LRhi(:,:,:) = c0
 #  endif
-#  if defined O_save_npzd
+#  if defined O_save_mobi_fluxes
       ta_rnpp(:,:,:) = c0
       ta_rgraz(:,:,:) = c0
       ta_rgraz_Z(:,:,:) = c0
@@ -809,7 +803,7 @@
       ta_rexpo(:,:,:) = c0
       ta_rexpocal(:,:,:) = c0
       ta_rsedrr(:,:) = c0
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
       ta_rnpp_dop(:,:,:) = c0
       ta_rnpp_D(:,:,:) = c0
       ta_rnpp_D_dop(:,:,:) = c0
@@ -819,22 +813,22 @@
       ta_rwcdeni(:,:,:) = c0
       ta_rbdeni(:,:,:) = c0
       ta_rnfix(:,:,:) = c0
-#    if defined O_npzd_caco3
-      ta_rnpp_C_dop(:,:,:) = c0
+#    if defined O_mobi_silicon
+      ta_rnpp_Diat_dop(:,:,:) = c0
 #    endif      
 #   endif
-#   if defined O_npzd_iron
+#   if defined O_mobi_iron
       ta_rexpofe(:,:,:) = c0
       ta_rremife(:,:,:) = c0
-#    if defined O_npzd_iron_diagnostics
+#    if defined O_save_mobi_diagnostics
       ta_rfeorgads(:,:,:) = c0
       ta_rdeffe(:,:,:) = c0
       ta_rfeprime(:,:,:) = c0
       ta_rfesed(:,:,:) = c0
       ta_rbfe(:,:,:) = c0 
       ta_rfecol(:,:,:) = c0 
-#     if defined O_npzd_caco3
-      ta_rdeffe_C(:,:,:) = c0
+#     if defined O_mobi_silicon
+      ta_rdeffe_Diat(:,:,:) = c0
 #     endif      
 #    endif
 #   endif
@@ -843,32 +837,28 @@
       ta_rexpo_B(:,:,:) = c0
       ta_rremi_B(:,:,:) = c0
 #   endif
-#   if defined O_npzd_caco3
-      ta_rcalatt(:,:,:) = c0
+#   if defined O_mobi_caco3
       ta_rdissl(:,:,:) = c0
+      ta_romega_c(:,:,:) = c0
       ta_rexpocaco3(:,:,:) = c0
-      ta_rnpp_C(:,:,:) = c0
-      ta_rgraz_C(:,:,:) = c0
-      ta_rmorp_C(:,:,:) = c0
-      ta_rmorpt_C(:,:,:) = c0
       ta_rprocal(:,:,:) = c0
 #   else
       ta_rprocal(:,:) = c0
 #   endif
-#   if defined O_kk_diat
+#   if defined O_mobi_silicon
       ta_rnpp_Diat(:,:,:) = c0
       ta_rgraz_Diat(:,:,:) = c0
       ta_rmorp_Diat(:,:,:) = c0
       ta_rmorpt_Diat(:,:,:) = c0
 #   endif
-#   if defined O_kk_si
-      ta_rproopl(:,:) = c0
+#   if defined O_mobi_silicon
+      ta_rproopl(:,:,:) = c0
       ta_rrivsil(:,:) = c0
       ta_rexpoopl(:,:,:) = c0
       ta_rdisopl(:,:,:) = c0    
-      ta_rbur_sil(:,:,:) = c0      
+c      ta_rbur_sil(:,:,:) = c0      
 #   endif
-#   if defined O_npzd_extra_diagnostics
+#   if defined O_save_mobi_diagnostics
       ta_ravej(:,:,:) = c0
       ta_ravej_D(:,:,:) = c0
       ta_rgmax(:,:,:) = c0
@@ -967,7 +957,7 @@
       ta_vntiso(:,:,:) = c0
       ta_vbtiso(:,:,:) = c0
 #  endif
-#  if defined O_save_npzd
+#  if defined O_save_mobi_fluxes
       ta_rnpp(:,:,:) = c0
       ta_rgraz(:,:,:) = c0
       ta_rgraz_Z(:,:,:) = c0
@@ -980,7 +970,7 @@
       ta_rexpo(:,:,:) = c0
       ta_rexpocal(:,:,:) = c0
       ta_rsedrr(:,:) = c0
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
       ta_rnpp_dop(:,:,:) = c0
       ta_rnpp_D(:,:,:) = c0
       ta_rnpp_D_dop(:,:,:) = c0
@@ -990,33 +980,29 @@
       ta_rnfix(:,:,:) = c0
       ta_rwcdeni(:,:,:) = c0
       ta_rbdeni(:,:,:) = c0
-#    if defined O_npzd_caco3
-      ta_rnpp_C_dop(:,:,:) = c0
-#    endif     
+#    if defined O_mobi_silicon
+      ta_rnpp_Diat_dop(:,:,:) = c0
+#    endif
 #   endif
-#   if defined O_npzd_iron
+#   if defined O_mobi_iron
       ta_rexpofe(:,:,:) = c0
       ta_rremife(:,:,:) = c0
-#    if defined O_npzd_iron_diagnostics
+#    if defined O_save_mobi_diagnostics
       ta_rfeorgads(:,:,:) = c0
       ta_rdeffe(:,:,:) = c0
       ta_rfeprime(:,:,:) = c0
       ta_rfesed(:,:,:) = c0
       ta_rbfe(:,:,:) = c0
       ta_rfecol(:,:,:) = c0
-#     if defined O_npzd_caco3
-      ta_rdeffe_C(:,:,:) = c0
+#     if defined O_mobi_silicon
+      ta_rdeffe_Diat(:,:,:) = c0
 #     endif
 #    endif
 #   endif
-#   if defined O_npzd_caco3
-      ta_rcalatt(:,:,:) = c0
+#   if defined O_mobi_caco3
       ta_rdissl(:,:,:) = c0
+      ta_romega_c(:,:,:) = c0
       ta_rexpocaco3(:,:,:) = c0      
-      ta_rnpp_C(:,:,:) = c0
-      ta_rgraz_C(:,:,:) = c0
-      ta_rmorp_C(:,:,:) = c0
-      ta_rmorpt_C(:,:,:) = c0
       ta_rprocal(:,:,:) = c0
 #   else
       ta_rprocal(:,:) = c0
@@ -1026,20 +1012,20 @@
       ta_rexpo_B(:,:,:) = c0
 #    endif
 #   endif
-#   if defined O_kk_diat
+#   if defined O_mobi_silicon
       ta_rnpp_Diat(:,:,:) = c0
       ta_rgraz_Diat(:,:,:) = c0
       ta_rmorp_Diat(:,:,:) = c0
       ta_rmorpt_Diat(:,:,:) = c0
 #   endif
-#   if defined O_kk_si
-      ta_rproopl(:,:) = c0
+#   if defined O_mobi_silicon
+      ta_rproopl(:,:,:) = c0
       ta_rrivsil(:,:) = c0
       ta_rexpoopl(:,:,:) = c0
       ta_rdisopl(:,:,:) = c0
-      ta_rbur_sil(:,:,:) = c0
+c      ta_rbur_sil(:,:,:) = c0
 #   endif
-#   if defined O_npzd_extra_diagnostics
+#   if defined O_save_mobi_diagnostics
       ta_ravej(:,:,:) = c0
       ta_ravej_D(:,:,:) = c0
       ta_rgmax(:,:,:) = c0
