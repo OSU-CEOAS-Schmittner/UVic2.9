@@ -623,6 +623,7 @@ c     &,                din15_in
       opl_dis = 0.0             ! opal dissolution rate 
       opl_pro = 0.0             ! opal production rate 
       bctd(:) = 0.0             ! temperature scaling of microbial dissolution
+      rexpoopl(:) = 0.0
 # endif  
 
       src(:,:) = 0.0
@@ -656,7 +657,6 @@ c     &,                din15_in
 #   if defined O_mobi_silicon
       rnpp_Diat_dop(:) = 0.0
       rdisopl(:) = 0.0
-      rexpoopl(:) = 0.0
 #   endif
 #  endif
 #  if defined O_kk_ballast
@@ -854,6 +854,7 @@ cAAA remove limit
 # endif
 # if defined O_mobi_silicon
          expoopl = expoopl*rnbio
+         rexpoopl(k) = expoopl
 # endif
 # if defined O_kk_ballast
          expo_B = expo_B*rnbio !ballast detritus
@@ -894,12 +895,11 @@ cAAA remove limit
          rmorp_D(k) = morp_D*rnbio
          rmorpt_D(k) = morpt_D*rnbio
          rnfix(k) = nfix(k)*rnbio
-#   if defined O_mobi_silicon
+#  endif
+#  if defined O_mobi_silicon
          rdisopl(k) = opl_dis*rnbio
          rproopl(k) = opl_pro*rnbio
-         rexpoopl(k) = expoopl
          rnpp_Diat_dop(k) = npp_Diat_dop*rnbio
-#   endif
 #  endif
 #  if defined O_kk_ballast
          rexpo_B(k) = expo_B  !ballast detritus
