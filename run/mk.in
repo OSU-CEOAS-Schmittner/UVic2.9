@@ -1,0 +1,215 @@
+# Add version directory for use
+# for Uvic_ESCM 2.9 version reference run
+#test for github
+Version_Directory = /Users/csomes/Research/Models/UVic2.9_ASGH
+
+# comment out unwanted options or directories with "#"
+
+Model_Options =
+
+#O_time_averages_monthly
+### options common to all models (need source_common)
+O_even_fluxes
+O_read_my_kmt 
+O_read_my_grid 
+O_cyclic
+O_time_averages
+O_time_step_monitor
+O_sbc_in_memory
+O_fourfil
+O_constant_flux_reference
+#O_global_sums
+#O_idealized_ic 
+#O_replacst
+#O_restorst
+#O_min_window
+#O_restart_2
+
+### atmosphere model options (need source_embm)
+O_embm
+O_embm_mgrid
+#O_embm_awind
+#O_embm_adiff
+#O_embm_vcs
+#O_save_embm_diff
+#O_save_embm_wind
+#O_embm_slap
+
+### sea-ice model options (need source_ice and source_embm)
+O_ice
+O_ice_evp  
+O_ice_fourfil
+#O_ice_cpts
+#O_ice_cpts3
+#O_ice_cpts5
+#O_ice_cpts10
+
+### land and vegetation model options (need source_mtlm and source_embm)
+O_mtlm
+O_mtlm_segday
+#O_mtlm_carbon_13
+#O_mtlm_carbon_14
+
+### ocean model options (need source_mom)
+O_gthflx
+O_mom
+O_ramdrive 
+O_conjugate_gradient 
+O_sf_5_point
+O_stream_function
+O_consthmix 
+O_constvmix 
+O_fullconvect
+O_save_convection
+O_stability_tests
+O_gyre_components 
+O_term_balances
+O_energy_analysis 
+O_meridional_overturning
+O_tracer_averages
+#O_bryan_lewis_vertical 
+O_gent_mcwilliams
+O_isopycmix 
+O_fct
+#O_quicker
+#O_ncar_upwind3
+O_mobi
+O_mobi_alk
+O_mobi_caco3
+O_mobi_o2
+O_mobi_nitrogen
+O_mobi_nitrogen_15
+O_mobi_silicon
+O_mobi_iron
+O_mobi_iron_var_ligands
+O_mobi_iron_sed_dale
+O_mobi_iron_gesamp_atmfedep
+O_mobi_iron_inscav_nonlinear
+O_mobi_sedcox_flogel
+O_mobi_omz_threshold_smooth
+#O_mobi_no_vflux
+O_save_mobi_fluxes
+O_save_mobi_diagnostics
+#O_save_kv
+O_tidal_kv
+O_anisotropic_viscosity
+#O_save_anisotropic_viscosity
+O_anisotropic_zonal_mixing
+
+#SPKKK
+#O_kk_ballast
+#O_kk_si_compensating_sources
+#O_kk_variable_sipr
+
+### Climate engineering options
+
+#O_pipe_co2
+#O_green_australia
+#O_green_africa
+
+### sediment model options (need source_sed and source_mom)
+#O_sed
+#O_sed_weath_diag
+#O_sed_uncoupled
+#O_sed_constrain_rainr
+
+### carbon options (need source_data)
+O_carbon
+#O_carbon_co2_2d
+#O_carbon_uncoupled
+O_carbon_13
+#O_carbon_13_coupled
+O_carbon_14
+#O_carbon_14_coupled
+#O_save_carbon_carbonate_chem
+#O_co2emit_diag
+#O_co2emit_track_sat
+#O_co2emit_track_co2
+#O_save_carbon_totals
+
+### forcing data options (need source_data)
+O_co2ccn_data
+#O_co2ccn_user
+#O_co2emit_data
+#O_co2emit_data_land
+#O_co2emit_data_fuel
+O_agric_data
+O_landice_data
+O_solar_data
+#O_volcano_data
+#O_sulphate_data
+#O_sulphate_data_direct
+#O_sulphate_data_indirect
+#O_aggfor_data
+#O_cfcs_data
+#O_c14ccn_data
+#O_orbit_user
+
+### transient forcing data options (need source_data)
+#O_co2ccn_data_transient
+#O_co2emit_data_transient
+#O_agric_data_transient
+#O_landice_data_transient
+#O_solar_data_transient
+#O_volcano_data_transient
+#O_sulphate_data_transient
+#O_aggfor_data_transient
+#O_cfcs_data_transient
+#O_c14ccn_data_transient
+#O_orbit_transient
+
+### freshwater anomaly options
+#O_fwa
+#O_fwa_compevap
+#O_fwa_precip
+
+### sea level options
+#O_sealev
+#O_sealev_data
+#O_sealev_data_transient
+#O_sealev_salinity
+
+### time step integral file options
+O_tai_otsf
+O_tai_ns
+O_tai_lo
+O_tai_slh
+O_tai_rad
+#O_tai_slh_from_averages
+#O_tai_otsf_from_averages
+
+### units
+O_units_temperature_Celsius
+O_units_time_years
+O_save_time_relyear0
+#O_save_time_startper
+#O_save_time_endper
+
+### source code directories (if excluded, exclude equivalent option)
+
+Source_Directory(1) = updates
+Source_Directory(2) = updates/08/common
+Source_Directory(3) = updates/08/embm
+Source_Directory(4) = updates/08/ice
+Source_Directory(5) = updates/08/mtlm
+Source_Directory(6) = updates/08/mom
+Source_Directory(7) = updates/08/sed
+Source_Directory(8) = source/common
+Source_Directory(9) = source/netcdf
+Source_Directory(10) = source/embm
+Source_Directory(11) = source/ice
+Source_Directory(12) = source/mtlm
+Source_Directory(13) = source/mom
+Source_Directory(14) = source/sed
+
+### data source directories
+Data_Source(1) = data.100.100.19
+
+### miscellaneous settings
+Executable_File = UVic_ESCM_ebpv_nlfc_isr_mor
+Input_File = control.in
+Output_File = pr
+Code_Directory = code
+Data_Directory = data
+Updates_Level = 08
+
