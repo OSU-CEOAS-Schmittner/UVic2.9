@@ -1,7 +1,7 @@
 # Add version directory for use
 # for Uvic_ESCM 2.9 version reference run
 #test for github
-Version_Directory = /Users/csomes/Research/Models/UVic2.9_ASGH
+Version_Directory = /Users/csomes/Research/Models/UVic2.9_GitHub
 
 # comment out unwanted options or directories with "#"
 
@@ -188,19 +188,15 @@ O_save_time_relyear0
 ### source code directories (if excluded, exclude equivalent option)
 
 Source_Directory(1) = updates
-Source_Directory(2) = updates/08/common
-Source_Directory(3) = updates/08/embm
-Source_Directory(4) = updates/08/ice
-Source_Directory(5) = updates/08/mtlm
-Source_Directory(6) = updates/08/mom
-Source_Directory(7) = updates/08/sed
-Source_Directory(8) = source/common
-Source_Directory(9) = source/netcdf
-Source_Directory(10) = source/embm
-Source_Directory(11) = source/ice
-Source_Directory(12) = source/mtlm
-Source_Directory(13) = source/mom
-Source_Directory(14) = source/sed
+Source_Directory(2) = updates/latest
+Source_Directory(3) = updates/08
+Source_Directory(4) = source/common
+Source_Directory(5) = source/netcdf
+Source_Directory(6) = source/embm
+Source_Directory(7) = source/ice
+Source_Directory(8) = source/mtlm
+Source_Directory(9) = source/mom
+Source_Directory(10) = source/sed
 
 ### data source directories
 Data_Source(1) = data.100.100.19
