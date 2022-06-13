@@ -1143,8 +1143,8 @@ c         if (zt(k) .le. 200000.) sg_bdeni = sgbdfac*sg_bdeni
          rremife(k) = rremife(k) + bfe
 #  endif
 #  if defined O_save_mobi_diagnostics
-         rfesed=fesed
-         rbfe=bfe 
+         rfesed(k)=fesed
+         rbfe(k)=bfe 
 #  endif
 # endif
          snpzd(imobipo4) = snpzd(imobipo4) + sgb_in(k)*expo_phos
