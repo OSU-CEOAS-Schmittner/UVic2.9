@@ -100,7 +100,7 @@
 #if defined O_mobi_iron && !defined O_mobi_iron_gesamp_atmfedep
         elseif ( m .eq. idfeadep ) then
 !         read atmospheric fe deposition
-          call get_tdsbc (n, 'O_feflux.nc', 'O_FEFLUX_GESAMP', idfeadep
+          call get_tdsbc (n, 'O_feflux.nc', 'O_FEFLUX', idfeadep
      &,     rdtdbc(n), c1, c0)
 
 #endif
