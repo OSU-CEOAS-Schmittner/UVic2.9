@@ -119,7 +119,7 @@
 # if defined O_mobi_iron && !defined O_mobi_iron_gesamp_atmfedep    
             elseif ( m .eq. idfeadep ) then              
               if (k .eq. 1) print*, 'atmospheric iron deposition'
-              call get_sbc (n, 'O_feflux.nc', 'O_FEFLUX_GESAMP', id, im
+              call get_sbc (n, 'O_feflux.nc', 'O_FEFLUX', id, im
      &,         c1, c0)  
 # endif
 # if defined O_mobi_silicon
