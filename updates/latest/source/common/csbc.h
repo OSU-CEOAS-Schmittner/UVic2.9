@@ -39,10 +39,14 @@
 !       issdop    = sea surface concentration of dop (nmol cm-3)
 !       idopflx   = sea surface flux of dop (nmol cm-2 s-1)
 !       issphyt   = sea surface concentration of phytoplankton (nmol P cm-3)
+!	issphyt_phos = sea surface concentration of phytoplankton_phos (nmol P cm-3)
 !       iphytflx  = sea surface flux of phytoplankton (nmol P cm-2 s-1)
+!       iphytflx_phos  = sea surface flux of phytoplankton_phos (nmol P cm-2 s-1)
 !       isszoop   = sea surface concentration of zooplankton (nmol P cm-3)
 !       izoopflx  = sea surface flux of zooplankton (nmol P cm-2 s-1)
 !       issdetr   = sea surface concentration of detritus (nmol P cm-3)
+!       issdetr_phos   = sea surface concentration of detritus_phos (nmol P cm-3)
+!       idetrflx_phos  = sea surface flux of detritus_phos (nmol P cm-2 s-1)
 !       idetrflx  = sea surface flux of detritus (nmol P cm-2 s-1)
 !       issdetrfe = sea surface concentration of particualte Fe (nmol Fe cm-3)  
 !       idetrfeflx= sea surface flux of particulate Fe (nmol Fe cm-2 s-1)
@@ -62,9 +66,8 @@
 !       issphytn15  = sea surface concentration of phytoplankton n15 
 !                     (nmol P cm-3)
 !       iphytn15flx = sea surface flux of phytoplankton n15 (nmol P cm-2 s-1)
-!       isscoccn15  = sea surface concentration of calcifiers n15 
-!                     (nmol P cm-3)
-!       icoccn15flx = sea surface flux of calcifiers n15 (nmol P cm-2 s-1)  
+!       issdiatn15  = sea surface concentration of diatoms n15 (nmol P cm-3)
+!       idiatn15flx = sea surface flux of diatoms n15 (nmol P cm-2 s-1)  
 !       isszoopn15  = sea surface concentration of zooplankton n15 (nmol P cm-3)
 !       izoopn15flx = sea surface flux of zooplankton n15 (nmol P cm-2 s-1)
 !       issdetrn15  = sea surface concentration of detritus n15 (nmol P cm-3)
@@ -73,14 +76,20 @@
 !       idiazn15flx = sea surface flux of diazotraphs (nmol P cm-2 s-1)
 !       issphytc13= sea surface concentration of phytc13 (nmol P cm-3)
 !       iphytc13flx= sea surface flux of phytc13 (nmol P cm-2 s-1)
-!       isscoccc13= sea surface concentration of coccc13 (nmol P cm-3)
-!       icoccc13flx= sea surface flux of coccc13 (nmol P cm-2 s-1)			  
+!       issdiatc13= sea surface concentration of diatc13 (nmol P cm-3)
+!       idiatc13flx= sea surface flux of diatc13 (nmol P cm-2 s-1)			  
 !       isszoopc13= sea surface concentration of zoopc13 (nmol P cm-3)
 !       izoopc13flx= sea surface flux of zoopc13 (nmol P cm-2 s-1)
 !       issdetrc13= sea surface concentration of detrc13 (nmol P cm-3)
 !       idetrc13flx= sea surface flux of detrc13 (nmol P cm-2 s-1)
 !       issc14    = sea surface concentration of carbon 14 (umol cm-3)
 !       ic14flx   = sea surface flux of carbon 14 (umol cm-2 s-1)
+!       isssil    = sea surface concentration of silica (umol cm-3)
+!       isilflx   = sea surface flux of silica (umol cm-2 s-1)
+!       issopl    = sea surface concentration of opal (umol cm-3)
+!       ioplflx   = sea surface flux of opal (umol cm-2 s-1)
+!       issdiat    = sea surface concentration of diatoms (umol cm-3) SPKKK should be nmol N/cm-3?
+!       idiatflx   = sea surface flux of diatoms (umol cm-2 s-1)  SPKKK units???
 !       isscfc11  = sea surface concentration of cfc11 (umol cm-3)
 !       icfc11flx = sea surface flux of cfc11 (umol cm-2 s-1)
 !       isscfc12  = sea surface concentration of cfc12 (umol cm-3)
@@ -111,6 +120,8 @@
 !       ibalk     = ocean bottom alkalinity (umol cm-3)
 !       ibalkfx   = ocean bottom flux of alkalinity (umol cm-2 s-1)
 !       ibo2      = ocean bottom oxygen (umol cm-3)
+!       ibsil     = ocean bottom dissolved Silica (umol cm-3)
+!       ibsilfx   = ocean bottom flux of Silica (umol cm-2 s-1)
 !       ircal     = rain rate of calcite (umol cm-2 s-1)
 !       irorg     = rain rate of organic carbon (umol cm-2 s-1)
 !     bhf        = spatially varying (bottom) heat flux
@@ -169,52 +180,62 @@
      &                  + 2 ! ssc14, c14flx
 # endif
 #endif
-#if defined O_npzd_alk
+#if defined O_mobi_alk
      &                  + 2 ! ssalk, alkflx
 #endif
-#if defined O_npzd_o2
+#if defined O_mobi_o2
      &                  + 2 ! sso2, o2flx
 #endif
-#if defined O_npzd
+#if defined O_mobi_silicon
+     &                  + 4 ! sssil, silflx, ssopl, oplflx
+#endif
+#if defined O_mobi
      &                  + 2 ! sspo4, po4flx
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
      &                  + 6 ! ssphyt, phytflx, sszoop, zoopflx, ssdetr, detrflx
+     &			+ 4 ! ssphyt_phos, phytflx_phos, ssdetr_phos, detrflx_phos
 #  if defined O_kk_ballast
      &                  + 2 ! ssdetr_B, detrflx_B
 #  endif
-#  if defined O_npzd_caco3
-     &                  + 4 ! sscaco3, caco3flx, sscocc, coccflx
+#  if defined O_mobi_caco3
+     &                  + 2 ! sscaco3, caco3flx
+#  endif
+#  if defined O_mobi_silicon
+     &                  + 2 ! ssdiat, diatflx
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
      &                  + 3 ! ssdfe, dfeflx, dfeadep
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
      &                  + 2 ! ssdetrfe, detrfeflx
 #  endif
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
      &                  + 6 ! ssdop, dopflx, ssno3, no3flx, ssdon, donflx
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
      &                  + 2 ! ssdiaz, diazflx
 #  endif
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
      &                  + 4 ! ssdin15, din15flx, ssdon15, don15flx
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
      &                  + 8 ! ssphytn15, phytn15flx, sszoopn15, zoopn15flx, ssddetrn15, detrn15flx, ssdiazn15, diazn15flx 
-#    if defined O_npzd_caco3
-     &                  + 2 ! sscoccn15, coccn15flx
+#    if defined O_mobi_silicon
+     &                  + 2 ! ssdiatn15, diatn15flx
 #    endif		 
 #   endif
 #  endif
 # endif
 #endif
 #if defined O_carbon_13
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
      &                  + 6 ! ssphytc13, phytc13flx, sszoopc13, zoopc13flx, ssdetrc13, detrc13flx
-#  if defined O_npzd_caco3
-     &                  + 4 ! sscoccc13, coccc13flx, sscaco3c13, caco3c13flx 
+#  if defined O_mobi_silicon
+     &                  + 2 ! ssdiatc13, diatc13flx
 #  endif
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_caco3
+     &                  + 2 ! sscaco3c13, caco3c13flx 
+#  endif
+#  if defined O_mobi_nitrogen
      &                  + 4 ! ssdoc13, doc13flx, ssdiazc13, diazc13flx
 #  endif
 # endif
@@ -239,7 +260,7 @@
 # if defined O_carbon
      &                  + 1
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
      &                  + 1
 # endif
 #endif
@@ -249,6 +270,7 @@
       integer iwa, iro, iwxq, iwyq, iwxt, iwyt, iwxc, iwyc, ipsw, isu
       integer isv, igu, igv, issdic, idicflx, issalk, ialkflx, isso2
       integer io2flx, isspo4, ipo4flx, issphyt, iphytflx, isszoop
+      integer issphyt_phos, iphytflx_phos, issdetr_phos, idetrflx_phos
       integer izoopflx, issdetr, idetrflx, issno3, ino3flx, issdiaz
       integer idiazflx, issc14, ic14flx, isscfc11, icfc11flx, isscfc12
       integer icfc12flx, iat, irh, ipr, ips, iaws, iswr, ilwr, isens
@@ -264,19 +286,22 @@
       integer issdic13, idic13flx, issdoc13, issphytc13, idoc13flx
       integer iphytc13flx, isszoopc13, izoopc13flx, issdetrc13
       integer idetrc13flx, issdiazc13, idiazc13flx
-      integer issdetr_B, idetrflx_B, isscoccc13, icoccc13flx
-      integer isscocc, icoccflx, isscoccn15, icoccn15flx
+      integer issdetr_B, idetrflx_B, issdiatc13, idiatc13flx
+      integer issdiatn15, idiatn15flx
       integer isscaco3, icaco3flx, isscaco3c13, icaco3c13flx
+      integer isssil, isilflx, ibsil, ibsilfx, issopl, ioplflx
+      integer issdiat, idiatflx
       integer trsbcindex(nt)
 			  
       common /csbc_i/ isscaco3, icaco3flx			  
-      common /csbc_i/ isscocc, icoccflx
       common /csbc_i/ issdetr_B, idetrflx_B
       common /csbc_i/ itaux, itauy, iws, iaca, isca, ihflx, isflx, isst
       common /csbc_i/ isss, iwa, iro, iwxq, iwyq, iwxt, iwyt, iwxc, iwyc
       common /csbc_i/ ipsw, isu, isv, igu, igv, issdic, idicflx, issalk
       common /csbc_i/ ialkflx, isso2, io2flx, isspo4, ipo4flx, issphyt
       common /csbc_i/ iphytflx, isszoop, izoopflx, issdetr, idetrflx
+      common /csbc_i/ issphyt_phos, iphytflx_phos
+      common /csbc_i/ issdetr_phos, idetrflx_phos
       common /csbc_i/ issno3, ino3flx, issdiaz, idiazflx, issc14
       common /csbc_i/ ic14flx, isscfc11, icfc11flx, isscfc12, icfc12flx
       common /csbc_i/ iat, irh, ipr, ips, iaws, iswr, ilwr, isens, ievap
@@ -288,13 +313,15 @@
       common /csbc_i/ issdin15, idin15flx, issdon15, idon15flx
       common /csbc_i/ issphytn15, iphytn15flx, isszoopn15, izoopn15flx 
       common /csbc_i/ idetrn15flx, issdiazn15, idiazn15flx
-      common /csbc_i/ issdetrn15, isscoccn15, icoccn15flx
+      common /csbc_i/ issdetrn15, issdiatn15, idiatn15flx
       common /csbc_i/ issdic13, idic13flx, issdoc13, idoc13flx 
       common /csbc_i/ issphytc13, iphytc13flx, isszoopc13, izoopc13flx 
       common /csbc_i/ issdetrc13, idetrc13flx, issdiazc13, idiazc13flx
       common /csbc_i/ issdfe, idfeflx, issdetrfe, idetrfeflx
       common /csbc_i/ idfeadep
-      common /csbc_i/ isscoccc13, icoccc13flx, isscaco3c13, icaco3c13flx
+      common /csbc_i/ issdiatc13, idiatc13flx, isscaco3c13, icaco3c13flx
+      common /csbc_i/ isssil, isilflx, ibsil, ibsilfx, issopl, ioplflx
+      common /csbc_i/ issdiat, idiatflx
       common /csbc_i/ trsbcindex
 			  
       character(20) :: mapsbc
@@ -341,3 +368,7 @@
       real dtoih, dtoic
 
       common /csbc_r/ dtoih, dtoic
+#if defined O_mobi_silicon
+      real dtois
+      common /csbc_r/ dtois
+#endif

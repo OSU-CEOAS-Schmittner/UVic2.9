@@ -23,6 +23,9 @@
 #if defined O_embm
       include "atm.h"
 #endif
+#if defined O_mobi_silicon
+      include "mobi.h"
+#endif
 
       c10 = 10.
       c100 = 100.
@@ -94,14 +97,19 @@
           call get_tdsbc (n, 'A_calbatm.nc', 'A_calbatm', iaca
      &,     rdtdbc(n), c1, c0)
 
-#if defined O_npzd_iron
+#if defined O_mobi_iron && !defined O_mobi_iron_gesamp_atmfedep
         elseif ( m .eq. idfeadep ) then
 !         read atmospheric fe deposition
-          call get_tdsbc (n, 'O_feflux.nc', 'O_feflux', idfeadep
+          call get_tdsbc (n, 'O_feflux.nc', 'O_FEFLUX', idfeadep
      &,     rdtdbc(n), c1, c0)
 
 #endif
-
+#if defined O_mobi_silicon
+        elseif ( m .eq. isilflx ) then
+!         read atmospheric si deposition
+          call get_tdsbc (n, 'O_sil_dep.nc', 'O_SIL_DEP', isilflx
+     &,     rdtdbc(n), c100*sildustfluxfac, c0)
+#endif
 #if defined O_read_my_stf
         elseif ( m .eq. ihflx ) then
 !         heat flux

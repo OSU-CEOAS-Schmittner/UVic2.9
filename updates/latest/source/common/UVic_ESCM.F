@@ -856,8 +856,8 @@
       idopflx = 0
       issphyt = 0
       iphytflx = 0
-      isscocc = 0
-      icoccflx = 0
+      issphyt_phos = 0
+      iphytflx_phos = 0
       icaco3flx = 0
       isscaco3 = 0
       issdetr_B = 0
@@ -865,13 +865,21 @@
       isszoop = 0
       izoopflx = 0
       issdetr = 0
+      issdetr_phos = 0
       idetrflx = 0
+      idetrflx_phos = 0
       issno3 = 0
       ino3flx = 0
       issdon = 0
       idonflx = 0
       issdiaz = 0
       idiazflx = 0
+      isssil = 0
+      isilflx = 0
+      issopl = 0
+      ioplflx = 0
+      issdiat = 0
+      idiatflx = 0
       issdfe = 0
       idfeflx = 0
       idfeadep = 0
@@ -883,8 +891,8 @@
       idon15flx = 0
       issphytn15 = 0
       iphytn15flx = 0
-      isscoccn15 = 0
-      icoccn15flx = 0      
+      issdiatn15 = 0
+      idiatn15flx = 0      
       isszoopn15 = 0
       izoopn15flx = 0
       issdetrn15 = 0
@@ -895,8 +903,8 @@
       idoc13flx = 0
       issphytc13 = 0
       iphytc13flx = 0
-      isscoccc13 = 0
-      icoccc13flx = 0            
+      issdiatc13 = 0
+      idiatc13flx = 0            
       isscaco3c13 = 0
       icaco3c13flx = 0            
       isszoopc13 = 0
@@ -946,6 +954,8 @@
       ibdic = 0
       ibdicfx = 0
       ibalkfx  = 0
+      ibsil = 0
+      ibsilfx = 0
 
       trsbcindex(:) = 0
       
@@ -999,56 +1009,70 @@
       call set (ic14flx, m, mapsbc(m), 'c14flx', m)
 # endif
 #endif
-#if defined O_npzd_alk
+#if defined O_mobi_alk
       call set (issalk, m, mapsbc(m), 'ssalk', m)
       trsbcindex(ialk) = issalk
       call set (ialkflx, m, mapsbc(m), 'alkflx', m)
 #endif
-#if defined O_npzd_o2
+#if defined O_mobi_o2
       call set (isso2, m, mapsbc(m), 'sso2', m)
       trsbcindex(io2) = isso2      
       call set (io2flx, m, mapsbc(m), 'o2flx', m)
 #endif
-#if defined O_npzd
+#if defined O_mobi
       call set (isspo4, m, mapsbc(m), 'sspo4', m)
       trsbcindex(ipo4) = isspo4
       call set (ipo4flx, m, mapsbc(m), 'po4flx', m)
-# if !defined O_npzd_no_vflux
+# if !defined O_mobi_no_vflux
       call set (issphyt, m, mapsbc(m), 'ssphyt', m)
       trsbcindex(iphyt) = issphyt
       call set (iphytflx, m, mapsbc(m), 'phytflx', m)
+      call set (issphyt_phos, m, mapsbc(m), 'ssphyt_phos', m)
+      trsbcindex(iphyt_phos) = issphyt_phos
+      call set (iphytflx_phos, m, mapsbc(m), 'phytflx_phos', m)
       call set (isszoop, m, mapsbc(m), 'sszoop', m)
       trsbcindex(izoop) = isszoop
       call set (izoopflx, m, mapsbc(m), 'zoopflx', m)
       call set (issdetr, m, mapsbc(m), 'ssdetr', m)
       trsbcindex(idetr) = issdetr
       call set (idetrflx, m, mapsbc(m), 'detrflx', m)
+      call set (issdetr_phos, m, mapsbc(m), 'ssdetr_phos', m)
+      trsbcindex(idetr_phos) = issdetr_phos
+      call set (idetrflx_phos, m, mapsbc(m), 'detrflx_phos', m)
 #  if defined O_kk_ballast
       call set (issdetr_B, m, mapsbc(m), 'ssdetr_B', m)
       trsbcindex(isdetr_B) = issdetr_B
       call set (idetrflx_B, m, mapsbc(m), 'detrflx_B', m)
 #  endif
-#  if defined O_npzd_caco3
+#if defined O_mobi_silicon
+      call set (isssil, m, mapsbc(m), 'sssil', m)
+      trsbcindex(isil) = isssil
+      call set (isilflx, m, mapsbc(m), 'silflx', m)
+      call set (issdiat, m, mapsbc(m), 'ssdiat', m)
+      trsbcindex(idiat) = issdiat
+      call set (idiatflx, m, mapsbc(m), 'diatflx', m)
+      call set (issopl, m, mapsbc(m), 'ssopl', m)
+      trsbcindex(iopl) = issopl
+      call set (ioplflx, m, mapsbc(m), 'oplflx', m)
+#  endif
+#  if defined O_mobi_caco3
       call set (isscaco3, m, mapsbc(m), 'sscaco3', m)
       trsbcindex(icaco3) = isscaco3
       call set (icaco3flx, m, mapsbc(m), 'caco3flx', m)
-      call set (isscocc, m, mapsbc(m), 'sscocc', m)
-      trsbcindex(icocc) = isscocc
-      call set (icoccflx, m, mapsbc(m), 'coccflx', m)
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
       call set (issdfe, m, mapsbc(m), 'ssdfe', m)
       trsbcindex(idfe) = issdfe
       call set (idfeflx, m, mapsbc(m), 'dfeflx', m)
       call set (idfeadep, m, mapsbc(m), 'dfeadep', m)
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
       call set (issdetrfe, m, mapsbc(m), 'ssdetrfe', m)
       trsbcindex(idetrfe) = issdetrfe
       call set (idetrfeflx, m, mapsbc(m), 'detrfeflx', m)
 #  endif
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
       call set (issdop, m, mapsbc(m), 'ssdop', m)
       trsbcindex(idop) = issdop
       call set (idopflx, m, mapsbc(m), 'dopflx', m)
@@ -1058,26 +1082,26 @@
       call set (issdon, m, mapsbc(m), 'ssdon', m)
       trsbcindex(idon) = issdon
       call set (idonflx, m, mapsbc(m), 'donflx', m)
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
       call set (issdiaz, m, mapsbc(m), 'ssdiaz', m)
       trsbcindex(idiaz) = issdiaz
       call set (idiazflx, m, mapsbc(m), 'diazflx', m)
 #  endif
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
       call set (issdin15, m, mapsbc(m), 'ssdin15', m)
       trsbcindex(idin15) = issdin15
       call set (idin15flx, m, mapsbc(m), 'din15flx', m)
       call set (issdon15, m, mapsbc(m), 'ssdon15', m)
       trsbcindex(idon15) = issdon15
       call set (idon15flx, m, mapsbc(m), 'don15flx', m)
-#   if !defined O_npzd_no_vflux
+#   if !defined O_mobi_no_vflux
       call set (issphytn15, m, mapsbc(m), 'ssphytn15', m)
       trsbcindex(iphytn15) = issphytn15
       call set (iphytn15flx, m, mapsbc(m), 'phytn15flx', m)
-#    if defined O_npzd_caco3
-      call set (isscoccn15, m, mapsbc(m), 'sscoccn15', m)
-      trsbcindex(icoccn15) = isscoccn15
-      call set (icoccn15flx, m, mapsbc(m), 'coccn15flx', m)
+#    if defined O_mobi_silicon
+      call set (issdiatn15, m, mapsbc(m), 'ssdiatn15', m)
+      trsbcindex(idiatn15) = issdiatn15
+      call set (idiatn15flx, m, mapsbc(m), 'diatn15flx', m)
 #    endif      
       call set (isszoopn15, m, mapsbc(m), 'sszoopn15', m)
       trsbcindex(izoopn15) = isszoopn15
@@ -1092,14 +1116,16 @@
 #  endif
 # endif
 # if defined O_carbon_13
-#  if !defined O_npzd_no_vflux
+#  if !defined O_mobi_no_vflux
       call set (issphytc13, m, mapsbc(m), 'ssphytc13', m)
       trsbcindex(iphytc13) = issphytc13
       call set (iphytc13flx, m, mapsbc(m), 'phytc13flx', m)
-#    if defined O_npzd_caco3
-      call set (isscoccc13, m, mapsbc(m), 'sscoccc13', m)
-      trsbcindex(icoccc13) = isscoccc13
-      call set (icoccc13flx, m, mapsbc(m), 'coccc13flx', m)
+#    if defined O_mobi_silicon
+      call set (issdiatc13, m, mapsbc(m), 'ssdiatc13', m)
+      trsbcindex(idiatc13) = issdiatc13
+      call set (idiatc13flx, m, mapsbc(m), 'diatc13flx', m)
+#    endif 
+#    if defined O_mobi_caco3
       call set (isscaco3c13, m, mapsbc(m), 'sscaco3c13', m)
       trsbcindex(icaco3c13) = isscaco3c13
       call set (icaco3c13flx, m, mapsbc(m), 'caco3c13flx', m)
@@ -1110,7 +1136,7 @@
       call set (issdetrc13, m, mapsbc(m), 'ssdetrc13', m)
       trsbcindex(idetrc13) = issdetrc13
       call set (idetrc13flx, m, mapsbc(m), 'detrc13flx', m)
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
       call set (issdoc13, m, mapsbc(m), 'ssdoc13', m)
       trsbcindex(idoc13) = issdoc13
       call set (idoc13flx, m, mapsbc(m), 'doc13flx', m)
@@ -1167,8 +1193,12 @@
 # if defined O_carbon
       call set (ibdicfx, m, mapsbc(m), 'bdicfx', m)
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call set (ibalkfx, m, mapsbc(m), 'balkfx', m)
+# endif
+# if defined O_mobi_silicon
+      call set (ibsil, m, mapsbc(m), 'bsil', m)
+      call set (ibsilfx, m, mapsbc(m), 'bsilfx', m)
 # endif
 #endif
 
@@ -1221,30 +1251,34 @@
       ipo4 = 0
       idop = 0
       iphyt = 0
+      iphyt_phos = 0
       izoop = 0
       idetr = 0
+      idetr_phos = 0
       ino3 = 0
       idon = 0
       idiaz = 0
-      icocc = 0
       icaco3 = 0
       idetr_B = 0     
       idin15 = 0
       idon15 = 0
       iphytn15 = 0
-      icoccn15 = 0
+      idiatn15 = 0
       izoopn15 = 0
       idetrn15 = 0
       idiazn15 = 0
       idoc13 = 0
       iphytc13 = 0
-      icoccc13 = 0
+      idiatc13 = 0
       icaco3c13 = 0
       izoopc13 = 0
       idetrc13 = 0
       idiazc13 = 0
       idfe = 0
       idetrfe = 0
+      isil = 0
+      idiat = 0
+      iopl = 0
 
       m = 1
       call set (itemp, m, mapt(m), 'temp', m)
@@ -1270,54 +1304,62 @@
       call set (icfc11, m, mapt(m), 'cfc11', m)
       call set (icfc12, m, mapt(m), 'cfc12', m)
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call set (ialk, m, mapt(m), 'alk', m)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
       call set (io2, m, mapt(m), 'o2', m)
 # endif
-# if defined O_npzd
+# if defined O_mobi
       call set (ipo4, m, mapt(m), 'po4', m)
       call set (iphyt, m, mapt(m), 'phyt', m)
+      call set (iphyt_phos, m, mapt(m), 'phyt_phos', m)
       call set (izoop, m, mapt(m), 'zoop', m)
       call set (idetr, m, mapt(m), 'detr', m)
-#  if defined O_npzd_caco3
-      call set (icocc, m, mapt(m), 'cocc', m)
+      call set (idetr_phos, m, mapt(m), 'detr_phos', m)
+#  if defined O_mobi_caco3
       call set (icaco3, m, mapt(m), 'caco3', m)
 #  endif     
 #  if defined O_kk_ballast
       call set (idetr_B, m, mapt(m), 'detr_B', m)
-#  endif       
-#  if defined O_npzd_nitrogen
+#  endif
+# if defined O_mobi_silicon
+      call set (idiat, m, mapt(m), 'diat', m)
+      call set (isil, m, mapt(m), 'sil', m)
+      call set (iopl, m, mapt(m), 'opl', m)
+# endif   
+#  if defined O_mobi_nitrogen
       call set (idop, m, mapt(m), 'dop', m)
       call set (ino3, m, mapt(m), 'no3', m)
       call set (idon, m, mapt(m), 'don', m)
       call set (idiaz, m, mapt(m), 'diaz', m)
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
       call set (idin15, m, mapt(m), 'din15', m)
       call set (idon15, m, mapt(m), 'don15', m)
       call set (iphytn15, m, mapt(m), 'phytn15', m)
-#    if defined O_npzd_caco3
-      call set (icoccn15, m, mapt(m), 'coccn15', m)
+#    if defined O_mobi_silicon
+      call set (idiatn15, m, mapt(m), 'diatn15', m)
 #    endif      
       call set (izoopn15, m, mapt(m), 'zoopn15', m)
       call set (idetrn15, m, mapt(m), 'detrn15', m)
       call set (idiazn15, m, mapt(m), 'diazn15', m)
 #   endif
 #  endif
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
       call set (idfe, m, mapt(m), 'dfe', m)
       call set (idetrfe, m, mapt(m), 'detrfe', m)
 #  endif
 #  if defined O_carbon_13
       call set (iphytc13, m, mapt(m), 'phytc13', m)
-#   if defined O_npzd_caco3
-      call set (icoccc13, m, mapt(m), 'coccc13', m)
+#   if defined O_mobi_silicon
+      call set (idiatc13, m, mapt(m), 'diatc13', m)
+#   endif      
+#   if defined O_mobi_caco3
       call set (icaco3c13, m, mapt(m), 'caco3c13', m)
 #   endif      
       call set (izoopc13, m, mapt(m), 'zoopc13', m)
       call set (idetrc13, m, mapt(m), 'detrc13', m)
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
       call set (idoc13, m, mapt(m), 'doc13', m)
       call set (idiazc13, m, mapt(m), 'diazc13', m)
 #   endif
@@ -1340,7 +1382,7 @@
       call set (isc14, m, mapst(m), 'sc14', m)
       itrc(ic14) = m-1
 # endif
-# if defined O_npzd
+# if defined O_mobi
 #  if defined O_carbon
       call set (isdic, m, mapst(m), 'sdic', m)
       itrc(idic) = m-1
@@ -1349,11 +1391,11 @@
       itrc(idic13) = m-1
 #   endif
 #  endif
-#  if defined O_npzd_alk
+#  if defined O_mobi_alk
       call set (isalk, m, mapst(m), 'salk', m)
       itrc(ialk) = m-1
 #  endif      
-#  if defined O_npzd_o2
+#  if defined O_mobi_o2
       call set (iso2, m, mapst(m), 'so2', m)
       itrc(io2) = m-1
 #  endif
@@ -1361,11 +1403,15 @@
       itrc(ipo4) = m-1
       call set (isphyt, m, mapst(m), 'sphyt', m)
       itrc(iphyt) = m-1
+      call set (isphyt_phos, m, mapst(m), 'sphyt_phos', m)
+      itrc(iphyt_phos) = m-1  
       call set (iszoop, m, mapst(m), 'szoop', m)
       itrc(izoop) = m-1
       call set (isdetr, m, mapst(m), 'sdetr', m)
       itrc(idetr) = m-1
-#  if defined O_npzd_iron
+      call set (isdetr_phos, m, mapst(m), 'sdetr_phos', m)
+      itrc(idetr_phos) = m-1
+#  if defined O_mobi_iron
       call set (isdfe, m, mapst(m), 'sdfe', m)
       itrc(idfe) = m-1
       call set (isdetrfe, m, mapst(m), 'sdetrfe', m)
@@ -1375,13 +1421,21 @@
       call set (isdetr_B, m, mapst(m), 'sdetr_B', m)
       itrc(idetr_B) = m-1
 #  endif      
-#  if defined O_npzd_caco3
+#  if defined O_mobi_caco3
       call set (iscaco3, m, mapst(m), 'scaco3', m)
       itrc(icaco3) = m-1
-      call set (iscocc, m, mapst(m), 'scocc', m)
-      itrc(icocc) = m-1
 #  endif      
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_silicon
+      call set (isdiat, m, mapst(m), 'sdiat', m)
+      itrc(idiat) = m-1
+#  endif
+#  if defined O_mobi_silicon
+      call set (issil, m, mapst(m), 'ssil', m)
+      itrc(isil) = m-1
+      call set (isopl, m, mapst(m), 'sopl', m)
+      itrc(iopl) = m-1
+#  endif
+#  if defined O_mobi_nitrogen
       call set (isdop, m, mapst(m), 'sdop', m)
       itrc(idop) = m-1
       call set (isno3, m, mapst(m), 'sno3', m)
@@ -1390,17 +1444,17 @@
       itrc(idon) = m-1
       call set (isdiaz, m, mapst(m), 'sdiaz', m)
       itrc(idiaz) = m-1
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
       call set (isdin15, m, mapst(m), 'sdin15', m)
       itrc(idin15) = m-1
       call set (isdon15, m, mapst(m), 'sdon15', m)
       itrc(idon15) = m-1
       call set (isphytn15, m, mapst(m), 'sphytn15', m)
       itrc(iphytn15) = m-1
-#    if defined O_npzd_caco3
-      call set (iscoccn15, m, mapst(m), 'scoccn15', m)
-      itrc(icoccn15) = m-1
-#    endif      
+#    if defined O_mobi_silicon
+      call set (isdiatn15, m, mapst(m), 'sdiatn15', m)
+      itrc(idiatn15) = m-1
+#    endif
       call set (iszoopn15, m, mapst(m), 'szoopn15', m)
       itrc(izoopn15) = m-1
       call set (isdetrn15, m, mapst(m), 'sdetrn15', m)
@@ -1412,9 +1466,11 @@
 #  if defined O_carbon_13
       call set (isphytc13, m, mapst(m), 'sphytc13', m) 
       itrc(iphytc13) = m-1
-#   if defined O_npzd_caco3
-      call set (iscoccc13, m, mapst(m), 'scoccc13', m) 
-      itrc(icoccc13) = m-1
+#   if defined O_mobi_silicon
+      call set (isdiatc13, m, mapst(m), 'sdiatc13', m) 
+      itrc(idiatc13) = m-1
+#   endif
+#   if defined O_mobi_caco3
       call set (iscaco3c13, m, mapst(m), 'scaco3c13', m) 
       itrc(icaco3c13) = m-1
 #   endif      
@@ -1422,7 +1478,7 @@
       itrc(izoopc13) = m-1
       call set (isdetrc13, m, mapst(m), 'sdetrc13', m) 
       itrc(idetrc13) = m-1
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
       call set (isdoc13, m, mapst(m), 'sdoc13', m) 
       itrc(idoc13) = m-1
       call set (isdiazc13, m, mapst(m), 'sdiazc13', m) 
@@ -1511,7 +1567,7 @@
 #include "isopyc.h"
 #endif
 #include "mtlm.h"
-#include "npzd.h"
+#include "mobi.h"
 #include "scalar.h"
 #include "sed.h"
 #include "stab.h"
@@ -1557,12 +1613,6 @@
       namelist /fwa/    isfwa1, iefwa1, isfwa2, iefwa2, jsfwa, jefwa
      &,                 mrfwa, fwaflxi, fwayri, fwayrf, fwarate
      &,                 compensate
-# if defined O_npzd_iron
-     &,                 kfeleq, kfecol, alphamax, alphamin
-     &,                 thetamaxhi, rfeton, fetopsed, o2min
-     &,                 lig, thetamaxlo, mc, kfeorg
-     &,                 kfemax, kfemin, pmax
-# endif
       namelist /blmix/  Ahv, Ahh
       namelist /hlmix/  hl_depth, hl_back, hl_max
       namelist /isopyc/ slmx, ahisop, athkdf, del_dm, s_dm

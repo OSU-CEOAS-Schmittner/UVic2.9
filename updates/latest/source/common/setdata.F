@@ -25,6 +25,9 @@
 # if defined O_embm
       include "atm.h"
 # endif
+#if defined O_mobi_silicon
+      include "mobi.h"
+#endif
       include "calendar.h"
       include "ctdbc.h"
       include "tmngr.h"
@@ -113,11 +116,17 @@
               if (k .eq. 1) print*, 'atmospheric coalbedo'
               call get_sbc (n, 'A_calbatm.nc', 'A_calbatm', id, im
      &,         c1, c0)
-# if defined O_npzd_iron         
+# if defined O_mobi_iron && !defined O_mobi_iron_gesamp_atmfedep    
             elseif ( m .eq. idfeadep ) then              
               if (k .eq. 1) print*, 'atmospheric iron deposition'
-              call get_sbc (n, 'O_feflux.nc', 'O_feflux', id, im
+              call get_sbc (n, 'O_feflux.nc', 'O_FEFLUX', id, im
      &,         c1, c0)  
+# endif
+# if defined O_mobi_silicon
+            elseif ( m .eq. isilflx ) then              
+              if (k .eq. 1) print*, 'atmospheric silica deposition'
+              call get_sbc (n, 'O_sil_dep.nc', 'O_SIL_DEP', id, im
+     &,         c100*sildustfluxfac, c0)  
 # endif
 # if defined O_read_my_stf
               if (k .eq. 1) print*, 'heat flux'

@@ -44,39 +44,46 @@
 #if defined O_cfcs_data || defined O_cfcs_data_transient
      $             +2 !
 #endif
-#if defined O_npzd_alk
+#if defined O_mobi_alk
      $             +1 ! alk
 #endif
-#if defined O_npzd_o2
+#if defined O_mobi_o2
      $             +1 ! 
 #endif
-#if defined O_npzd
+#if defined O_mobi
      $             +4 ! po4, phyt, zoop, detr
-# if defined O_npzd_caco3
-     $             +2 ! cocc, caco3
+     $             +2 ! phyt_phos, detr_phos
+# if defined O_mobi_caco3
+     $             +1 ! caco3
 #  if defined O_kk_ballast
      $             +1 !
 #  endif
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_silicon
+     $             +3 ! diat, sil, opl
+# endif
+# if defined O_mobi_nitrogen
      $             +4 ! no3, diaz, dop, don
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
      $             +6 ! din15, phytn15, zoopn15, detrn15, diazn15, don15
-#   if defined O_npzd_caco3
-     $             +1 ! coccn15
+#   if defined O_mobi_silicon
+     $             +1 ! diatn15
 #   endif		 
 #  endif
 # endif
 # if defined O_carbon_13
      $             +3 ! phytc13, zoopc13, detrc13
-#  if defined O_npzd_caco3
-     $             +2 ! coccc13, caco3c13
+#  if defined O_mobi_caco3
+     $             +1 ! caco3c13
+#  endif
+#  if defined O_mobi_silicon
+     $             +1 ! diatc13
 #  endif		 
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
      $             +2 ! diazc13, doc13
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
      $               +2 ! dfe, detrfe
 # endif
 #endif
@@ -91,39 +98,46 @@
      $               +1 ! dic14
 # endif
 #endif
-#if defined O_npzd_alk
+#if defined O_mobi_alk
      $               +1 ! alk
 #endif
-#if defined O_npzd_o2
+#if defined O_mobi_o2
      $               +1 ! o2
 #endif
-#if defined O_npzd
+#if defined O_mobi
      $               +4 ! po4, phyt, zoop, detr
+     $               +2 ! phyt_phos, detr_phos
 # if defined O_kk_ballast
      $               +1 
 # endif
-# if defined O_npzd_caco3
-     $               +2 ! cocc, caco3
+# if defined O_mobi_caco3
+     $               +1 ! caco3
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_silicon
+     $               +3 ! diat, sil, opl
+# endif
+# if defined O_mobi_nitrogen
      $               +4 ! no3, diaz, dop, don
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
      $               +6 ! din15, phytn15, zoopn15, detrn15, diazn15, don15
-#   if defined O_npzd_caco3
-     $               +1 ! coccn15
-#   endif		 
+#   if defined O_mobi_silicon
+     $               +1 ! diatn15
+#   endif
 #  endif
 # endif
 # if defined O_carbon_13
      $               +3 ! phytc13, zoopc13, detrc13
-#  if defined O_npzd_caco3
-     $               +2 ! coccc13, caco3c13
+#  if defined O_mobi_caco3
+     $               +1 ! caco3c13
 #  endif
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_silicon
+     $               +1 ! diatc13
+#  endif
+#  if defined O_mobi_nitrogen
      $               +2 ! diazc13, doc13
 #  endif
 # endif
-# if defined O_npzd_iron
+# if defined O_mobi_iron
      $               +2 ! dfe, detrfe
 # endif
 #endif

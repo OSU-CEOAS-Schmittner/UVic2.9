@@ -27,20 +27,66 @@
       common /ta_gm_r/ ta_Lr(imt,jmt)
       common /ta_gm_r/ ta_LRhi(imt,km,jmt)
 #endif
-#if defined O_save_npzd
+#if defined O_save_mobi_fluxes
       real ta_rnpp, ta_rgraz, ta_rmorp, ta_rmorpt, ta_rmorz, ta_rexcr
-      real ta_rremi, ta_rexpo, ta_rnpp_D, ta_rgraz_D, ta_rmorpt_D
-      real ta_rnfix, ta_rwcdeni, ta_rexpocal, ta_rprocal, ta_rgraz_Z
-      real ta_rgraz_Det, ta_ravej, ta_ravej_D, ta_rgmax, ta_rno3P
-      real ta_rpo4P, ta_rpo4_D, ta_kpipe, ta_rsedrr, ta_rbdeni
-      real ta_rmorp_D, ta_rnpp_dop, ta_rnpp_D_dop, ta_rnpp_C_dop
+      real ta_rremi, ta_rexpo, ta_rexpocal, ta_rsedrr
+      real ta_rgraz_Det, ta_rgraz_Z
+      common /ta_npzd_r/ ta_rnpp(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rgraz(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorp(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorpt(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorz(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rexcr(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rremi(imt,km,jmt)
+      common /ta_npzd_r/ ta_rexpo(imt,km,jmt)
+      common /ta_npzd_r/ ta_rexpocal(imt,km,jmt)
+      common /ta_npzd_r/ ta_rsedrr(imt,jmt)
+      common /ta_npzd_r/ ta_rgraz_Det(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rgraz_Z(imt,kpzd,jmt)
+# if defined O_save_mobi_diagnostics
+      real ta_ravej, ta_ravej_D, ta_rgmax, ta_rno3P
+      real ta_rpo4P, ta_rpo4_D
+      common /ta_npzd_r/ ta_ravej(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_ravej_D(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rgmax(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rno3P(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rpo4P(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rpo4_D(imt,kpzd,jmt)
+# endif
+# if defined O_pipe_co2
+      real ta_rpo4P
+      common /ta_npzd_r/ ta_kpipe(imt,jmt)
+# endif
+# if defined O_mobi_nitrogen
+      real ta_rnpp_dop, ta_rnpp_D, ta_rnpp_D_dop
+      real ta_rgraz_D, ta_rmorp_D, ta_rmorpt_D
+      real ta_rnfix, ta_rwcdeni, ta_rbdeni
+      common /ta_npzd_r/ ta_rnpp_dop(imt,kpzd,jmt) 
+      common /ta_npzd_r/ ta_rnpp_D(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rnpp_D_dop(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rgraz_D(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorp_D(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorpt_D(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rnfix(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rwcdeni(imt,km,jmt)
+      common /ta_npzd_r/ ta_rbdeni(imt,km,jmt)
+#  if defined O_mobi_caco3
+      real ta_rnpp_C_dop
+      common /ta_npzd_r/ ta_rnpp_C_dop(imt,kpzd,jmt) 
+#  endif
+#  if defined O_mobi_silicon
+      real ta_rnpp_Diat_dop
+      common /ta_npzd_r/ ta_rnpp_Diat_dop(imt,kpzd,jmt) 
+#  endif
+# endif
 # if defined O_kk_ballast
       real ta_rremi_B, ta_rexpo_B, ta_rgraz_Det_B
 # endif
-# if defined O_npzd_caco3
-      real ta_rexpocaco3, ta_rdissl, ta_rimpocaco3, ta_rcalatt
-      real ta_rmorpt_C, ta_rnpp_C, ta_rgraz_C, ta_rmorp_C
-  
+      real ta_rprocal
+# if defined O_mobi_caco3
+      real ta_rnpp_C, ta_rgraz_C, ta_rmorp_C, ta_rmorpt_C
+      real ta_rexpocaco3, ta_rimpocaco3, ta_rdissl, ta_rcalatt
+      real ta_romega_c
       common /ta_npzd_r/ ta_rnpp_C(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rgraz_C(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rmorp_C(imt,kpzd,jmt)
@@ -48,6 +94,7 @@
       common /ta_npzd_r/ ta_rexpocaco3(imt,km,jmt)
       common /ta_npzd_r/ ta_rimpocaco3(imt,km,jmt)
       common /ta_npzd_r/ ta_rdissl(imt,km,jmt)
+      common /ta_npzd_r/ ta_romega_c(imt,km,jmt)
       common /ta_npzd_r/ ta_rcalatt(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rprocal(imt,kpzd,jmt)
 # else
@@ -58,35 +105,21 @@
       common /ta_npzd_r/ ta_rexpo_B(imt,km,jmt)
       common /ta_npzd_r/ ta_rgraz_Det_B(imt,kpzd,jmt)
 # endif
-      common /ta_npzd_r/ ta_rnpp(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rnpp_dop(imt,kpzd,jmt) 
-      common /ta_npzd_r/ ta_rnpp_C_dop(imt,kpzd,jmt) 
-      common /ta_npzd_r/ ta_rgraz(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rmorp(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rmorpt(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rmorz(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rexcr(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rremi(imt,km,jmt)
-      common /ta_npzd_r/ ta_rexpo(imt,km,jmt)
-      common /ta_npzd_r/ ta_rexpocal(imt,km,jmt)
-      common /ta_npzd_r/ ta_rsedrr(imt,jmt)
-      common /ta_npzd_r/ ta_rnpp_D(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rnpp_D_dop(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rgraz_D(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rmorp_D(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rmorpt_D(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rnfix(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rwcdeni(imt,km,jmt)
-      common /ta_npzd_r/ ta_rbdeni(imt,km,jmt)
-      common /ta_npzd_r/ ta_rgraz_Det(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rgraz_Z(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_ravej(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_ravej_D(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rgmax(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rno3P(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rpo4P(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rpo4_D(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_kpipe(imt,jmt)
+# if defined O_mobi_silicon
+      real ta_rmorpt_Diat
+      real ta_rnpp_Diat, ta_rgraz_Diat, ta_rmorp_Diat
+      common /ta_npzd_r/ ta_rmorp_Diat(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rnpp_Diat(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rgraz_Diat(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rmorpt_Diat(imt,kpzd,jmt)
+      real ta_rproopl, ta_rrivsil, ta_rexpoopl, ta_rdisopl
+c      real ta_rbur_sil
+      common /ta_npzd_r/ ta_rproopl(imt,km,jmt)
+      common /ta_npzd_r/ ta_rrivsil(imt,jmt)
+      common /ta_npzd_r/ ta_rexpoopl(imt,km,jmt)
+      common /ta_npzd_r/ ta_rdisopl(imt,km,jmt)
+c      common /ta_npzd_r/ ta_rbur_sil(imt,km,jmt)
+# endif
 #endif
 #if defined O_save_convection
       integer nta_conv
@@ -105,18 +138,33 @@
       common /ta_car_r/ ta_sspCO2(imt,jmt)
 #endif
 
-      real ta_rfeorgads, ta_rfecol
-      real ta_rchl, ta_rchl_D
-      real ta_rdeffe, ta_rremife, ta_rexpofe, ta_rfeprime
+#if defined O_mobi_iron
+      real ta_rremife, ta_rexpofe
+      common /ta_npzd_r/ ta_rremife(imt,kpzd,jmt)
+      common /ta_npzd_r/ ta_rexpofe(imt,kpzd,jmt)
+# if defined O_save_mobi_diagnostics
+      real ta_rfeorgads, ta_rdeffe, ta_rfecol
+      real ta_rfeprime
       real ta_rfesed, ta_rbfe
-      real ta_rdeffe_C
-     
+#  if defined O_mobi_iron_var_ligands
+      real ta_rligand
+#  endif
       common /ta_npzd_r/ ta_rfeorgads(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rfecol(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rdeffe(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rremife(imt,kpzd,jmt)
-      common /ta_npzd_r/ ta_rexpofe(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rfeprime(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rfesed(imt,kpzd,jmt)
       common /ta_npzd_r/ ta_rbfe(imt,kpzd,jmt)
+#  if defined O_mobi_iron_var_ligands
+      common /ta_npzd_r/ ta_rligand(imt,kpzd,jmt)
+#  endif
+#  if defined O_mobi_caco3
+      real ta_rdeffe_C
       common /ta_npzd_r/ ta_rdeffe_C(imt,kpzd,jmt)
+#  endif
+#  if defined O_mobi_silicon
+      real ta_rdeffe_Diat
+      common /ta_npzd_r/ ta_rdeffe_Diat(imt,kpzd,jmt)
+#  endif
+# endif
+#endif
