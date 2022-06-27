@@ -123,28 +123,39 @@
      &, 'global average ocean c14 flux', ' ', 'mol m-2 s-1')
 #  endif
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call defvar ('O_alk', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean alkalinity', ' ', 'mol m-3')
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_silicon
+      call defvar ('O_sil', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'global average ocean sil', ' ', 'mol m-3')
+      call defvar ('F_sil', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'global average ocean sil flux', ' ', 'mol m-2 s-1')      
+      call defvar ('O_opl', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'global average ocean opal', ' ', 'mol m-3')
+# endif
+# if defined O_mobi_o2
       call defvar ('O_o2', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean oxygen', ' ', 'mol m-3')
       call defvar ('F_o2', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean oxygen flux', ' ', 'mol m-2 s-1')
 # endif
-# if defined O_npzd
+# if defined O_mobi
       call defvar ('O_po4', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean phosphate', ' ', 'mol m-3')
       call defvar ('O_phyt', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean phytoplankton', ' ', 'mol N m-3')
+      call defvar ('O_phyt_phos', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'global average ocean phytoplankton
+     & phosphorous', ' ', 'mol P m-3')
       call defvar ('O_zoop', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean zooplankton', ' ', 'mol N m-3')
       call defvar ('O_detr', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean detritus', ' ', 'mol N m-3')
-#  if defined O_npzd_caco3
-      call defvar ('O_cocc', iou, 1, id, c0, c100, ' ', 'F'
-     &, 'global average ocean coccolithophores', ' ', 'mol N m-3')
+      call defvar ('O_detr_phos', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'global average ocean detritus phosphorous', ' ', 'mol P m-3')
+#  if defined O_mobi_caco3
       call defvar ('O_caco3', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean dead calcite', ' ', 'mol C m-3')
 #  endif
@@ -152,8 +163,12 @@
       call defvar ('O_detr_B', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean ballasted detritus', ' ', 'mol N m-3')
 #  endif
+#  if defined O_mobi_silicon
+      call defvar ('O_diat', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'global average ocean diatoms', ' ', 'mol N m-3')
+#  endif
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
       call defvar ('O_dop', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean DOP', ' ', 'mol m-3')
       call defvar ('O_no3', iou, 1, id, c0, c100, ' ', 'F'
@@ -162,16 +177,16 @@
      &, 'global average ocean DON', ' ', 'mol m-3')
       call defvar ('O_diaz', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean diazotrophs', ' ', 'mol N m-3')
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
       call defvar ('O_din15', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average ocean nitrate 15', ' ', 'mol m-3')
       call defvar ('O_don15', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average ocean DON 15', ' ', 'mol m-3')
       call defvar ('O_phytn15', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average ocean phytoplankton n15', ' ', 'mol N m-3')
-#   if defined O_npzd_caco3
-      call defvar ('O_coccn15', iou, 1, id, c0, c100, ' ', 'F'
-     &, 'Global average ocean coccs n15', ' ', 'mol N m-3')
+#   if defined O_mobi_silicon
+      call defvar ('O_diatn15', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'Global average ocean diat n15', ' ', 'mol N m-3')
 #   endif      
       call defvar ('O_zoopn15', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average ocean zooplankton n15', ' ', 'mol N m-3')
@@ -182,7 +197,7 @@
 #  endif
 # endif
 !juan
-# if defined O_npzd_iron
+# if defined O_mobi_iron
       call defvar ('O_dfe', iou, 1, id, c0, c100, ' ', 'F'
      &, 'global average ocean iron', ' ', 'mol Fe m-3')
       call defvar ('O_detrfe', iou, 1, id, c0, c100, ' ', 'F'
@@ -194,9 +209,11 @@
      &, 'Global average DOC13', ' ', 'mol m-3')
       call defvar ('O_phytc13', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average phytoplankton c13', ' ', 'mol m-3')
-#  if defined O_npzd_caco3
-      call defvar ('O_coccc13', iou, 1, id, c0, c100, ' ', 'F'
-     &, 'Global average calcifier c13', ' ', 'mol m-3')
+#  if defined O_mobi_silicon
+      call defvar ('O_diatc13', iou, 1, id, c0, c100, ' ', 'F'
+     &, 'Global average diatom c13', ' ', 'mol m-3')
+#  endif      
+#  if defined O_mobi_caco3
       call defvar ('O_caco3c13', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average CaCO3 c13', ' ', 'mol m-3')
 #  endif      
@@ -204,7 +221,7 @@
      &, 'Global average zooplankton c13', ' ', 'mol m-3')
       call defvar ('O_detrc13', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average detrius c13', ' ', 'mol m-3')
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
       call defvar ('O_diazc13', iou, 1, id, c0, c100, ' ', 'F'
      &, 'Global average diazotroph c13', ' ', 'mol m-3')
 #  endif
@@ -265,6 +282,7 @@
      &,                       tbar_dic13, dic13flx
      &,                       tbar_alk, tbar_o2, o2flx, tbar_po4
      &,                       tbar_dop, tbar_phyt, tbar_zoop, tbar_detr
+     &,                       tbar_phyt_phos, tbar_detr_phos
      &,                       tbar_no3, tbar_don, tbar_diaz, tbar_din15
      &,                       tbar_don15, tbar_phytn15, tbar_zoopn15
      &,                       tbar_detrn15, tbar_diazn15, tbar_doc13
@@ -277,9 +295,13 @@
 # if defined O_kk_ballast
      &,                       tbar_d_B
 # endif
-# if defined O_npzd_caco3
-     &,                       tbar_c, tbar_coccn15, tbar_coccc13
+# if defined O_mobi_caco3
      &,                       tbar_caco3, tbar_caco3c13
+# endif
+# if defined O_mobi_silicon
+     &,                       tbar_diat
+     &,                       tbar_diatn15, tbar_diatc13
+     &,                       tbar_sil, silflx, tbar_opl
 # endif
      &     )
 !=======================================================================
@@ -307,14 +329,16 @@
       real tbar_po4, tbar_phyt, tbar_zoop, tbar_detr, tbar_no3
       real tbar_diaz, tbar_c14, tbar_dc14, c14flx, tbar_cfc11
       real cfc11flx, tbar_cfc12, cfc12flx
+      real tbar_phyt_phos, tbar_detr_phos  
       real otmax, otmin, slh, sspH, ssCO3, ssOc, ssOa, sspCO2, cocn
       real cfa2o, avgper, time, tmp, c0, c1, c10, c100, c1e3, c1e6
       real p001, p035, p1, C2K, cal2J, tbar_dop, tbar_don, tbar_din15
       real tbar_don15, tbar_phytn15, tbar_zoopn15, tbar_detrn15
-      real tbar_diazn15, tbar_coccn15
+      real tbar_diazn15, tbar_diatn15
       real tbar_dic13, dic13flx, tbar_doc13, tbar_phytc13, tbar_zoopc13
       real tbar_detrc13, tbar_diazc13, tbar_dfe, tbar_ddfe
-      real tbar_d_B, tbar_c, tbar_caco3, tbar_coccc13, tbar_caco3c13
+      real tbar_d_B, tbar_c, tbar_caco3, tbar_diatc13, tbar_caco3c13
+      real tbar_diat, tbar_sil, silflx, tbar_opl
       
       c0 = 0.
       c1 = 1.
@@ -372,37 +396,46 @@
       call putvars ('F_c14', iou, ntrec, c14flx, c100, c0)
 #  endif
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_alk
       call putvars ('O_alk', iou, ntrec, tbar_alk, c1, c0)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_silicon
+      call putvars ('O_sil', iou, ntrec, tbar_sil, c1, c0)
+      call putvars ('F_sil', iou, ntrec, silflx, c100, c0)     
+      call putvars ('O_opl', iou, ntrec, tbar_opl, c1, c0)
+# endif
+# if defined O_mobi_o2
       call putvars ('O_o2', iou, ntrec, tbar_o2, c1, c0)
       call putvars ('F_o2', iou, ntrec, o2flx, c100, c0)
 # endif
-# if defined O_npzd
+# if defined O_mobi
       call putvars ('O_po4', iou, ntrec, tbar_po4, c1e3, c0)
       call putvars ('O_phyt', iou, ntrec, tbar_phyt, c1e3, c0)
+      call putvars ('O_phyt_phos', iou, ntrec, tbar_phyt_phos, c1e3, c0)
       call putvars ('O_zoop', iou, ntrec, tbar_zoop, c1e3, c0)
       call putvars ('O_detr', iou, ntrec, tbar_detr, c1e3, c0)
-#  if defined O_npzd_caco3
-      call putvars ('O_cocc', iou, ntrec, tbar_c, c1e3, c0)
+      call putvars ('O_detr_phos', iou, ntrec, tbar_detr_phos, c1e3, c0)
+#  if defined O_mobi_caco3
       call putvars ('O_caco3', iou, ntrec, tbar_caco3, c1e3, c0)
 #  endif
 #  if defined O_kk_ballast
       call putvars ('O_detr_B', iou, ntrec, tbar_d_B, c1e3, c0)
 #  endif
+#  if defined O_mobi_silicon
+      call putvars ('O_diat', iou, ntrec, tbar_diat, c1e3, c0)
+#  endif
 # endif
-# if defined O_npzd_nitrogen
+# if defined O_mobi_nitrogen
       call putvars ('O_dop', iou, ntrec, tbar_dop, c1e3, c0)
       call putvars ('O_no3', iou, ntrec, tbar_no3, c1e3, c0)
       call putvars ('O_don', iou, ntrec, tbar_don, c1e3, c0)
       call putvars ('O_diaz', iou, ntrec, tbar_diaz, c1e3, c0)
-#  if defined O_npzd_nitrogen_15
+#  if defined O_mobi_nitrogen_15
       call putvars ('O_din15', iou, ntrec, tbar_din15, c1e3, c0)
       call putvars ('O_don15', iou, ntrec, tbar_don15, c1e3, c0)
       call putvars ('O_phytn15', iou, ntrec, tbar_phytn15, c1e3, c0)
-#   if defined O_npzd_caco3
-      call putvars ('O_coccn15', iou, ntrec, tbar_coccn15, c1e3, c0)
+#   if defined O_mobi_silicon
+      call putvars ('O_diatn15', iou, ntrec, tbar_diatn15, c1e3, c0)
 #   endif      
       call putvars ('O_zoopn15', iou, ntrec, tbar_zoopn15, c1e3, c0)
       call putvars ('O_detrn15', iou, ntrec, tbar_detrn15, c1e3, c0)
@@ -410,7 +443,7 @@
 #  endif
 # endif
 !juan
-# if defined O_npzd_iron
+# if defined O_mobi_iron
       call putvars ('O_dfe', iou, ntrec, tbar_dfe, c1e3, c0)
       call putvars ('O_detrfe', iou, ntrec, tbar_ddfe, c1e3, c0)
 # endif
@@ -418,13 +451,15 @@
 # if defined O_carbon_13
       call putvars ('O_doc13', iou, ntrec, tbar_doc13, c1, c0)
       call putvars ('O_phytc13', iou, ntrec, tbar_phytc13, c1, c0)
-#  if defined O_npzd_caco3
-      call putvars ('O_coccc13', iou, ntrec, tbar_coccc13, c1, c0)
+#  if defined O_mobi_silicon
+      call putvars ('O_diatc13', iou, ntrec, tbar_diatc13, c1, c0)
+#  endif      
+#  if defined O_mobi_caco3
       call putvars ('O_caco3c13', iou, ntrec, tbar_caco3c13, c1, c0)
 #  endif      
       call putvars ('O_zoopc13', iou, ntrec, tbar_zoopc13, c1, c0)
       call putvars ('O_detrc13', iou, ntrec, tbar_detrc13, c1, c0)
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
       call putvars ('O_diazc13', iou, ntrec, tbar_diazc13, c1, c0)
 #  endif
 # endif

@@ -2,7 +2,7 @@
 
 #if defined O_mom
 !=======================================================================
-!     write out diagnostic output
+!!     write out diagnostic output
 !=======================================================================
 
       implicit none
@@ -375,10 +375,10 @@
         endif
       endif
 9001  format('    k','  All Regions ',9(1x,i7,5x))
-9002  format(1x,i4,10(1x,e12.6))
-9003  format('  AVG',10(1x,e12.6))
+9002  format(1x,i4,10(1x,e12.5))
+9003  format('  AVG',10(1x,e12.5))
 9004  format(/' Volume Weighted Averages for ',a12,' on ts =',i10,a33)
-9014  format(/' FLX',i1,10(1x,e12.6),/)
+9014  format(/' FLX',i1,10(1x,e12.5),/)
 # endif
 # if defined O_time_step_monitor
 
@@ -406,21 +406,22 @@
 #  if defined O_save_carbon_totals
 !       convert from umol cm-3 to Pg (redctn contained 1e-3)
         tai_cocn = (tai_dic 
-#   if defined O_npzd
+#   if defined O_mobi
      &       + (tai_phyt + tai_zoop + tai_detr
-#    if defined O_npzd_nitrogen
+#    if defined O_mobi_nitrogen
      &       + tai_diaz
 #    endif
      &       )*redctn
 #   endif
      &       )*tcellv*12.e-21
-#   if defined O_npzd_caco3
-        tai_cocn = tai_cocn + ((tai_zoop + tai_c)*redctn*capr
-     &             + tai_caco3)*tcellv*12.e-21
-        tai_cocn = tai_cocn + tai_c*redctn*tcellv*12.e-21 ! Andreas: correct?
+#   if defined O_mobi_caco3
+        tai_cocn = tai_cocn + tai_caco3*tcellv*12.e-21
 #   endif
 #   if defined O_kk_ballast
         tai_cocn = tai_cocn + tai_d_B*redctn*tcellv*12.e-21
+#   endif
+#   if defined O_mobi_silicon
+        tai_cocn = tai_cocn + tai_diat*redctn*tcellv*12.e-21
 #   endif        
 !       convert from umol cm-2 s-1 to Pg year-1
         tai_cfa2o = tai_dicflx*tcella(1)*yrlen*daylen*12.e-21
@@ -470,6 +471,8 @@
      &,                   tai_dicflx, tai_dic13, tai_dic13flx 
      &,                   tai_alk, tai_o2, tai_o2flx
      &,                   tai_po4, tai_dop, tai_phyt, tai_zoop, tai_detr
+     &,                   tai_phyt_phos
+     &,                   tai_detr_phos
      &,                   tai_no3, tai_don, tai_diaz, tai_din15
      &,                   tai_don15, tai_phytn15, tai_zoopn15
      &,                   tai_detrn15, tai_diazn15, tai_doc13 
@@ -483,9 +486,13 @@
 #  if defined O_kk_ballast
      &,                   tai_d_B
 #  endif
-#  if defined O_npzd_caco3
-     &,                   tai_c, tai_coccn15, tai_coccc13, tai_caco3
-     &,                   tai_caco3c13
+#  if defined O_mobi_caco3
+     &,                   tai_caco3, tai_caco3c13
+#  endif
+#  if defined O_mobi_silicon
+     &,                   tai_diat
+     &,                   tai_diatn15, tai_diatc13 
+     &,                   tai_sil, tai_silflx, tai_opl
 #  endif
      &       )
 
@@ -1258,7 +1265,7 @@
 8201  format (/,22x,a40,/)
 8202  format (/,22x,' Global ',/)
 8203  format (8x,'total advection',2x,'total diffusion',2x,'total')
-8204  format (2x,i3,3x,3(e12.6,5x))
+8204  format (2x,i3,3x,3(e12.5,5x))
 8205  format (/,6x,'northward transport of salt (x10**10 cm**3/sec)',/)
 # endif
 # if defined O_meridional_overturning
@@ -1944,8 +1951,8 @@
       include "levind.h"
       include "mw.h"
       include "iounit.h"
-# if defined O_npzd
-      include "npzd.h"
+# if defined O_mobi
+      include "mobi.h"
 # endif
 # if defined O_sed && !defined O_sed_uncoupled
       include "sed.h"
@@ -2001,21 +2008,28 @@
         tai_phyt = 0.
         tai_zoop = 0.
         tai_detr = 0.
+        tai_phyt_phos = 0.
+        tai_detr_phos = 0.
         tai_no3 = 0.
         tai_dfe = 0.
         tai_ddfe = 0.
+# if defined O_mobi_silicon
+        tai_sil = 0.
+        tai_silflx = 0.
+        tai_opl = 0.
+# endif        
         tai_don = 0.
         tai_diaz = 0.
         tai_din15 = 0.
         tai_don15 = 0.
         tai_phytn15 = 0.
-        tai_coccn15 = 0.        
+        tai_diatn15 = 0.        
         tai_zoopn15 = 0.
         tai_detrn15 = 0.
         tai_diazn15 = 0.
         tai_doc13 = 0.
         tai_phytc13 = 0.
-        tai_coccc13 = 0.
+        tai_diatc13 = 0.
         tai_zoopc13 = 0.
         tai_detrc13 = 0.
         tai_diazc13 = 0.
@@ -2030,7 +2044,10 @@
         tai_c = 0.
         tai_caco3 = 0.
         tai_caco3c13 = 0.
-        tai_d_B = 0.        
+        tai_d_B = 0.
+# if defined O_mobi_silicon
+        tai_diat = 0.
+# endif                
       elseif (m .eq. 1) then
 
 !       accumulate
@@ -2157,57 +2174,69 @@
         tai_c14flx = tai_c14flx + tmp
 #  endif
 # endif
-# if defined O_npzd_alk
+# if defined O_mobi_silicon
+        tai_sil = tai_sil + tbar(0,isil,1)
+        call areaavg (sbc(1,1,isilflx), dmsk, tmp)
+        tai_silflx = tai_silflx + tmp
+        tai_opl = tai_opl + tbar(0,iopl,1)
+# endif
+# if defined O_mobi_alk
         tai_alk = tai_alk + tbar(0,ialk,1)
 # endif
-# if defined O_npzd_o2
+# if defined O_mobi_o2
         tai_o2 = tai_o2 + tbar(0,io2,1)
         call areaavg (sbc(1,1,io2flx), dmsk, tmp)
         tai_o2flx = tai_o2flx + tmp
 # endif
-# if defined O_npzd
+# if defined O_mobi
         tai_po4 = tai_po4 + tbar(0,ipo4,1)
         tai_phyt = tai_phyt + tbar(0,iphyt,1)
+        tai_phyt_phos = tai_phyt_phos + tbar(0,iphyt_phos,1)
         tai_zoop = tai_zoop + tbar(0,izoop,1)
         tai_detr = tai_detr + tbar(0,idetr,1)
+        tai_detr_phos = tai_detr_phos + tbar(0,idetr_phos,1)
 #  if defined O_kk_ballast
         tai_d_B = tai_d_B + tbar(0,idetr_B,1)
 #  endif
-#  if defined O_npzd_caco3
-        tai_c = tai_c + tbar(0,icocc,1)
+#  if defined O_mobi_caco3
         tai_caco3 = tai_caco3 + tbar(0,icaco3,1)
+#  endif
+#  if defined O_mobi_silicon
+        tai_diat = tai_diat + tbar(0,idiat,1)
 #  endif        
-#  if defined O_npzd_nitrogen
+#  if defined O_mobi_nitrogen
         tai_dop = tai_dop + tbar(0,idop,1)
         tai_no3 = tai_no3 + tbar(0,ino3,1)
         tai_don = tai_don + tbar(0,idon,1)
         tai_diaz = tai_diaz + tbar(0,idiaz,1)
-#   if defined O_npzd_nitrogen_15
+#   if defined O_mobi_nitrogen_15
         tai_din15 = tai_din15 + tbar(0,idin15,1)
         tai_don15 = tai_don15 + tbar(0,idon15,1)
         tai_phytn15 = tai_phytn15 + tbar(0,iphytn15,1)
-#    if defined O_npzd_caco3
-        tai_coccn15 = tai_coccn15 + tbar(0,icoccn15,1)
+#    if defined O_mobi_silicon
+        tai_diatn15 = tai_diatn15 + tbar(0,idiatn15,1)
 #    endif        
         tai_zoopn15 = tai_zoopn15 + tbar(0,izoopn15,1)
         tai_detrn15 = tai_detrn15 + tbar(0,idetrn15,1)
         tai_diazn15 = tai_diazn15 + tbar(0,idiazn15,1)
 #   endif
 #  endif
-#  if defined O_npzd_iron
+#  if defined O_mobi_iron
         tai_dfe = tai_dfe + tbar(0,idfe,1)
         tai_ddfe = tai_ddfe + tbar(0,idetrfe,1)
 #  endif
 #  if defined O_carbon_13
         tai_doc13 = tai_doc13 + tbar(0,idoc13,1)
         tai_phytc13 = tai_phytc13 + tbar(0,iphytc13,1)
-#   if defined O_npzd_caco3
-        tai_coccc13 = tai_coccc13 + tbar(0,icoccc13,1)
+#   if defined O_mobi_silicon
+        tai_diatc13 = tai_diatc13 + tbar(0,idiatc13,1)
+#   endif        
+#   if defined O_mobi_caco3
         tai_caco3c13 = tai_caco3c13 + tbar(0,icaco3c13,1)
 #   endif        
         tai_zoopc13 = tai_zoopc13 + tbar(0,izoopc13,1)
         tai_detrc13 = tai_detrc13 + tbar(0,idetrc13,1)
-#   if defined O_npzd_nitrogen
+#   if defined O_mobi_nitrogen
         tai_diazc13 = tai_diazc13 + tbar(0,idiazc13,1)
 #   endif
 #  endif
@@ -2319,17 +2348,24 @@
         tai_o2 = tai_o2*rntatio
         tai_o2flx = tai_o2flx*rntatio
         tai_po4 = tai_po4*rntatio
+# if defined O_mobi_silicon
+        tai_sil = tai_sil*rntatio
+        tai_silflx = tai_silflx*rntatio
+        tai_opl = tai_opl*rntatio
+# endif        
         tai_dop = tai_dop*rntatio
         tai_phyt = tai_phyt*rntatio
         tai_zoop = tai_zoop*rntatio
         tai_detr = tai_detr*rntatio
+        tai_phyt_phos = tai_phyt_phos*rntatio
+        tai_detr_phos = tai_detr_phos*rntatio
         tai_no3 = tai_no3*rntatio
         tai_don = tai_don*rntatio
         tai_diaz = tai_diaz*rntatio
         tai_din15 = tai_din15*rntatio
         tai_don15 = tai_don15*rntatio
         tai_phytn15 = tai_phytn15*rntatio
-        tai_coccn15 = tai_coccn15*rntatio
+        tai_diatn15 = tai_diatn15*rntatio
         tai_zoopn15 = tai_zoopn15*rntatio
         tai_detrn15 = tai_detrn15*rntatio
         tai_diazn15 = tai_diazn15*rntatio
@@ -2352,14 +2388,18 @@
         tai_sspCO2 = tai_sspCO2*rntatio
         tai_dfe = tai_dfe*rntatio
         tai_ddfe = tai_ddfe*rntatio
-# if defined O_npzd_caco3
-        tai_c = tai_c*rntatio
-        tai_coccc13 = tai_coccc13*rntatio
+# if defined O_mobi_silicon
+        tai_diatc13 = tai_diatc13*rntatio
+# endif
+# if defined O_mobi_caco3
         tai_caco3 = tai_caco3*rntatio
         tai_caco3c13 = tai_caco3c13*rntatio
 # endif
 # if defined O_kk_ballast
         tai_d_B = tai_d_B*rntatio
+# endif
+# if defined O_mobi_silicon
+        tai_diat = tai_diat*rntatio
 # endif        
       endif
 

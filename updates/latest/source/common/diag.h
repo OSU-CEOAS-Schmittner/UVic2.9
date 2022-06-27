@@ -73,22 +73,24 @@
 !     tai_po4       = average phosphate
 !     tai_dop       = average dop
 !     tai_phyt      = average phytoplankton
+!     tai_phyt_phos      = average phytoplankton phosphorous
 !     tai_zoop      = average zooplankton
 !     tai_detr      = average detritus
+!     tai_detr_phos      = average detritus phosphorous
 !     tai_no3       = average nitrate
 !     tai_don       = average don
 !     tai_diaz      = average diazotrophs
 !     tai_din15     = average nitrate 15
 !     tai_don15     = average don15
 !     tai_phytn15   = average phytoplankton n15
-!     tai_coccn15   = average calcifiers n15			     
+!     tai_diatn15   = average diatom n15			     
 !     tai_zoopn15   = average zooplankton n15
 !     tai_detrn15   = average detritus n15
 !     tai_diazn15   = average diazotrophs n15
 !     tai_dic13     = average DIC13
 !     tai_doc13     = average DOC13
 !     tai_phytc13   = average phytoplankton c13
-!     tai_coccc13   = average calcifier c13			     
+!     tai_diatc13   = average diatom c13			     
 !     tai_zoopc13   = average zooplankton c13
 !     tai_detrc13   = average detritus c13
 !     tai_diazc13   = average diazotrophs c13
@@ -109,9 +111,12 @@
 !     tai_dicwflx   = average carbon flux from weathering
 !     tai_dfe       = average iron
 !     tai_ddfe      = average particulate fe
-!     tai_c         = average coccolithophores
 !     tai_caco3     = average detached calcite
 !     tai_caco3c13  = average detached calcite c13
+!     tai_diat      = average diatom
+!     tai_sil       = average silica
+!     tai_silflx    = average silica flux
+!     tai_opl       = average opal
 			     
       integer ntatio
       common /cdiagi/ ntatio
@@ -121,12 +126,13 @@
       real tai_hflx, tai_sflx, tai_dic, tai_dicflx, tai_alk
       real tai_o2, tai_o2flx, tai_po4, tai_phyt, tai_zoop, tai_detr
       real tai_no3, tai_diaz, tai_c14, tai_dc14, tai_c14flx
+      real tai_phyt_phos, tai_detr_phos	
       real tai_cfc11, tai_cfc11flx, tai_cfc12, tai_cfc12flx
       real tai_sspH, tai_ssCO3, tai_ssOc, tai_ssOa, tai_sspCO2
       real tai_cocn, tai_cfa2o, tai_dicwflx
       real tai_dop, tai_don
       real tai_din15, tai_don15, tai_phytn15, tai_zoopn15, tai_detrn15
-      real tai_diazn15, tai_coccn15, tai_coccc13
+      real tai_diazn15, tai_diatn15, tai_diatc13
       real tai_dic13, tai_doc13, tai_phytc13, tai_zoopc13, tai_detrc13
       real tai_diazc13, tai_dic13flx, tai_dic13wflx, tai_dfe, tai_ddfe
       real tai_d_B, tai_c, tai_caco3, tai_caco3c13, tai_calatt, tcalatt
@@ -139,14 +145,19 @@
       common /cdiag_r/ tai_cfc11, tai_cfc11flx, tai_cfc12, tai_cfc12flx
       common /cdiag_r/ tai_sspH, tai_ssCO3, tai_ssOc, tai_ssOa
       common /cdiag_r/ tai_sspCO2, tai_cocn, tai_cfa2o, tai_dicwflx
-      common /cdiag_r/ tai_dop, tai_don, tai_coccn15
+      common /cdiag_r/ tai_dop, tai_don, tai_diatn15
       common /cdiag_r/ tai_din15, tai_don15, tai_phytn15, tai_zoopn15
       common /cdiag_r/ tai_detrn15, tai_diazn15, tai_detr
+      common /cdiag_r/ tai_phyt_phos, tai_detr_phos
       common /cdiag_r/ tai_dic13, tai_doc13, tai_phytc13, tai_zoopc13
       common /cdiag_r/ tai_detrc13, tai_diazc13, tai_dic13wflx, tai_dfe
-      common /cdiag_r/ tai_dic13flx, tai_ddfe, tai_coccc13, tai_caco3c13
+      common /cdiag_r/ tai_dic13flx, tai_ddfe, tai_diatc13, tai_caco3c13
       common /cdiag_r/ tai_d_B, tai_c, tai_caco3, tai_calatt
-      common /cdiag_r/ tcalatt(0:km,jmt)		       
+      common /cdiag_r/ tcalatt(0:km,jmt)	
+      real tai_diat
+      common /cdiag_r/ tai_diat
+      real tai_sil, tai_silflx, tai_opl
+      common /cdiag_r/ tai_sil, tai_silflx, tai_opl
 # endif
 # if defined O_energy_analysis
 

@@ -47,6 +47,9 @@
 # if defined O_sed && !defined O_sed_uncoupled
 #include "sed.h"
 # endif
+# if defined O_mobi_silicon 
+#include "mobi.h"
+# endif
 # if defined O_sulphate_data || defined O_sulphate_data_transient
 #include "insolation.h"
       real tot, twt, cz(1), zero(1)
@@ -256,7 +259,26 @@
           endif
         enddo
       enddo
-#endif
+
+#  if defined O_mobi_silicon && defined O_kk_si_compensating_sources
+CSPKKK I found kk's code confusing and have rewritten it, specifically 
+C      renaming globalsilwflx to sildustflux; globalsilwflx is now 
+C      the prescribed weathering flux (default value set in setmom.F and 
+C      read from restart) and only used when O_kk_si_compensating_sources 
+C      is not defined. 
+C      sildustflux is used in tracer.F. When O_TMM is defined it is 
+C      computed in and passed from the TMM driver. 
+	  sildustflux = 0.
+	  do j=jsp1,jem1
+		do i=isp1,iem1
+		  if (kmt(i,j) .ne. 0.) then
+		   sildustflux = sildustflux 
+     &                   + sbc(i,j,isilflx)*dxt(i)*dyt(j)*cst(j)
+		  endif
+		enddo
+	  enddo
+#  endif
+#endif ! O_TMM
 #  if defined O_sed && !defined O_sed_uncoupled
 !-----------------------------------------------------------------------
 !     apply CaCO3 weathering flux proportional to discharge
@@ -281,7 +303,7 @@ c       Andreas: needs to be changed
 c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + dic13ocn*tmp
 c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
 #    endif
-#   if defined O_npzd_alk
+#   if defined O_mobi_alk
             sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + disch(i,j)*2.*tmp
 #   endif
 #    if defined O_save_carbon_totals
@@ -364,7 +386,7 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
 
 #  endif
 #endif ! not O_TMM
-#  if defined O_carbon || defined O_npzd_alk || defined O_npzd_o2 || defined O_npzd || defined O_cfcs_data || defined O_cfcs_data_transient
+#  if defined O_carbon || defined O_mobi_alk || defined O_mobi_o2 || defined O_mobi || defined O_cfcs_data || defined O_cfcs_data_transient
 !-----------------------------------------------------------------------
 !     add normalized virtual fluxes to other tracers
 !-----------------------------------------------------------------------
@@ -400,18 +422,26 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
             sbc(i,j,ic14flx) = sbc(i,j,ic14flx) + gaost(ic14)*tmp
 #    endif
 #   endif
-#   if defined O_npzd_alk
+#   if defined O_mobi_silicon
+            sbc(i,j,isilflx) = sbc(i,j,isilflx) + gaost(isil)*tmp
+            sbc(i,j,ioplflx) = sbc(i,j,ioplflx) + gaost(iopl)*tmp
+#   endif
+#   if defined O_mobi_alk
             sbc(i,j,ialkflx) = sbc(i,j,ialkflx) + gaost(ialk)*tmp
 #   endif
-#   if defined O_npzd_o2
+#   if defined O_mobi_o2
             sbc(i,j,io2flx) = sbc(i,j,io2flx) + gaost(io2)*tmp
 #   endif
-#   if defined O_npzd
+#   if defined O_mobi
             sbc(i,j,ipo4flx) = sbc(i,j,ipo4flx) + gaost(ipo4)*tmp
-#    if !defined O_npzd_no_vflux
+#    if !defined O_mobi_no_vflux
             sbc(i,j,iphytflx) = sbc(i,j,iphytflx) + gaost(iphyt)*tmp
+            sbc(i,j,iphytflx_phos) = sbc(i,j,iphytflx_phos) 
+     &      + gaost(iphyt_phos)*tmp
             sbc(i,j,izoopflx) = sbc(i,j,izoopflx) + gaost(izoop)*tmp
             sbc(i,j,idetrflx) = sbc(i,j,idetrflx) + gaost(idetr)*tmp
+            sbc(i,j,idetrflx_phos) = sbc(i,j,idetrflx_phos)
+     &      + gaost(idetr_phos)*tmp
 #     if defined O_carbon_13
             sbc(i,j,iphytc13flx) = sbc(i,j,iphytc13flx) 
      &                                            + gaost(iphytc13)*tmp
@@ -423,37 +453,41 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
 #     if defined O_kk_ballast
             sbc(i,j,idetrflx_B) = sbc(i,j,idetrflx_B)+gaost(idetr_B)*tmp
 #     endif
-#     if defined O_npzd_caco3
-            sbc(i,j,icoccflx) = sbc(i,j,icoccflx) + gaost(icocc)*tmp
+#     if defined O_mobi_caco3
             sbc(i,j,icaco3flx) = sbc(i,j,icaco3flx) + gaost(icaco3)*tmp
 #      if defined O_carbon_13
-            sbc(i,j,icoccc13flx) = sbc(i,j,icoccc13flx) 
-     &                           + gaost(icoccc13)*tmp
             sbc(i,j,icaco3c13flx) = sbc(i,j,icaco3c13flx) 
      &                            + gaost(icaco3c13)*tmp
 #      endif
 #     endif
+#     if defined O_mobi_silicon
+            sbc(i,j,idiatflx) = sbc(i,j,idiatflx) + gaost(idiat)*tmp
+#      if defined O_carbon_13
+            sbc(i,j,idiatc13flx) = sbc(i,j,idiatc13flx) 
+     &                           + gaost(idiatc13)*tmp
+#      endif
+#     endif
 #    endif
-#    if defined O_npzd_nitrogen
+#    if defined O_mobi_nitrogen
             sbc(i,j,idopflx) = sbc(i,j,idopflx) + gaost(idop)*tmp
             sbc(i,j,ino3flx) = sbc(i,j,ino3flx) + gaost(ino3)*tmp
             sbc(i,j,idonflx) = sbc(i,j,idonflx) + gaost(idon)*tmp
-#     if !defined O_npzd_no_vflux
+#     if !defined O_mobi_no_vflux
             sbc(i,j,idiazflx) = sbc(i,j,idiazflx) + gaost(idiaz)*tmp
 #      if defined O_carbon_13
             sbc(i,j,idiazc13flx) = sbc(i,j,idiazc13flx) 
      &                                            + gaost(idiazc13)*tmp
 #      endif
 #     endif
-#     if defined O_npzd_nitrogen_15
+#     if defined O_mobi_nitrogen_15
             sbc(i,j,idin15flx) = sbc(i,j,idin15flx) + gaost(idin15)*tmp
             sbc(i,j,idon15flx) = sbc(i,j,idon15flx) + gaost(idon15)*tmp
-#      if !defined O_npzd_no_vflux 
+#      if !defined O_mobi_no_vflux 
             sbc(i,j,iphytn15flx) = sbc(i,j,iphytn15flx) 
      &           + gaost(iphytn15)*tmp
-#       if defined O_npzd_caco3
-            sbc(i,j,icoccn15flx) = sbc(i,j,icoccn15flx) 
-     &                          + gaost(icoccn15)*tmp
+#       if defined O_mobi_silicon
+            sbc(i,j,idiatn15flx) = sbc(i,j,idiatn15flx) 
+     &                          + gaost(idiatn15)*tmp
 #       endif            
             sbc(i,j,izoopn15flx) = sbc(i,j,izoopn15flx) 
      &                          + gaost(izoopn15)*tmp
@@ -464,9 +498,9 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
 #      endif
 #     endif
 #    endif
-#    if defined O_npzd_iron
+#    if defined O_mobi_iron
             sbc(i,j,idfeflx) = sbc(i,j,idfeflx) + gaost(idfe)*tmp
-#     if !defined O_npzd_no_vflux
+#     if !defined O_mobi_no_vflux
           sbc(i,j,idetrfeflx) = sbc(i,j,idetrfeflx) + gaost(idetrfe)*tmp
 #     endif
 #    endif
@@ -491,47 +525,55 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
       call setbcx (sbc(1,1,ic14flx), imt, jmt)
 #    endif
 #   endif
-#   if defined O_npzd_alk
+#   if defined O_mobi_silicon
+      call setbcx (sbc(1,1,isilflx), imt, jmt)
+      call setbcx (sbc(1,1,ioplflx), imt, jmt)
+#   endif
+#   if defined O_mobi_alk
       call setbcx (sbc(1,1,ialkflx), imt, jmt)
 #   endif
-#   if defined O_npzd_o2
+#   if defined O_mobi_o2
       call setbcx (sbc(1,1,io2flx), imt, jmt)
 #   endif
-#   if defined O_npzd
+#   if defined O_mobi
       call setbcx (sbc(1,1,ipo4flx), imt, jmt)
-#    if !defined O_npzd_no_vflux
+#    if !defined O_mobi_no_vflux
       call setbcx (sbc(1,1,iphytflx), imt, jmt)
+      call setbcx (sbc(1,1,iphytflx_phos), imt, jmt)
       call setbcx (sbc(1,1,izoopflx), imt, jmt)
       call setbcx (sbc(1,1,idetrflx), imt, jmt)
+      call setbcx (sbc(1,1,idetrflx_phos), imt, jmt)
 #     if defined O_kk_ballast
       call setbcx (sbc(1,1,idetrflx_B), imt, jmt)
 #     endif
-#     if defined O_npzd_caco3
-      call setbcx (sbc(1,1,icoccflx), imt, jmt)
+#     if defined O_mobi_caco3
       call setbcx (sbc(1,1,icaco3flx), imt, jmt)
 #     endif
+#     if defined O_mobi_silicon
+      call setbcx (sbc(1,1,idiatflx), imt, jmt)
+#     endif
 #    endif
-#    if defined O_npzd_iron
+#    if defined O_mobi_iron
       call setbcx (sbc(1,1,idfeflx), imt, jmt)
       call setbcx (sbc(1,1,idfeadep), imt, jmt)
-#     if !defined O_npzd_no_vflux
+#     if !defined O_mobi_no_vflux
       call setbcx (sbc(1,1,idetrfeflx), imt, jmt)
 #     endif
 #    endif
-#    if defined O_npzd_nitrogen
+#    if defined O_mobi_nitrogen
       call setbcx (sbc(1,1,idopflx), imt, jmt)
       call setbcx (sbc(1,1,ino3flx), imt, jmt)
       call setbcx (sbc(1,1,idonflx), imt, jmt)
-#     if !defined O_npzd_no_vflux
+#     if !defined O_mobi_no_vflux
       call setbcx (sbc(1,1,idiazflx), imt, jmt)
 #     endif
-#     if defined O_npzd_nitrogen_15
+#     if defined O_mobi_nitrogen_15
       call setbcx (sbc(1,1,idin15flx), imt, jmt)
       call setbcx (sbc(1,1,idon15flx), imt, jmt)
-#      if !defined O_npzd_no_vflux
+#      if !defined O_mobi_no_vflux
       call setbcx (sbc(1,1,iphytn15flx), imt, jmt)
-#       if defined O_npzd_caco3
-      call setbcx (sbc(1,1,icoccn15flx), imt, jmt)
+#       if defined O_mobi_silicon
+      call setbcx (sbc(1,1,idiatn15flx), imt, jmt)
 #       endif      
       call setbcx (sbc(1,1,izoopn15flx), imt, jmt)
       call setbcx (sbc(1,1,idetrn15flx), imt, jmt)
@@ -541,15 +583,17 @@ c            sbc(i,j,idic13flx) = sbc(i,j,idic13flx) + disch(i,j)*tmp
 #    endif
 #    if defined O_carbon_13
       call setbcx (sbc(1,1,idoc13flx), imt, jmt)
-#     if !defined O_npzd_no_vflux
+#     if !defined O_mobi_no_vflux
       call setbcx (sbc(1,1,iphytc13flx), imt, jmt)
-#      if defined O_npzd_caco3
-      call setbcx (sbc(1,1,icoccc13flx), imt, jmt)
+#      if defined O_mobi_silicon
+      call setbcx (sbc(1,1,idiatc13flx), imt, jmt)
+#      endif
+#      if defined O_mobi_caco3
       call setbcx (sbc(1,1,icaco3c13flx), imt, jmt)
 #      endif
       call setbcx (sbc(1,1,izoopc13flx), imt, jmt)
       call setbcx (sbc(1,1,idetrc13flx), imt, jmt)
-#      if defined O_npzd_nitrogen
+#      if defined O_mobi_nitrogen
       call setbcx (sbc(1,1,idiazc13flx), imt, jmt)
 #      endif
 #     endif

@@ -25,7 +25,7 @@
 
       integer i, iou, j, ln, n, ntrec, ids, ide, jds, jde, ils
       integer ile, jls, jle, kls, kle, ib(10), ic(10), jrow, k
-      integer nyear, nmonth, nday, nhour, nmin, nsec
+      integer nyear, nmonth, nday, nhour, nmin, nsec, salt_on_off
 
       logical inqvardef, exists, warning
 
@@ -45,6 +45,10 @@
       include "mw.h"
       include "tmngr.h"
       include "switch.h"
+#if defined O_mobi_silicon
+      include "atm.h"
+      include "mobi.h"
+#endif
 
 !-----------------------------------------------------------------------
 !     open file
@@ -110,6 +114,12 @@
         relyr = 0.
         call mkstmp (stamp, year0, month0, day0, hour0, min0, sec0)
       endif
+
+#if defined O_mobi_silicon
+      tmp = globalsilwflx
+      call getvars ('globalsilwflx', iou, 1, tmp, c1, c0)
+      globalsilwflx = tmp
+#endif
 
 !-----------------------------------------------------------------------
 !     read 2d data (x,y)
@@ -255,6 +265,8 @@
             if (inqvardef('dic131', iou)) var1 = 'dic131'
           elseif (trim(mapt(n)) .eq. 'alk') then
             if (inqvardef('alk1', iou)) var1 = 'alk1'
+          elseif (trim(mapt(n)) .eq. 'sil') then
+            if (inqvardef('sil1', iou)) var1 = 'sil1'
           elseif (trim(mapt(n)) .eq. 'o2') then
             if (inqvardef('o21', iou)) var1 = 'o21'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -265,10 +277,14 @@
             if (inqvardef('dop1', iou)) var1 = 'dop1'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             if (inqvardef('phyt1', iou)) var1 = 'phyt1'
+          elseif (trim(mapt(n)) .eq. 'phyt_phos') then
+            if (inqvardef('phyt_phos1', iou)) var1 = 'phyt_phos1'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             if (inqvardef('zoop1', iou)) var1 = 'zoop1'
           elseif (trim(mapt(n)) .eq. 'detr') then
             if (inqvardef('detr1', iou)) var1 = 'detr1'
+          elseif (trim(mapt(n)) .eq. 'detr_phos') then
+            if (inqvardef('detr_phos1', iou)) var1 = 'detr_phos1'
           elseif (trim(mapt(n)) .eq. 'detrfe') then
             if (inqvardef('detrfe1', iou)) var1 = 'detrfe1'
           elseif (trim(mapt(n)) .eq. 'no3') then
@@ -305,18 +321,18 @@
             if (inqvardef('cfc111', iou)) var1 = 'cfc111'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             if (inqvardef('cfc121', iou)) var1 = 'cfc121'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            if (inqvardef('cocc1', iou)) var1 = 'cocc1'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            if (inqvardef('coccn151', iou)) var1 = 'coccn151'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            if (inqvardef('diatn151', iou)) var1 = 'diatn151'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             if (inqvardef('caco31', iou)) var1 = 'caco31'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            if (inqvardef('coccc131', iou)) var1 = 'coccc131'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            if (inqvardef('diatc131', iou)) var1 = 'diatc131'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             if (inqvardef('caco3c131', iou)) var1 = 'caco3c131'
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             if (inqvardef('detr1_B', iou)) var1 = 'detr1_B'
+          elseif (trim(mapt(n)) .eq. 'diat') then
+            if (inqvardef('diat1', iou)) var1 = 'diat1'
           endif
           exists = inqvardef(trim(var1), iou)
           if (exists) then
@@ -327,6 +343,27 @@
             if (jrow .eq. 1) print*, '==> Warning: ', trim(var1)
      &,       ' not found'
           endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       The section below is used to alter the salinity for the purpose
+!       of simulating changes in sea level rise. To increase by 1 PSU,
+!       0.001 is added to the data read from the restart file. In
+!       control.in, init = .false. and rest = .true.. This causes the
+!       restart file to be read, and a new one to be written. After one
+!       very very short run, this salinity addition needs to be turned
+!       off or you will be continuously adding salt with every
+!       subsequent run. Later in the code taum1 (tau-1.0) is set to tau
+!       and this salt_on_off variable will also control the alteration
+!       need to be applied to taup1 (tau=1.0).  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          salt_on_off = 0
+          if (salt_on_off .eq. 1) then                       
+          if (n .eq. 2) then
+          t(:,:,j,2,tau) = t(:,:,j,2,tau)+0.001 
+          endif
+          endif 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
         enddo
         exists = inqvardef('u1', iou)
         if (exists) then
@@ -393,6 +430,8 @@
             if (inqvardef('dic132', iou)) var2 = 'dic132'
           elseif (trim(mapt(n)) .eq. 'alk') then
             if (inqvardef('alk2', iou)) var2 = 'alk2'
+          elseif (trim(mapt(n)) .eq. 'sil') then
+            if (inqvardef('sil2', iou)) var2 = 'sil2'
           elseif (trim(mapt(n)) .eq. 'o2') then
             if (inqvardef('o22', iou)) var2 = 'o22'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -403,10 +442,14 @@
             if (inqvardef('dop2', iou)) var2 = 'dop2'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             if (inqvardef('phyt2', iou)) var2 = 'phyt2'
+          elseif (trim(mapt(n)) .eq. 'phyt_phos') then
+            if (inqvardef('phyt_phos2', iou)) var2 = 'phyt_phos2'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             if (inqvardef('zoop2', iou)) var2 = 'zoop2'
           elseif (trim(mapt(n)) .eq. 'detr') then
             if (inqvardef('detr2', iou)) var2 = 'detr2'
+          elseif (trim(mapt(n)) .eq. 'detr_phos') then
+            if (inqvardef('detr_phos2', iou)) var2 = 'detr_phos2'
           elseif (trim(mapt(n)) .eq. 'detrfe') then
             if (inqvardef('detrfe2', iou)) var2 = 'detrfe2'
           elseif (trim(mapt(n)) .eq. 'no3') then
@@ -443,18 +486,18 @@
             if (inqvardef('cfc112', iou)) var2 = 'cfc112'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             if (inqvardef('cfc122', iou)) var2 = 'cfc122'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            if (inqvardef('cocc2', iou)) var2 = 'cocc2'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            if (inqvardef('coccn152', iou)) var2 = 'coccn152'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            if (inqvardef('diatn152', iou)) var2 = 'diatn152'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             if (inqvardef('caco32', iou)) var2 = 'caco32'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            if (inqvardef('coccc132', iou)) var2 = 'coccc132'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            if (inqvardef('diatc132', iou)) var2 = 'diatc132'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             if (inqvardef('caco3c132', iou)) var2 = 'caco3c132'
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             if (inqvardef('detr2_B', iou)) var2 = 'detr2_B'
+          elseif (trim(mapt(n)) .eq. 'diat') then
+            if (inqvardef('diat2', iou)) var2 = 'diat2'
           endif
           exists = inqvardef(trim(var2), iou)
           if (exists) then
@@ -465,6 +508,19 @@
             if (jrow .eq. 1) print*, '==> Warning: ',trim(var2)
      &,       ' not found'
           endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       The section below is used to alter the salinity for the purpose
+!       of simulating changes in sea level rise. See associated section
+!       above for tau
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         if (salt_on_off .eq. 1) then
+          if (n .eq. 2) then
+          t(:,:,j,2,taup1) = t(:,:,j,2,taup1)+0.001 
+          endif
+         endif      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
         enddo
         exists = inqvardef('u2', iou)
         if (exists) then
@@ -654,6 +710,11 @@
       call defvar ('depth_W_edges', iou, 1, it, c0, c0, ' ', 'D'
      &, 'depth edges', ' ', 'm')
 
+#if defined O_mobi_silicon
+      call defvar ('globalsilwflx', iou, 1, it, c0, c0, ' ', 'D'
+     &, 'globalsilwflx', ' ',' ')
+#endif
+
 !-----------------------------------------------------------------------
 !     define 2d data (x,y)
 !-----------------------------------------------------------------------
@@ -735,6 +796,11 @@
      &,     'alkalinity at tau',' ', ' ')
           call defvar ('alk2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'alkalinity at tau+1',' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'sil') then
+          call defvar ('sil1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'ocean silicon at tau', ' ', ' ')
+          call defvar ('sil2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'ocean silicon at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'o2') then
           call defvar ('o21', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'oxygen at tau',' ', ' ')
@@ -760,6 +826,11 @@
      &,     'phytoplankton at tau', ' ', ' ')
           call defvar ('phyt2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'phytoplankton at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'phyt_phos') then
+          call defvar ('phyt_phos1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'phytoplankton phosphorous at tau', ' ', ' ')
+          call defvar ('phyt_phos2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'phytoplankton phosphorous at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'zoop') then
           call defvar ('zoop1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'zooplankton at tau', ' ', ' ')
@@ -770,6 +841,11 @@
      &,     'detritus at tau', ' ', ' ')
           call defvar ('detr2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'detritus at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'detr_phos') then
+          call defvar ('detr_phos1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'detritus phosphorous at tau', ' ', ' ')
+          call defvar ('detr_phos2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'detritus phosphorous at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'detrfe') then
           call defvar ('detrfe1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'particulate iron at tau', ' ', ' ')
@@ -860,26 +936,21 @@
      &,     'CFC12 at tau', ' ', ' ')
           call defvar ('cfc122', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'CFC12 at tau+1', ' ', ' ')
-        elseif (trim(mapt(n)) .eq. 'cocc') then
-          call defvar ('cocc1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores at tau', ' ', ' ')
-          call defvar ('cocc2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores at tau+1', ' ', ' ')
-        elseif (trim(mapt(n)) .eq. 'coccn15') then
-          call defvar ('coccn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores n15 at tau', ' ', ' ')
-          call defvar ('coccn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores n15 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'diatn15') then
+          call defvar ('diatn151', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom n15 at tau', ' ', ' ')
+          call defvar ('diatn152', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom n15 at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'caco3') then
           call defvar ('caco31', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'calcite at tau', ' ', ' ')
           call defvar ('caco32', iou, 4, it, -c1e20, c1e20, ' ','D'
      &,     'calcite at tau+1', ' ', ' ')
-        elseif (trim(mapt(n)) .eq. 'coccc13') then
-          call defvar ('coccc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores c13 at tau', ' ', ' ')
-          call defvar ('coccc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
-     &,     'coccolithophores c13 at tau+1', ' ', ' ')
+        elseif (trim(mapt(n)) .eq. 'diatc13') then
+          call defvar ('diatc131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom c13 at tau', ' ', ' ')
+          call defvar ('diatc132', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatom c13 at tau+1', ' ', ' ')
         elseif (trim(mapt(n)) .eq. 'caco3c13') then
           call defvar ('caco3c131', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'calcite c13 at tau', ' ', ' ')
@@ -892,6 +963,11 @@
           call defvar ('detr2_B', iou, 4, it, -c1e20, c1e20, ' ', 'D'
      &,     'ballasted detritus at tau+1', ' ', ' ')
 # endif
+        elseif (trim(mapt(n)) .eq. 'diat') then
+          call defvar ('diat1', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatoms at tau', ' ', ' ')
+          call defvar ('diat2', iou, 4, it, -c1e20, c1e20, ' ', 'D'
+     &,     'diatoms at tau+1', ' ', ' ')
         else
           if (n .lt. 1000) write(a3,'(i3)') n
           if (n .lt. 100) write(a3,'(i2)') n
@@ -966,6 +1042,10 @@
       include "mw.h"
       include "switch.h"
       include "tmngr.h"
+#if defined O_mobi_silicon
+      include "atm.h"
+      include "mobi.h"
+#endif
 
       real xt_e(imt+1), xu_e(imt+1), yt_e(jmt+1), yu_e(jmt+1)
       real zt_e(km+1), zw_e(km+1), tmp, bufsl(imt,km,2)
@@ -1107,6 +1187,16 @@
       tmpke(kgs:kge+1) = zw_e(kgs:kge+1)
       call putvara ('depth_W_edges', iou, kg+1, ib, ic, tmpke, c100, c0)
 
+#if defined O_mobi_silicon
+# if defined O_kk_si_compensating_sources
+      tmp = rivsil*globaldisch !ratio times water flux
+# else
+      tmp = globalsilwflx
+!      print*,'KK rest', globalsilwflx
+# endif
+      call putvars ('globalsilwflx', iou, 1, tmp, c1, c0)
+#endif
+
 !-----------------------------------------------------------------------
 !     write 2d data (x,y)
 !-----------------------------------------------------------------------
@@ -1245,6 +1335,8 @@
             var1 = 'dic131'
           elseif (trim(mapt(n)) .eq. 'alk') then
             var1 = 'alk1'
+          elseif (trim(mapt(n)) .eq. 'sil') then
+            var1 = 'sil1'
           elseif (trim(mapt(n)) .eq. 'o2') then
             var1 = 'o21'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -1255,10 +1347,14 @@
             var1 = 'dop1'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             var1 = 'phyt1'
+          elseif (trim(mapt(n)) .eq. 'phyt_phos') then
+            var1 = 'phyt_phos1'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             var1 = 'zoop1'
           elseif (trim(mapt(n)) .eq. 'detr') then
             var1 = 'detr1'
+          elseif (trim(mapt(n)) .eq. 'detr_phos') then
+            var1 = 'detr_phos1'
           elseif (trim(mapt(n)) .eq. 'detrfe') then
             var1 = 'detrfe1'
           elseif (trim(mapt(n)) .eq. 'no3') then
@@ -1295,20 +1391,20 @@
             var1 = 'cfc111'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             var1 = 'cfc121'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            var1 = 'cocc1'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            var1 = 'coccn151'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            var1 = 'diatn151'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             var1 = 'caco31'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            var1 = 'coccc131'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            var1 = 'diatc131'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             var1 = 'caco3c131'
 # if defined O_kk_ballast
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             var1 = 'detr1_B'
 # endif
+          elseif (trim(mapt(n)) .eq. 'diat') then
+            var1 = 'diat1'
           else
             if (n .lt. 1000) write(a3, '(i3)') n
             if (n .lt. 100) write(a3, '(i2)') n
@@ -1332,7 +1428,7 @@
           j = jmw
           call getrow (latdisk(taup1disk), nslab, jrow
      &,                u(1,1,j,1,taup1), t(1,1,j,1,taup1))
-        endif
+        endif 
         ib(2) = jrow
         do n=1,nt
           if (trim(mapt(n)) .eq. 'temp') then
@@ -1345,6 +1441,8 @@
             var2 = 'dic132'
           elseif (trim(mapt(n)) .eq. 'alk') then
             var2 = 'alk2'
+          elseif (trim(mapt(n)) .eq. 'sil') then
+            var2 = 'sil2'
           elseif (trim(mapt(n)) .eq. 'o2') then
             var2 = 'o22'
           elseif (trim(mapt(n)) .eq. 'po4') then
@@ -1355,10 +1453,14 @@
             var2 = 'dop2'
           elseif (trim(mapt(n)) .eq. 'phyt') then
             var2 = 'phyt2'
+          elseif (trim(mapt(n)) .eq. 'phyt_phos') then
+            var2 = 'phyt_phos2'
           elseif (trim(mapt(n)) .eq. 'zoop') then
             var2 = 'zoop2'
           elseif (trim(mapt(n)) .eq. 'detr') then
             var2 = 'detr2'
+          elseif (trim(mapt(n)) .eq. 'detr_phos') then
+            var2 = 'detr_phos2'
           elseif (trim(mapt(n)) .eq. 'detrfe') then
             var2 = 'detrfe2'
           elseif (trim(mapt(n)) .eq. 'no3') then
@@ -1395,20 +1497,20 @@
             var2 = 'cfc112'
           elseif (trim(mapt(n)) .eq. 'cfc12') then
             var2 = 'cfc122'
-          elseif (trim(mapt(n)) .eq. 'cocc') then
-            var2 = 'cocc2'
-          elseif (trim(mapt(n)) .eq. 'coccn15') then
-            var2 = 'coccn152'
+          elseif (trim(mapt(n)) .eq. 'diatn15') then
+            var2 = 'diatn152'
           elseif (trim(mapt(n)) .eq. 'caco3') then
             var2 = 'caco32'
-          elseif (trim(mapt(n)) .eq. 'coccc13') then
-            var2 = 'coccc132'
+          elseif (trim(mapt(n)) .eq. 'diatc13') then
+            var2 = 'diatc132'
           elseif (trim(mapt(n)) .eq. 'caco3c13') then
             var2 = 'caco3c132'
 # if defined O_kk_ballast
           elseif (trim(mapt(n)) .eq. 'detr_B') then
             var2 = 'detr2_B'
 # endif
+          elseif (trim(mapt(n)) .eq. 'diat') then
+            var2 = 'diat2'
           else
             if (n .lt. 1000) write(a3, '(i3)') n
             if (n .lt. 100) write(a3, '(i2)') n
