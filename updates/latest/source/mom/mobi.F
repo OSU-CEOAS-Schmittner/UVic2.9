@@ -197,7 +197,7 @@ c     juan: Levin's value was 0.1e-3
 #  if defined O_mobi_iron_inscav_nonlinear
       kfecol = 900/86400.
 #  else
-      kfecol = 0.03/86400.      ! Colloidal production and precipitation rate [s^-1]
+      kfecol = 0.007/86400.      ! Colloidal production and precipitation rate [s^-1]
 #  endif
 # endif
 !     read namelist
