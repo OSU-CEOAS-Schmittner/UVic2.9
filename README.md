@@ -2,7 +2,7 @@
 This version contains the new marine iron biogeochemistry modifications from Somes et al., (2021; https://doi.org/10.1029/2021GB006948), which has now been implemented into MOBI2.1 updates level 09. Please note some marine biogeochemical parameter changes in run/control.in. 
 
 # UVic2.9
-This is the base code of the University of Victoria (UVic) climate model version 2.9 used at OSU. The source directory should not be changed. It is the original code without updates. It resides in /usr/local/models/UVic_ESCM/2.9/. Changes should be made to "updates/latest", which contains the latest updates. It should reside in /usr/local/models/UVic_ESCM/2.9/updates/. 
+This is the base code of the University of Victoria (UVic) climate model version 2.9 used at OSU. The source directory should not be changed. It is the original code without updates. 
 
 ## Further info
 * [OSU-UVic2.9 webpage](https://osu-ceoas-schmittner.github.io/UVic2.9/)
