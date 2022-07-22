@@ -1,0 +1,160 @@
+Updates_Level = latest
+Auto_Update = true
+
+Source_Comment_Character = !
+Code_Extension = f
+Object_Extension = o
+Include_Extension = h inc
+Source_Extension = F f F90 f90
+Notify_User = aschmitt@coas.oregonstate.edu
+Run_Copy = restatm.nc restocn.nc rest.nc restart.nc data
+End_String = UVIC_ESCM integration is complete
+Nice = -19
+Run_File_Local = run/run
+
+Step_Start_File = Step_Start
+Step_End_File = Step_End
+
+Remote_Machine = kikou
+Remote_Directory = /net/kikou
+
+# uncomment this section for code that uses compiler preprocessing
+#Preprocessor_Compile = true
+#Preprocessor_aix = xlf90
+#Option_Prefix_aix = -WF,-D
+#Preprocessor_linux = ifort
+#Preprocessor_linux-gnu = ifort
+#Option_Prefix_linux = -cpp -D
+#Option_Prefix_linux-gnu = -cpp -D
+
+#set defaults for any UNSET variables that may be OSTYPE or HOST dependent
+Option_Prefix_Default = -D
+#Preprocessor_Default = /lib/cpp -traditional -P -C
+Preprocessor_Default = /lib/cpp -P
+Module_Extension_Default = mod
+Run_File_Default = run/run
+Libraries_Default = -lnetcdf
+Libraries_Directory_Default = lib_linux
+Libraries_Directory_Prefix_Default = -L
+Compiler_Default_F = ifort -r8 -O3 -warn nouncalled -c
+Compiler_Default_f = ifort -r8 -O3 -warn nouncalled -c
+Compiler_Default_F90 = ifort -r8 -O3 -warn nouncalled -FR -c
+Compiler_Default_f90 = ifort -r8 -O3 -warn nouncalled -FR -c
+Linker_Default = ifort -r8 -O3 -warn nouncalled -o
+
+# linux
+Preprocessor_linux = /lib/cpp -traditional -P -C
+Module_Extension_linux = mod
+Run_File_linux = run/run_pbs
+Libraries_Directory_linux = lib_linux
+# intel linux compiler
+Compiler_F_linux = ifort -r8 -O3 -warn nouncalled -c
+Compiler_f_linux = ifort -r8 -O3 -warn nouncalled -c
+Compiler_F90_linux = ifort -r8 -O3 -warn nouncalled -FR -c
+Compiler_f90_linux = ifort -r8 -O3 -warn nouncalled -FR -c
+Linker_linux = ifort -r8 -O3 -warn nouncalled -o
+
+# use this for de-bugging
+#Compiler_F_linux = ifort -r8 -align -check -warn interfaces -fpe0 -traceback -c
+#Compiler_f_linux = ifort -r8 -align -check -warn interfaces -fpe0 -traceback -c
+#Compiler_F90_linux = ifort -r8 -align -check -warn interfaces -fpe0 -traceback -FR -c
+#Compiler_f90_linux = ifort -r8 -align -check -warn interfaces -fpe0 -traceback -FR -c
+#Linker_linux = ifort -r8 -align -check -warn interfaces -fpe0 -traceback -o
+
+# lahey 64 8.0 PRO fortran compiler
+#Compiler_F_linux = lfc --o3 --dbl -c
+#Compiler_f_linux = lfc --o3 --dbl -c
+#Compiler_F90_linux = lfc --o3 --dbl -c
+#Compiler_f90_linux = lfc --o3 --dbl -c
+#Linker_linux = lfc --o3 --dbl -o 
+
+# gnu compiler on Aspen cluster
+#Compiler_F_linux = gfortran -O3 -c
+#Compiler_f_linux = gfortran -O3 -c
+#Compiler_F90_linux = gfortran -O3 -c
+#Compiler_f90_linux = gfortran -O3 -c
+#Linker_linux = gfortran -O3 -o
+
+# mare (64 bit linux netcdf library)
+Libraries_Directory_mare = lib_mare
+
+# sx (nec cross compiler on linux)
+Preprocessor_sx = /lib/cpp -traditional -P -C
+Libraries_Directory_sx = lib_super-ux
+Module_Extension_sx = mod
+Run_File_sx = run/run_nqsII
+Libraries_Directory_sx = lib_super-ux
+Compiler_F_sx = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f0 -pi line=1000 nest=2 -c
+Compiler_f_sx = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f0 -pi line=1000 nest=2 -c
+Compiler_F90_sx = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f4 -pi line=1000 nest=2 -c
+Compiler_f90_sx = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f4 -pi line=1000 nest=2 -c
+Linker_sx = /SX/usr/bin/sxf90 -o
+
+# kikou (nec cross compiler on linux)
+Preprocessor_kikou = /lib/cpp -traditional -P -C
+Libraries_Directory_kikou = lib_super-ux
+Module_Extension_kikou = mod
+Run_File_kikou = run/run_nqsII
+Libraries_Directory_kikou = lib_super-ux
+Compiler_F_kikou = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f0 -pi line=1000 nest=2 -c
+Compiler_f_kikou = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f0 -pi line=1000 nest=2 -c
+Compiler_F90_kikou = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f4 -pi line=1000 nest=2 -c
+Compiler_f90_kikou = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f4 -pi line=1000 nest=2 -c
+Linker_kikou = /SX/usr/bin/sxf90 -o
+
+# super-ux (NEC)
+Preprocessor_super-ux = /lib/cpp -P -C
+Libraries_Directory_super-ux = lib_super-ux
+Module_Extension_super-ux = mod
+Run_File_super-ux = run/run_nqsII
+Libraries_super-ux = -lnetcdf
+Compiler_F_super-ux = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f0 -pi line=1000 nest=2 -c
+Compiler_f_super-ux = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f0 -pi line=1000 nest=2 -c
+Compiler_F90_super-ux = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f4 -pi line=1000 nest=2 -c
+Compiler_f90_super-ux = /SX/usr/bin/sxf90 -C hopt -Wf,"-A idbl4,-pvctl noassume loopcnt=1000000" -f4-pi line=1000 nest=2  -c
+Linker_super-ux = /SX/usr/bin/sxf90 -o
+
+# darwin (Apple)
+Preprocessor_darwin = /usr/bin/cpp -P -C -traditional-cpp
+Libraries_Directory_darwin = lib_darwin
+Module_Extension_darwin = mod
+Run_File_darwin = run/run
+Libraries_darwin = -lnetcdf
+Compiler_F_darwin = ifort -r8 -O3 -warn nouncalled -c
+Compiler_f_darwin = ifort -r8 -O3 -warn nouncalled -c
+Compiler_F90_darwin = ifort -r8 -O3 -warn nouncalled -c
+Compiler_f90_darwin = ifort -r8 -O3 -warn nouncalled -c
+Linker_darwin = ifort -r8 -O3 -warn nouncalled -o
+
+# aix (IBM)
+Preprocessor_aix = /lib/cpp -P -C
+Libraries_Directory_aix = lib_aix
+Module_Extension_aix = mod
+Run_File_aix = run/run_loadleveler
+Libraries_aix = -lnetcdf -lmass -lesslp2.m
+Compiler_F_aix = xlf90 -O3 -qstrict -qfixed=132 -qarch=pwr3 -qrealsize=8 -c
+Compiler_f_aix = xlf90 -O3 -qstrict -qfixed=132 -qarch=pwr3 -qrealsize=8 -c
+Compiler_F90_aix = xlf90 -O3 -qstrict -qarch=pwr3 -qrealsize=8 -c
+Compiler_f90_aix = xlf90 -O3 -qstrict -qarch=pwr3 -qrealsize=8 -c
+Linker_aix = xlf90 -bmaxdata:0x80000000 -o 
+# parallel
+Run_File_Parallel_aix = run/run_parallel_loadleveler
+Libraries_Parallel_aix = -lnetcdf -lmass -lessl_r -lxlsmp
+Compiler_Parallel_F_aix = xlf90_r -qsmp=noauto -O3 -qstrict -qfixed=132 -qarch=pwr3 -qrealsize=8 -c
+Compiler_Parallel_f_aix = xlf90_r -qsmp=noauto -O3 -qstrict -qfixed=132 -qarch=pwr3 -qrealsize=8 -c
+Compiler_Parallel_F90_aix = xlf90_r -qsmp=noauto -O3 -qstrict -qarch=pwr3 -qrealsize=8 -c
+Compiler_Parallel_f90_aix = xlf90_r -qsmp=noauto -O3 -qstrict -qarch=pwr3 -qrealsize=8 -c
+Linker_Parallel_aix = xlf90_r -qsmp -bmaxdata:0x80000000 -o
+
+#irix (SGI)
+#Preprocessor_irix = /usr/freeware/bin/cpp -traditional -P -C
+Preprocessor_irix = /lib/cpp -P -C
+Libraries_Directory_irix = lib_irix
+Module_Extension_irix = kmo
+Run_File_irix = run/run
+Libraries_irix = -lnetcdf
+Compiler_F_irix = f90 -O2 -OPT:Olimit=0 -r8 -fixedform -c
+Compiler_f_irix = f90 -O2 -OPT:Olimit=0 -r8 -fixedform -c
+Compiler_F90_irix = f90 -r8 -O2 -OPT:Olimit=0 -freeform -c
+Compiler_f90_irix = f90 -r8 -O2 -OPT:Olimit=0 -freeform -c
+Linker_irix = f90 -o
