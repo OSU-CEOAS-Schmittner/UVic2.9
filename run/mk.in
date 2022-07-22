@@ -1,7 +1,7 @@
 # Add version directory for use
 # for Uvic_ESCM 2.9 version reference run
 #test for github
-Version_Directory = /Users/csomes/Research/Models/UVic2.9_GitHub
+Version_Directory = /home/aschmitt/models/UVic2.9/git_test/myfork/UVic2.9
 
 # comment out unwanted options or directories with "#"
 
@@ -81,15 +81,9 @@ O_mobi_nitrogen
 O_mobi_nitrogen_15
 O_mobi_silicon
 O_mobi_iron
-O_mobi_iron_var_ligands
-O_mobi_iron_sed_dale
-O_mobi_iron_gesamp_atmfedep
-O_mobi_iron_inscav_nonlinear
-O_mobi_sedcox_flogel
-O_mobi_omz_threshold_smooth
 #O_mobi_no_vflux
-O_save_mobi_fluxes
-O_save_mobi_diagnostics
+#O_save_mobi_fluxes
+#O_save_mobi_diagnostics
 #O_save_kv
 O_tidal_kv
 O_anisotropic_viscosity
@@ -189,7 +183,7 @@ O_save_time_relyear0
 
 Source_Directory(1) = updates
 Source_Directory(2) = updates/latest
-Source_Directory(3) = updates/08
+Source_Directory(3) = updates/09
 Source_Directory(4) = source/common
 Source_Directory(5) = source/netcdf
 Source_Directory(6) = source/embm
@@ -202,10 +196,10 @@ Source_Directory(10) = source/sed
 Data_Source(1) = data.100.100.19
 
 ### miscellaneous settings
-Executable_File = UVic_ESCM_ebpv_nlfc_isr_mor
+Executable_File = UVic_ESCM
 Input_File = control.in
 Output_File = pr
 Code_Directory = code
 Data_Directory = data
-Updates_Level = 08
+Updates_Level = 09
 
