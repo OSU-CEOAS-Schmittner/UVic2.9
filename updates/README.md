@@ -1,6 +1,6 @@
-May 20, 2024: 10 updates inaclude Nate's carbon and 13C decomposition and Samars Pa/Th
-		but reverts the iron model back to before 09 updates (prior to Chris's update)
-		version 11 should merge the two
+May 20, 2024: 10 updates include Nate's carbon and 13C decomposition and Samars Pa/Th but reverts the iron model back to before 09 updates (prior to Chris's update) for reproducability with the runs in Nate's papers.
+
+version 11 should merge the two
 
 Jul 22, 2022: 09 updates (MOBI2.2) include Nate's variable P:N and Si:N stoichiometry and Chris' updates to the iron model
 
