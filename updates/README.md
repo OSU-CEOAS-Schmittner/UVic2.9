@@ -1,3 +1,5 @@
+June 12, 2026: 11 updates include Neodymium concentrations and isotopes and includes the iron model from 09 update.
+
 May 20, 2024: 10 updates include Nate's carbon and 13C decomposition and Samars Pa/Th but reverts the iron model back to before 09 updates (prior to Chris's update) for reproducability with the runs in Nate's papers.
 
 version 11 should merge the two
